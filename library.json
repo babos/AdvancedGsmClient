@@ -1,0 +1,36 @@
+{
+  "name": "AdvancedGsmClient",
+  "version": "0.1.0",
+  "description": ".",
+  "keywords": "GSM, AT commands, AT, SIM7020, SIM7080, SIMCOM, LTE, LTE-M, Cat-M1, NB-IoT",
+  "authors": [
+    {
+      "name": "Sly Gryphon",
+      "url": "https://github.com/sgryphon",
+      "maintainer": true
+    },
+    {
+      "name": "Volodymyr Shymanskyy",
+      "url": "https://github.com/vshymanskyy",
+      "maintainer": false
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sgryphon/AdvancedGsmClient.git"
+  },
+  "homepage": "https://github.com/sgryphon/AdvancedGsmClient",
+  "export": {
+    "include": [
+      "LICENSE",
+      "library.json",
+      "library.properties",
+      "README.md",
+      "src/*",
+      "examples/*"
+    ]
+  },
+  "frameworks": ["arduino"],
+  "platforms": "*",
+  "headers": "AdvancedGsmClient.h"
+}
