@@ -1,3 +1,4 @@
+#if 0
 #ifndef AdvancedHttpClient_h
 #define AdvancedHttpClient_h
 
@@ -173,4 +174,5 @@ class HttpClient
 
 }
 
+#endif
 #endif

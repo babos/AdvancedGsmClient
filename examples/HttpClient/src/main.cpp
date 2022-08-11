@@ -1,17 +1,19 @@
 #define GSM_BAUDRATE 115200
 
-#include "GsmModemSIM7020.h"
+#include "../../../src/SIM7020/GsmModemSIM7020.h"
 #include <Arduino.h>
 
-GsmModemSIM7020 modem(Serial1);
-//GsmModem modem = new GsmModemSIM7020(Serial1);
+// Allocate memory for concrete object
+GsmModemSIM7020 sim7020(Serial1);
+// But access it via the abstract interface
+GsmModem& modem = sim7020;
 
 void setup() {
   Serial.begin(115200);
   delay(5000);
-  Serial.print("GsmHttpClient\n(with Arduino framework)\nvia PlatformIO");
+  Serial.print("GsmHttpClient\n(with Arduino framework)\nvia PlatformIO\n");
 
-
+  modem.begin();
 }
 
 void loop() {

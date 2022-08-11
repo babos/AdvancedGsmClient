@@ -8,9 +8,10 @@
 class GsmModemCommon : public GsmModem
 {
  public:
-  GsmModemCommon(Stream& stream);
+  GsmModemCommon(const Stream& stream);
+  void begin() override;
  private:
-  Stream& stream;
+  const Stream& stream;
 };
 
 #endif

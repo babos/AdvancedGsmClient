@@ -1,3 +1,7 @@
 #include "GsmModemCommon.h"
 
-GsmModemCommon::GsmModemCommon(Stream& stream) : stream(stream) {}
+#include <Arduino.h>
+
+GsmModemCommon::GsmModemCommon(const Stream& stream) : stream(stream) {}
+
+void GsmModemCommon::begin() { Serial.print("GsmModemCommon"); }

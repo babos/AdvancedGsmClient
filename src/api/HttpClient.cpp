@@ -1,3 +1,4 @@
+#if 0
 #include "HttpClient.h"
 
 namespace advanced {
@@ -177,3 +178,4 @@ virtual bool HttpClient::endOfBodyReached()
 }
 
 }
+#endif

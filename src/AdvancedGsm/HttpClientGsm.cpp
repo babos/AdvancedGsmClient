@@ -1,3 +1,4 @@
+#if 0
 #include "../API/HttpClientGsm.h"
 
 HttpClientGsm::HttpClientGsm(Client& aClient, const char* aServerName, uint16_t aServerPort)
@@ -177,3 +178,4 @@ bool HttpClientGsm::endOfBodyReached()
     return false;
 }
 
+#endif

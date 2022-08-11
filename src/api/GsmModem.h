@@ -3,6 +3,8 @@
 
 class GsmModem
 {
+ public:
+  virtual void begin() = 0;
 };
 
 #endif
