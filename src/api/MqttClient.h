@@ -1,0 +1,11 @@
+#ifndef GsmTcpClient_h
+#define GsmTcpClient_h
+
+#include <Client.h>
+#include <IPAddress.h>
+#include <Arduino.h>
+
+class GsmTcpClient : public Client
+{
+
+}

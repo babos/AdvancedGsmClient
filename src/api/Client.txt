@@ -1,0 +1,11 @@
+#ifndef TcpClientGsm_h
+#define TcpClientGsm_h
+
+#include <Client.h>
+
+class TcpClientGsm : public Client
+{
+
+};
+
+#endif
