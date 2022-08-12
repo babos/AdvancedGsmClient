@@ -9,20 +9,22 @@ class GsmModemCommon : public GsmModem {
  public:
   GsmModemCommon(Stream& stream);
   void begin() override;
-  String manufacturer();
+  void loop() override;
+  virtual String manufacturer();
+  virtual String readResponseLine();
   template <typename... Args>
-  void sendAT(Args... cmd);
+  void writeAT(Args... cmd);
 
  protected:
-  char gsmNL[3] = "\r\n";
+  char gsmNL[3] = GSM_NL;
 
  private:
+  Stream& stream;
+
   template <typename T>
   inline void streamWrite(T last);
   template <typename T, typename... Args>
   inline void streamWrite(T head, Args... tail);
-
-  Stream& stream;
 };
 
 #endif
