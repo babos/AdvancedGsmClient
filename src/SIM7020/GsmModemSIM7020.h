@@ -5,7 +5,7 @@
 
 class GsmModemSIM7020 : public GsmModemCommon {
  public:
-  explicit GsmModemSIM7020(const Stream& stream);
+  explicit GsmModemSIM7020(Stream& stream);
   void begin() override;
   void test();
 };

@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-GsmModemSIM7020::GsmModemSIM7020(const Stream& stream)
+GsmModemSIM7020::GsmModemSIM7020(Stream& stream)
     : GsmModemCommon(stream) {}
 
 void GsmModemSIM7020::begin() {

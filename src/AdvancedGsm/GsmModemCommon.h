@@ -7,14 +7,22 @@
 
 class GsmModemCommon : public GsmModem {
  public:
-  GsmModemCommon(const Stream& stream);
+  GsmModemCommon(Stream& stream);
   void begin() override;
   String manufacturer();
   template <typename... Args>
   void sendAT(Args... cmd);
 
+ protected:
+  char gsmNL[3] = "\r\n";
+
  private:
-  const Stream& stream;
+  template <typename T>
+  inline void streamWrite(T last);
+  template <typename T, typename... Args>
+  inline void streamWrite(T head, Args... tail);
+
+  Stream& stream;
 };
 
 #endif
