@@ -16,12 +16,13 @@ The following API interfaces are defined, allowing basic code to be switched bet
 * HttpClient - Based on ArduinoHttpClient interface, https://github.com/arduino-libraries/ArduinoHttpClient (rather than the Arduino-ESP32 HTTPClient, even though the boards I am using are ESP32 based)
 * MqttClient [TODO] - Based on the ArudinoMqttClient interface, https://github.com/arduino-libraries/ArduinoMqttClient (alternative PubSubClient, https://github.com/knolleary/pubsubclient/blob/master/src/PubSubClient.h, or MQTT https://github.com/256dpi/arduino-mqtt)
 * Lwm2mClient [TODO] - See https://github.com/eclipse/wakaama/, https://github.com/ivankravets/libWakaamaEmb
+* UdpClient - Based on core Udp class.
 
 Different ways to compose an application that uses HTTP, whether the modem just supplies TCP sockets (everything else done in software), a secure TLS connection, or manages the entire HTTP client:
 
 * Application -> GsmHttpClient -> modem
 * Application -> ArduinoHttpClient -> GsmSecureClient -> modem
-* Application -> ArduinoHttpClient -> TlsClient -> GsmClient -> modem
+* Application -> ArduinoHttpClient -> TlsClient -> GsmTcpClient -> modem
 
 
 ## Supported platforms, boards, and devices

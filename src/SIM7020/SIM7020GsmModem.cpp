@@ -18,7 +18,7 @@ bool SIM7020GsmModem::connect(const char apn[],
                     : PacketDataProtocolType::IPv6            ? "IPV6"
                                                               : "IP";
 
-  GsmModemCommon::sendAT(GF("+CFUN=0"));
+  sendAT(GF("+CFUN=0"));
   waitResponse();
 
   // Set Default PSD Connection Settings
@@ -28,25 +28,33 @@ bool SIM7020GsmModem::connect(const char apn[],
   //            IPV6: Internet Protocol Version 6
   //            IP: Internet Protocol Version 4
   //            Non-IP: external packet data network
-  bool res = false;
   if (password && strlen(password) > 0 && username && strlen(username) > 0) {
-    GsmModemCommon::sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, "\",\"",
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, "\",\"",
            password, '"');
   } else if (username && strlen(username) > 0) {
     // Set the user name only
-    GsmModemCommon::sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, '"');
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, '"');
   } else {
     // Set the APN only
-    GsmModemCommon::sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
   }
+  if (waitResponse() != 1) { return false; }
+
+  sendAT(GF("+CFUN=1"));
+  if (waitResponse(20000L, GF(GSM_NL "+CPIN: READY")) != 1) { return false; }
   waitResponse();
 
-  GsmModemCommon::sendAT(GF("+CFUN=1"));
-  res = waitResponse(20000L, GF(GSM_NL "+CPIN: READY"));
-  if (res != 1) {
-    return res;
-  }
-  waitResponse();
+  // // Check signal strength
+  // sendAT(GF("+CSQ"));
+  // if (waitResponse() != 1) { return false; }
+
+  // // Check attached
+  // sendAT(GF("+CGATT?"));
+  // if (waitResponse() != 1) { return false; }
+
+  // // Check operator
+  // sendAT(GF("+COPS?"));
+  // if (waitResponse() != 1) { return false; }
 
   // sendAT(GF("+CGREG?"));
   // res = waitResponse(20000L, GF(GSM_NL "+CGREG: 0,1"));
@@ -54,7 +62,11 @@ bool SIM7020GsmModem::connect(const char apn[],
   // res = waitForNetwork(60000, true);
   // delay(100);
 
-  return res;
+  // // Check registeration details
+  // sendAT(GF("+CGCONTRDP"));
+  // if (waitResponse() != 1) { return false; }
+
+  return true;
 }
 
 bool SIM7020GsmModem::reset() {
@@ -63,30 +75,36 @@ bool SIM7020GsmModem::reset() {
 
   //    if (!testAT()) { return false; }
 
-  this->sendAT(GF("E0"));  // Echo Off
+  sendAT(GF("Z"));  // Reset (to user settings)
   if (waitResponse() != 1) {
     return false;
   }
 
-  this->sendAT(GF("+CMEE=0"));  // turn off error codes
+  sendAT(GF("E0"));  // Echo Off
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  // TODO: Support error codes
+  sendAT(GF("+CMEE=0"));  // turn off error codes
   waitResponse();
 
   //  DBG(GF("### Modem:"), getModemName());
 
   // Enable Local Time Stamp for getting network time
-  this->sendAT(GF("+CLTS=1"));
+  sendAT(GF("+CLTS=1"));
   if (waitResponse(10000) != 1) {
     return false;
   }
 
   // Enable battery checks
-  this->sendAT(GF("+CBATCHK=1"));
+  sendAT(GF("+CBATCHK=1"));
   if (waitResponse() != 1) {
     return false;
   }
 
   // Set IPv6 format
-  this->sendAT(GF("+CGPIAF=1,1,0,1"));
+  sendAT(GF("+CGPIAF=1,1,0,1"));
   if (waitResponse() != 1) {
     return false;
   }
