@@ -55,13 +55,6 @@ void GsmModemCommon::sendATCommand(const char command[]) {
 
 // Protected
 
-// template <typename... Args>
-// void GsmModemCommon::sendAT(Args... command) {
-//   // Serial.print("GsmModemCommon::sendAT\n");
-//   streamWrite("AT", command..., this->gsmNL);
-//   this->stream.flush();
-// };
-
 // inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t
 // timeout_ms = 1000L) {
 //   uint32_t startMillis = millis();

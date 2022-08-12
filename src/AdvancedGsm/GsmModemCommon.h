@@ -60,7 +60,7 @@ class GsmModemCommon : public GsmModem {
                               GsmConstStr r4 = NULL,
                               GsmConstStr r5 = NULL) = 0;
 
- // Define template function in the header, so that derived classes instantiate
+ // Define template functions in the header, so that derived classes instantiate
  // See: https://www.modernescpp.com/index.php/surprise-included-inheritance-and-member-functions-of-class-templates
  protected:
   template <typename... Args>
