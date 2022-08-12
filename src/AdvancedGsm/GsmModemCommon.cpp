@@ -7,3 +7,7 @@ GsmModemCommon::GsmModemCommon(const Stream& stream) : stream(stream) {}
 void GsmModemCommon::begin() {
   Serial.print("GsmModemCommon");
 }
+
+String GsmModemCommon::getManufacturer() {
+  return "unknown";
+}
