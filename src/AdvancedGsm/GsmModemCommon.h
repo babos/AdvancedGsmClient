@@ -8,7 +8,10 @@
 class GsmModemCommon : public GsmModem {
  public:
   GsmModemCommon(Stream& stream);
-  void begin() override;
+  void begin(const char apn[],
+             PacketDataProtocolType pdpType,
+             const char username[],
+             const char password[]) override;
   void loop() override;
   virtual String manufacturer();
   virtual String readResponseLine();
@@ -18,8 +21,15 @@ class GsmModemCommon : public GsmModem {
   char gsmNL[3] = GSM_NL;
   Stream& stream;
 
-  template <typename... Args> void sendAT(Args... command);
-  //inline bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L):
+  virtual void connect(const char apn[],
+                  PacketDataProtocolType pdpType,
+                  const char username[],
+                  const char password[]) = 0;
+  virtual void reset() = 0;
+  template <typename... Args>
+  void sendAT(Args... command);
+  // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
+  // 1000L):
   virtual int8_t waitResponse(uint32_t timeout_ms,
                               String& data,
                               GsmConstStr r1 = GFP(GSM_OK),

@@ -4,13 +4,16 @@
 
 GsmModemSIM7020::GsmModemSIM7020(Stream& stream) : GsmModemCommon(stream) {}
 
-void GsmModemSIM7020::begin() {
-  Serial.print("GsmModemSIM7020\n");
-}
-
 void GsmModemSIM7020::test() {
   Serial.print("Test\n");
 }
+
+void GsmModemSIM7020::connect(const char apn[],
+                              PacketDataProtocolType pdpType,
+                              const char username[],
+                              const char password[]) {}
+
+void GsmModemSIM7020::reset() {}
 
 int8_t GsmModemSIM7020::waitResponse(uint32_t timeout_ms,
                                      String& data,
@@ -57,17 +60,19 @@ int8_t GsmModemSIM7020::waitResponse(uint32_t timeout_ms,
         index = 5;
         goto finish;
       } else if (data.endsWith(GF("+CLTS:"))) {
-//        streamSkipUntil('\n');  // Refresh time and time zone by network
+        //        streamSkipUntil('\n');  // Refresh time and time zone by
+        //        network
         data = "";
-//        DBG("### Unsolicited local timestamp.");
+        //        DBG("### Unsolicited local timestamp.");
       } else if (data.endsWith(GF("+CTZV:"))) {
-//        streamSkipUntil('\n');  // Refresh network time zone by network
+        //        streamSkipUntil('\n');  // Refresh network time zone by
+        //        network
         data = "";
-//        DBG("### Unsolicited time zone updated.");
+        //        DBG("### Unsolicited time zone updated.");
       } else if (data.endsWith(GF(GSM_NL "SMS Ready" GSM_NL))) {
         data = "";
-//        DBG("### Unexpected module reset!");
-//        init();
+        //        DBG("### Unexpected module reset!");
+        //        init();
         data = "";
       }
     }
@@ -76,7 +81,7 @@ finish:
   if (!index) {
     data.trim();
     if (data.length()) {
-//      DBG("### Unhandled:", data);
+      //      DBG("### Unhandled:", data);
     }
     data = "";
   }

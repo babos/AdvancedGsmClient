@@ -6,10 +6,14 @@
 class GsmModemSIM7020 : public GsmModemCommon {
  public:
   explicit GsmModemSIM7020(Stream& stream);
-  void begin() override;
   void test();
 
  protected:
+  void connect(const char apn[],
+               PacketDataProtocolType pdpType,
+               const char username[],
+               const char password[]) override;
+  void reset() override;
   int8_t waitResponse(uint32_t timeout_ms,
                       String& data,
                       GsmConstStr r1 = GFP(GSM_OK),

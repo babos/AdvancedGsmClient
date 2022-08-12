@@ -6,8 +6,12 @@
 
 GsmModemCommon::GsmModemCommon(Stream& stream) : stream(stream) {}
 
-void GsmModemCommon::begin() {
-  Serial.print("GsmModemCommon::begin\n");
+void GsmModemCommon::begin(const char apn[],
+                           PacketDataProtocolType pdpType,
+                           const char username[],
+                           const char password[]) {
+  reset();
+  connect(apn, pdpType, username, password);
 }
 
 void GsmModemCommon::loop() {
@@ -44,7 +48,8 @@ void GsmModemCommon::sendAT(Args... command) {
   this->stream.flush();
 };
 
-// inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L) {
+// inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t
+// timeout_ms = 1000L) {
 //   uint32_t startMillis = millis();
 //   while (millis() - startMillis < timeout_ms) {
 //     while (millis() - startMillis < timeout_ms &&

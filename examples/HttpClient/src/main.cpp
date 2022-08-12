@@ -50,6 +50,8 @@ ModemDevice modemDevice(debugger);
 ModemDevice modemDevice(SerialAT);
 #endif
 
+const char apn[] = "telstra.iot";
+
 // Access via the API
 GsmModem& modem = modemDevice;
 
@@ -59,7 +61,7 @@ void setup() {
   SerialMon.print("GsmHttpClient\n(with Arduino framework)\nvia PlatformIO\n");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
-  modem.begin();
+  modem.begin(apn);
   //modem.test();
   modemDevice.test();
 
