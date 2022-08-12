@@ -3,7 +3,7 @@
 
 #include "../API/GsmHttpClient.h"
 
-class HttpClientSIM7020 : public HttpClientGsm
+class SIM7020HttpClient : public HttpClientGsm
 {
 }
 

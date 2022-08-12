@@ -3,7 +3,7 @@ Arduino-style GSM application clients for SIM7020 that take advantage of on-chip
 
 ## Overview
 
-Many modern communications chips have direct onboard support for protocols such as HTTP(S), MQTT(S), and even LwM2M.
+Many modern GSM (Global System for Mobile) communications modules have direct onboard support for protocols such as HTTP(S), MQTT(S), and even LwM2M.
 
 Often these in built protocols will support features like IPv6 and TLS that may be difficult to access from the underlying functions, e.g. the SIM7020 does not have easy IPv6 DNS resolution directly, but the HTTP application supports it.
 
@@ -11,11 +11,11 @@ This library is focussed on ensuring primary IPv6 support, and utilising the bui
 
 The following API interfaces are defined, allowing basic code to be switched between the AdvancedGsm direct implementation and stand alone implementation using a Client interface for the stream.
 
-* HttpClient - based on ArduinoHttpClient interface, https://github.com/arduino-libraries/ArduinoHttpClient (rather than the Arduino-ESP32 HTTPClient, even though the boards I am using are ESP32 based)
-* MqttClient [TODO] - based on the ArudinoMqttClient interface, https://github.com/arduino-libraries/ArduinoMqttClient (alternative PubSubClient, https://github.com/knolleary/pubsubclient/blob/master/src/PubSubClient.h, or MQTT https://github.com/256dpi/arduino-mqtt)
+* GsmModem - The modem is primarily used as a network provider, similar to Wifi or Ethernet, so initialisation is about connecting to the Packet Data Protocol (PDP) network (via a configured Access Point Name).
+* TcpClient - TCP client based on the the Arduino Client API, with IPv6 support, https://github.com/arduino/ArduinoCore-API
+* HttpClient - Based on ArduinoHttpClient interface, https://github.com/arduino-libraries/ArduinoHttpClient (rather than the Arduino-ESP32 HTTPClient, even though the boards I am using are ESP32 based)
+* MqttClient [TODO] - Based on the ArudinoMqttClient interface, https://github.com/arduino-libraries/ArduinoMqttClient (alternative PubSubClient, https://github.com/knolleary/pubsubclient/blob/master/src/PubSubClient.h, or MQTT https://github.com/256dpi/arduino-mqtt)
 * Lwm2mClient [TODO] - See https://github.com/eclipse/wakaama/, https://github.com/ivankravets/libWakaamaEmb
-* Client - TCP client from the Arduino Client API, but with IPv6 support, https://github.com/arduino/ArduinoCore-API
-
 
 Different ways to compose an application that uses HTTP, whether the modem just supplies TCP sockets (everything else done in software), a secure TLS connection, or manages the entire HTTP client:
 

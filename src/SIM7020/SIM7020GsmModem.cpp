@@ -1,14 +1,14 @@
-#include "GsmModemSIM7020.h"
+#include "SIM7020GsmModem.h"
 
 #include <Arduino.h>
 
-GsmModemSIM7020::GsmModemSIM7020(Stream& stream) : GsmModemCommon(stream) {}
+SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
-void GsmModemSIM7020::test() {
+void SIM7020GsmModem::test() {
   Serial.print("Test\n");
 }
 
-bool GsmModemSIM7020::connect(const char apn[],
+bool SIM7020GsmModem::connect(const char apn[],
                               PacketDataProtocolType pdpType,
                               const char username[],
                               const char password[]) {
@@ -57,7 +57,7 @@ bool GsmModemSIM7020::connect(const char apn[],
   return res;
 }
 
-bool GsmModemSIM7020::reset() {
+bool SIM7020GsmModem::reset() {
   //    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
   //    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientSIM7020"));
 
@@ -104,7 +104,7 @@ bool GsmModemSIM7020::reset() {
   return true;
 }
 
-int8_t GsmModemSIM7020::waitResponseDevice(uint32_t timeout_ms,
+int8_t SIM7020GsmModem::waitResponseDevice(uint32_t timeout_ms,
                                      String& data,
                                      GsmConstStr r1,
                                      GsmConstStr r2,

@@ -3,9 +3,9 @@
 
 #include "../AdvancedGsm/GsmModemCommon.h"
 
-class GsmModemSIM7020 : public GsmModemCommon {
+class SIM7020GsmModem : public GsmModemCommon {
  public:
-  explicit GsmModemSIM7020(Stream& stream);
+  explicit SIM7020GsmModem(Stream& stream);
   void test();
 
  protected:

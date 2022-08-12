@@ -6,7 +6,7 @@
 #include <IPAddress.h>
 #include <Arduino.h>
 
-class GsmTcpClient : public Client
+class GsmHttpClient : public Client
 {
 
 }

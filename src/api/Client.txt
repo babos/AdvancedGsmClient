@@ -1,9 +1,9 @@
-#ifndef TcpClientGsm_h
-#define TcpClientGsm_h
+#ifndef Advanced_TcpClient_h
+#define Advanced_TcpClient_h
 
 #include <Client.h>
 
-class TcpClientGsm : public Client
+class TcpClient : public Client
 {
 
 };

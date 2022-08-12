@@ -34,12 +34,12 @@
 // See all AT commands, if wanted
 #define DUMP_AT_COMMANDS
 
-#include "../../../src/SIM7020/GsmModemSIM7020.h"
+#include "../../../src/SIM7020/SIM7020GsmModem.h"
 
 #include <Arduino.h>
 
-#define ModemDevice GsmModemSIM7020
-//#define ModemDevice GsmModemSIM7080
+#define ModemDevice SIM7020GsmModem
+//#define ModemDevice SIM7080GsmModem
 
 // Allocate memory for concrete object
 #ifdef DUMP_AT_COMMANDS
