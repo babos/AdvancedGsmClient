@@ -16,7 +16,14 @@ void GsmModemCommon::loop() {
 
 String GsmModemCommon::manufacturer() {
   writeAT(GF("+CGMI"));
-  return "unknown";
+  String response;
+  if (waitResponse(1000L, response) != 1) {
+    return "unknown";
+  }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
 }
 
 String GsmModemCommon::readResponseLine() {
@@ -25,11 +32,24 @@ String GsmModemCommon::readResponseLine() {
 
 template <typename... Args>
 void GsmModemCommon::writeAT(Args... cmd) {
-  //Serial.print("GsmModemCommon::writeAT\n");
+  // Serial.print("GsmModemCommon::writeAT\n");
   streamWrite("AT", cmd..., this->gsmNL);
   this->stream.flush();
 };
 
+// Protected
+
+// inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L) {
+//   uint32_t startMillis = millis();
+//   while (millis() - startMillis < timeout_ms) {
+//     while (millis() - startMillis < timeout_ms &&
+//             !thisModem().stream.available()) {
+//       TINY_GSM_YIELD();
+//     }
+//     if (thisModem().stream.read() == c) { return true; }
+//   }
+//   return false;
+// }
 
 // Private
 

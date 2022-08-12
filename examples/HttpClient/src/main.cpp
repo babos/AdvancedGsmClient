@@ -38,12 +38,12 @@ void setup() {
   sim7020.test();
 
   String manufacturer = modem.manufacturer();
-  //Serial.printf("Manufacturer: %s\n", manufacturer);
+  Serial.printf("Manufacturer: %s\n", manufacturer);
 
-  for (size_t i = 0; i < 3; i++) {
-    String line = modem.readResponseLine();
-    Serial.println(line);
-  }
+  // for (size_t i = 0; i < 3; i++) {
+  //   String line = modem.readResponseLine();
+  //   Serial.println(line);
+  // }
 }
 
 void loop() {}
