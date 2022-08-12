@@ -6,12 +6,14 @@
 
 GsmModemCommon::GsmModemCommon(Stream& stream) : stream(stream) {}
 
-void GsmModemCommon::begin(const char apn[],
+void GsmModemCommon::begin(const char accessPointName[],
                            PacketDataProtocolType pdpType,
                            const char username[],
                            const char password[]) {
-  reset();
-  connect(apn, pdpType, username, password);
+  if (!reset()) {
+    return;
+  }
+  connect(accessPointName, pdpType, username, password);
 }
 
 void GsmModemCommon::loop() {
@@ -34,7 +36,7 @@ String GsmModemCommon::readResponseLine() {
   return this->stream.readStringUntil('\n');
 }
 
-void GsmModemCommon::sendAT(const char command[]) {
+void GsmModemCommon::sendATCommand(const char command[]) {
   streamWrite("AT", command, this->gsmNL);
   this->stream.flush();
 }
@@ -60,6 +62,38 @@ void GsmModemCommon::sendAT(Args... command) {
 //   }
 //   return false;
 // }
+
+int8_t GsmModemCommon::waitResponse() {
+  return waitResponse(GSM_OK);
+}
+
+int8_t GsmModemCommon::waitResponse(GsmConstStr r1,
+                                    GsmConstStr r2,
+                                    GsmConstStr r3,
+                                    GsmConstStr r4,
+                                    GsmConstStr r5) {
+  return waitResponse(1000, r1, r2, r3, r4, r5);
+}
+
+int8_t GsmModemCommon::waitResponse(uint32_t timeout_ms,
+                                    GsmConstStr r1,
+                                    GsmConstStr r2,
+                                    GsmConstStr r3,
+                                    GsmConstStr r4,
+                                    GsmConstStr r5) {
+  String s;
+  return waitResponse(timeout_ms, s, r1, r2, r3, r4, r5);
+}
+
+int8_t GsmModemCommon::waitResponse(uint32_t timeout_ms,
+                                    String& data,
+                                    GsmConstStr r1,
+                                    GsmConstStr r2,
+                                    GsmConstStr r3,
+                                    GsmConstStr r4,
+                                    GsmConstStr r5) {
+  return waitResponseDevice(timeout_ms, data, r1, r2, r3, r4, r5);
+}
 
 // Private
 

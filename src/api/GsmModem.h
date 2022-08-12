@@ -19,14 +19,14 @@ enum PacketDataProtocolType {
 
 class GsmModem {
  public:
-  virtual void begin(const char apn[],
+  virtual void begin(const char accessPointName[],
                      PacketDataProtocolType pdpType = IPv4v6,
                      const char username[] = NULL,
                      const char password[] = NULL) = 0;
   virtual void loop() = 0;
   virtual String manufacturer() = 0;
   virtual String readResponseLine();
-  virtual void sendAT(const char command[]);
+  virtual void sendATCommand(const char command[]);
 };
 
 #endif

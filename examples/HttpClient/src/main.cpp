@@ -68,7 +68,7 @@ void setup() {
   String manufacturer = modem.manufacturer();
   Serial.printf("Manufacturer: %s\n", manufacturer.c_str());
 
-  modem.sendAT(GF("I"));
+  modem.sendATCommand(GF("I"));
   for (size_t i = 0; i < 3; i++) {
     String line = modem.readResponseLine();
     Serial.println(line);

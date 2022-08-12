@@ -8,14 +8,103 @@ void GsmModemSIM7020::test() {
   Serial.print("Test\n");
 }
 
-void GsmModemSIM7020::connect(const char apn[],
+bool GsmModemSIM7020::connect(const char apn[],
                               PacketDataProtocolType pdpType,
                               const char username[],
-                              const char password[]) {}
+                              const char password[]) {
+  // Based on "APN Manual Configuration", from SIM7020 TCPIP Application Note
 
-void GsmModemSIM7020::reset() {}
+  const char* pdpTypeString = pdpType == PacketDataProtocolType::IPv4v6 ? "IPV4V6"
+                    : PacketDataProtocolType::IPv6            ? "IPV6"
+                                                              : "IP";
 
-int8_t GsmModemSIM7020::waitResponse(uint32_t timeout_ms,
+  sendAT(GF("+CFUN=0"));
+  waitResponse();
+
+  // Set Default PSD Connection Settings
+  // Set the user name and password
+  // AT*MCGDEFCONT=<PDP_type>[,<APN>[,<username>[,<password>]]]
+  // <pdp_type> IPV4V6: Dual PDN Stack
+  //            IPV6: Internet Protocol Version 6
+  //            IP: Internet Protocol Version 4
+  //            Non-IP: external packet data network
+  bool res = false;
+  if (password && strlen(password) > 0 && username && strlen(username) > 0) {
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, "\",\"",
+           password, '"');
+  } else if (username && strlen(username) > 0) {
+    // Set the user name only
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, '"');
+  } else {
+    // Set the APN only
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
+  }
+  waitResponse();
+
+  sendAT(GF("+CFUN=1"));
+  res = waitResponse(20000L, GF(GSM_NL "+CPIN: READY"));
+  if (res != 1) {
+    return res;
+  }
+  waitResponse();
+
+  // sendAT(GF("+CGREG?"));
+  // res = waitResponse(20000L, GF(GSM_NL "+CGREG: 0,1"));
+  // waitResponse();
+  // res = waitForNetwork(60000, true);
+  // delay(100);
+
+  return res;
+}
+
+bool GsmModemSIM7020::reset() {
+  //    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
+  //    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientSIM7020"));
+
+  //    if (!testAT()) { return false; }
+
+  sendAT(GF("E0"));  // Echo Off
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  sendAT(GF("+CMEE=0"));  // turn off error codes
+  waitResponse();
+
+  //  DBG(GF("### Modem:"), getModemName());
+
+  // Enable Local Time Stamp for getting network time
+  sendAT(GF("+CLTS=1"));
+  if (waitResponse(10000) != 1) {
+    return false;
+  }
+
+  // Enable battery checks
+  sendAT(GF("+CBATCHK=1"));
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  // Set IPv6 format
+  sendAT(GF("+CGPIAF=1,1,0,1"));
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  // SimStatus ret = getSimStatus();
+  // // if the sim isn't ready and a pin has been provided, try to unlock the
+  // sim if (ret != SIM_READY && pin != NULL && strlen(pin) > 0) {
+  //   simUnlock(pin);
+  //   return (getSimStatus() == SIM_READY);
+  // } else {
+  //   // if the sim is ready, or it's locked but no pin has been provided,
+  //   // return true
+  //   return (ret == SIM_READY || ret == SIM_LOCKED);
+  // }
+  return true;
+}
+
+int8_t GsmModemSIM7020::waitResponseDevice(uint32_t timeout_ms,
                                      String& data,
                                      GsmConstStr r1,
                                      GsmConstStr r2,
