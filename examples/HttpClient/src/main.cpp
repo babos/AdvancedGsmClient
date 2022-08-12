@@ -16,8 +16,11 @@ void setup() {
   Serial.print("GsmHttpClient\n(with Arduino framework)\nvia PlatformIO\n");
 
   modem.begin();
-  String manufacturer = modem.getManufacturer();
-  Serial.printf("Manufacturer: %", manufacturer);
+  //modem.test();
+  sim7020.test();
+
+  String manufacturer = modem.manufacturer();
+  Serial.printf("Manufacturer: %s\n", manufacturer);
 }
 
 void loop() {}

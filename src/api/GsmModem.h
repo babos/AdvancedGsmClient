@@ -6,7 +6,7 @@
 class GsmModem {
  public:
   virtual void begin() = 0;
-  virtual String getManufacturer() = 0;
+  virtual String manufacturer() = 0;
 };
 
 #endif

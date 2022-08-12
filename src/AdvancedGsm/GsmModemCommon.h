@@ -9,7 +9,7 @@ class GsmModemCommon : public GsmModem {
  public:
   GsmModemCommon(const Stream& stream);
   void begin() override;
-  String getManufacturer();
+  String manufacturer();
 
  private:
   const Stream& stream;

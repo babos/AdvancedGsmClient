@@ -8,6 +8,6 @@ void GsmModemCommon::begin() {
   Serial.print("GsmModemCommon");
 }
 
-String GsmModemCommon::getManufacturer() {
+String GsmModemCommon::manufacturer() {
   return "unknown";
 }
