@@ -17,7 +17,7 @@ void GsmModemCommon::loop() {
 String GsmModemCommon::manufacturer() {
   writeAT(GF("+CGMI"));
   String response;
-  if (waitResponse(1000L, response) != 1) {
+  if (waitResponse(2000L, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");

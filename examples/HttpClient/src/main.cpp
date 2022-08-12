@@ -1,11 +1,30 @@
 #define GSM_BAUDRATE 115200
+
+// M5 Atom NB-IoT DTU, Serial1
 #define GSM_TX_PIN 22
 #define GSM_RX_PIN 19
+
+// M5 Atom, PORT.A: GPIO26 I2C0_SDA, GPIO32 I2C0_SCL
+
+// M5 StickC, PORT.A: GPIO32 I2C0_SDA, GPIO33 I2C0_SCL
+
+// M5 Stack Core2, PORT.A (Red): GPIO32 I2C0_SDA, GPIO33 I2C0_SCL
+// M5 Stack Core2, PORT.B (Black): GPIO26 DAC2, GPIO36 ADC1_CH0
+
+// M5 Stack Core2, PORT.C (Blue), Serial2: GPIO14 TXD2, GPIO13 RXD2
+//#define GSM_TX_PIN 14
+//#define GSM_RX_PIN 13
+
+// M5 Stack, PORT.A: GPIO21 I2C0_SDA, GPIO22 I2C0_SCL
+// M5 Stack Fire, PORT.B: GPIO26 DAC2, GPIO36 ADC1_CH0
+
+// M5 Stack, PORT.C: GPIO16 RXD2, GPIO17 TXD2
 
 // Set serial for output console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
 
 // Set serial for AT commands (to the module)
+//#define SerialAT Serial2
 #define SerialAT Serial1
 
 // Set serial for debug, if wanted
@@ -41,12 +60,12 @@ void setup() {
   sim7020.test();
 
   String manufacturer = modem.manufacturer();
-  Serial.printf("Manufacturer: %s\n", manufacturer);
+  Serial.printf("Manufacturer: %s\n", manufacturer.c_str());
 
-  // for (size_t i = 0; i < 3; i++) {
-  //   String line = modem.readResponseLine();
-  //   Serial.println(line);
-  // }
+  for (size_t i = 0; i < 3; i++) {
+    String line = modem.readResponseLine();
+    Serial.println(line);
+  }
 }
 
 void loop() {}
