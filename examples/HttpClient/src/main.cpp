@@ -1,4 +1,6 @@
 #define GSM_BAUDRATE 115200
+#define GSM_TX_PIN 22
+#define GSM_RX_PIN 19
 
 // Set serial for output console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
@@ -33,6 +35,7 @@ void setup() {
   delay(5000);
   SerialMon.print("GsmHttpClient\n(with Arduino framework)\nvia PlatformIO\n");
 
+  SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
   modem.begin();
   //modem.test();
   sim7020.test();
