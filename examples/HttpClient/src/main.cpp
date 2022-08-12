@@ -1,8 +1,13 @@
 #define GSM_BAUDRATE 115200
 
+// Set serial for AT commands (to the module)
+#ifndef SerialAT
+#define SerialAT Serial1
+#endif
+
 // M5 Atom NB-IoT DTU, Serial1
-#define GSM_TX_PIN 22
-#define GSM_RX_PIN 19
+//#define GSM_TX_PIN 22
+//#define GSM_RX_PIN 19
 
 // M5 Atom, PORT.A: GPIO26 I2C0_SDA, GPIO32 I2C0_SCL
 
@@ -23,10 +28,6 @@
 // Set serial for output console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
 
-// Set serial for AT commands (to the module)
-//#define SerialAT Serial2
-#define SerialAT Serial1
-
 // Set serial for debug, if wanted
 #define ADVANCED_GSM_DEBUG Serial;
 
@@ -37,17 +38,20 @@
 
 #include <Arduino.h>
 
+#define ModemDevice GsmModemSIM7020
+//#define ModemDevice GsmModemSIM7080
+
 // Allocate memory for concrete object
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, SerialMon);
-GsmModemSIM7020 sim7020(debugger);
+ModemDevice modemDevice(debugger);
 #else
-GsmModemSIM7020 sim7020(SerialAT);
+ModemDevice modemDevice(SerialAT);
 #endif
 
 // Access via the API
-GsmModem& modem = sim7020;
+GsmModem& modem = modemDevice;
 
 void setup() {
   SerialMon.begin(115200);
@@ -57,11 +61,12 @@ void setup() {
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
   modem.begin();
   //modem.test();
-  sim7020.test();
+  modemDevice.test();
 
   String manufacturer = modem.manufacturer();
   Serial.printf("Manufacturer: %s\n", manufacturer.c_str());
 
+  modem.sendAT(GF("I"));
   for (size_t i = 0; i < 3; i++) {
     String line = modem.readResponseLine();
     Serial.println(line);

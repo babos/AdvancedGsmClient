@@ -16,8 +16,7 @@ class GsmModem {
   virtual void loop() = 0;
   virtual String manufacturer() = 0;
   virtual String readResponseLine();
-  template <typename... Args>
-  void sendAT(Args... command);
+  virtual void sendAT(const char command[]);
 };
 
 #endif

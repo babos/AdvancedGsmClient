@@ -12,13 +12,13 @@ class GsmModemCommon : public GsmModem {
   void loop() override;
   virtual String manufacturer();
   virtual String readResponseLine();
-  template <typename... Args>
-  void sendAT(Args... cmd);
+  virtual void sendAT(const char command[]);
 
  protected:
   char gsmNL[3] = GSM_NL;
   Stream& stream;
 
+  template <typename... Args> void sendAT(Args... command);
   //inline bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L):
   virtual int8_t waitResponse(uint32_t timeout_ms,
                               String& data,
