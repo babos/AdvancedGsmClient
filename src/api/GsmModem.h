@@ -17,7 +17,7 @@ class GsmModem {
   virtual String manufacturer() = 0;
   virtual String readResponseLine();
   template <typename... Args>
-  void writeAT(Args... command);
+  void sendAT(Args... command);
 };
 
 #endif

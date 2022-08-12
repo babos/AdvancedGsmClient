@@ -13,7 +13,7 @@ class GsmModemCommon : public GsmModem {
   virtual String manufacturer();
   virtual String readResponseLine();
   template <typename... Args>
-  void writeAT(Args... cmd);
+  void sendAT(Args... cmd);
 
  protected:
   char gsmNL[3] = GSM_NL;

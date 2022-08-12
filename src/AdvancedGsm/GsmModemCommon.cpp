@@ -15,7 +15,7 @@ void GsmModemCommon::loop() {
 }
 
 String GsmModemCommon::manufacturer() {
-  writeAT(GF("+CGMI"));
+  sendAT(GF("+CGMI"));
   String response;
   if (waitResponse(2000L, response) != 1) {
     return "unknown";
@@ -31,8 +31,8 @@ String GsmModemCommon::readResponseLine() {
 }
 
 template <typename... Args>
-void GsmModemCommon::writeAT(Args... cmd) {
-  // Serial.print("GsmModemCommon::writeAT\n");
+void GsmModemCommon::sendAT(Args... cmd) {
+  // Serial.print("GsmModemCommon::sendAT\n");
   streamWrite("AT", cmd..., this->gsmNL);
   this->stream.flush();
 };
