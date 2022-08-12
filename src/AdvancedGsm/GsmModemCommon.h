@@ -5,11 +5,11 @@
 
 #include <Stream.h>
 
-class GsmModemCommon : public GsmModem
-{
+class GsmModemCommon : public GsmModem {
  public:
   GsmModemCommon(const Stream& stream);
   void begin() override;
+
  private:
   const Stream& stream;
 };

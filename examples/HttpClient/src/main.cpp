@@ -1,6 +1,8 @@
 #define GSM_BAUDRATE 115200
+#define ADVANCED_GSM_DEBUG Serial;
 
 #include "../../../src/SIM7020/GsmModemSIM7020.h"
+
 #include <Arduino.h>
 
 // Allocate memory for concrete object
@@ -16,5 +18,4 @@ void setup() {
   modem.begin();
 }
 
-void loop() {
-}
+void loop() {}

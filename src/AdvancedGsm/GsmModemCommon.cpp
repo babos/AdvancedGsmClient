@@ -4,4 +4,6 @@
 
 GsmModemCommon::GsmModemCommon(const Stream& stream) : stream(stream) {}
 
-void GsmModemCommon::begin() { Serial.print("GsmModemCommon"); }
+void GsmModemCommon::begin() {
+  Serial.print("GsmModemCommon");
+}
