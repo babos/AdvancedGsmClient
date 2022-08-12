@@ -10,6 +10,8 @@ class GsmModemCommon : public GsmModem {
   GsmModemCommon(const Stream& stream);
   void begin() override;
   String manufacturer();
+  template <typename... Args>
+  void sendAT(Args... cmd);
 
  private:
   const Stream& stream;
