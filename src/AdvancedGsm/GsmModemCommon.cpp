@@ -21,7 +21,19 @@ void GsmModemCommon::loop() {
 }
 
 String GsmModemCommon::manufacturer() {
-  sendAT(GF("+CGMI"));
+  this->sendAT(GF("+CGMI"));
+  String response;
+  if (waitResponse(2000L, response) != 1) {
+    return "unknown";
+  }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
+}
+
+String GsmModemCommon::model() {
+  this->sendAT(GF("+GMM"));
   String response;
   if (waitResponse(2000L, response) != 1) {
     return "unknown";
@@ -43,12 +55,12 @@ void GsmModemCommon::sendATCommand(const char command[]) {
 
 // Protected
 
-template <typename... Args>
-void GsmModemCommon::sendAT(Args... command) {
-  // Serial.print("GsmModemCommon::sendAT\n");
-  streamWrite("AT", command..., this->gsmNL);
-  this->stream.flush();
-};
+// template <typename... Args>
+// void GsmModemCommon::sendAT(Args... command) {
+//   // Serial.print("GsmModemCommon::sendAT\n");
+//   streamWrite("AT", command..., this->gsmNL);
+//   this->stream.flush();
+// };
 
 // inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t
 // timeout_ms = 1000L) {
@@ -93,17 +105,4 @@ int8_t GsmModemCommon::waitResponse(uint32_t timeout_ms,
                                     GsmConstStr r4,
                                     GsmConstStr r5) {
   return waitResponseDevice(timeout_ms, data, r1, r2, r3, r4, r5);
-}
-
-// Private
-
-template <typename T>
-inline void GsmModemCommon::streamWrite(T last) {
-  this->stream.print(last);
-}
-
-template <typename T, typename... Args>
-inline void GsmModemCommon::streamWrite(T head, Args... tail) {
-  this->stream.print(head);
-  streamWrite(tail...);
 }

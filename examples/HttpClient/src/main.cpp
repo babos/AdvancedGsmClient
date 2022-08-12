@@ -34,7 +34,7 @@
 // See all AT commands, if wanted
 #define DUMP_AT_COMMANDS
 
-#include "../../../src/SIM7020/GsmModemSIM7020.h"
+#include "../../../src/AdvancedGsm/GsmModemSIM7020.h"
 
 #include <Arduino.h>
 

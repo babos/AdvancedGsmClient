@@ -13,7 +13,8 @@ class GsmModemCommon : public GsmModem {
              const char username[],
              const char password[]) override;
   void loop() override;
-  virtual String manufacturer();
+  String manufacturer() override;
+  String model() override;
   virtual String readResponseLine();
   virtual void sendATCommand(const char command[]);
 
@@ -26,8 +27,10 @@ class GsmModemCommon : public GsmModem {
                        const char username[],
                        const char password[]) = 0;
   virtual bool reset() = 0;
-  template <typename... Args>
-  void sendAT(Args... command);
+//  template <typename... Args>
+//  void sendAT(Args... command);
+
+
   // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
   // 1000L):
   int8_t waitResponse();
@@ -57,11 +60,27 @@ class GsmModemCommon : public GsmModem {
                               GsmConstStr r4 = NULL,
                               GsmConstStr r5 = NULL) = 0;
 
+ // Define template function in the header, so that derived classes instantiate
+ // See: https://www.modernescpp.com/index.php/surprise-included-inheritance-and-member-functions-of-class-templates
+ protected:
+  template <typename... Args>
+  void sendAT(Args... command) {
+    // Serial.print("GsmModemCommon::sendAT\n");
+    streamWrite("AT", command..., this->gsmNL);
+    this->stream.flush();
+  };
+
  private:
   template <typename T>
-  inline void streamWrite(T last);
+  inline void streamWrite(T last) {
+    this->stream.print(last);
+  }
+
   template <typename T, typename... Args>
-  inline void streamWrite(T head, Args... tail);
+  inline void streamWrite(T head, Args... tail) {
+    this->stream.print(head);
+    streamWrite(tail...);
+  }
 };
 
 #endif

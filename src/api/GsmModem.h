@@ -25,6 +25,7 @@ class GsmModem {
                      const char password[] = NULL) = 0;
   virtual void loop() = 0;
   virtual String manufacturer() = 0;
+  virtual String model() = 0;
   virtual String readResponseLine();
   virtual void sendATCommand(const char command[]);
 };

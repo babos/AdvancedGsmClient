@@ -18,7 +18,7 @@ bool GsmModemSIM7020::connect(const char apn[],
                     : PacketDataProtocolType::IPv6            ? "IPV6"
                                                               : "IP";
 
-  sendAT(GF("+CFUN=0"));
+  GsmModemCommon::sendAT(GF("+CFUN=0"));
   waitResponse();
 
   // Set Default PSD Connection Settings
@@ -30,18 +30,18 @@ bool GsmModemSIM7020::connect(const char apn[],
   //            Non-IP: external packet data network
   bool res = false;
   if (password && strlen(password) > 0 && username && strlen(username) > 0) {
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, "\",\"",
+    GsmModemCommon::sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, "\",\"",
            password, '"');
   } else if (username && strlen(username) > 0) {
     // Set the user name only
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, '"');
+    GsmModemCommon::sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, '"');
   } else {
     // Set the APN only
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
+    GsmModemCommon::sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
   }
   waitResponse();
 
-  sendAT(GF("+CFUN=1"));
+  GsmModemCommon::sendAT(GF("+CFUN=1"));
   res = waitResponse(20000L, GF(GSM_NL "+CPIN: READY"));
   if (res != 1) {
     return res;
@@ -63,30 +63,30 @@ bool GsmModemSIM7020::reset() {
 
   //    if (!testAT()) { return false; }
 
-  sendAT(GF("E0"));  // Echo Off
+  this->sendAT(GF("E0"));  // Echo Off
   if (waitResponse() != 1) {
     return false;
   }
 
-  sendAT(GF("+CMEE=0"));  // turn off error codes
+  this->sendAT(GF("+CMEE=0"));  // turn off error codes
   waitResponse();
 
   //  DBG(GF("### Modem:"), getModemName());
 
   // Enable Local Time Stamp for getting network time
-  sendAT(GF("+CLTS=1"));
+  this->sendAT(GF("+CLTS=1"));
   if (waitResponse(10000) != 1) {
     return false;
   }
 
   // Enable battery checks
-  sendAT(GF("+CBATCHK=1"));
+  this->sendAT(GF("+CBATCHK=1"));
   if (waitResponse() != 1) {
     return false;
   }
 
   // Set IPv6 format
-  sendAT(GF("+CGPIAF=1,1,0,1"));
+  this->sendAT(GF("+CGPIAF=1,1,0,1"));
   if (waitResponse() != 1) {
     return false;
   }
