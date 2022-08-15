@@ -72,16 +72,21 @@ String GsmModemCommon::model() {
   return response;
 }
 
-String GsmModemCommon::networkOperator() {
+String GsmModemCommon::network() {
   // Gets the PLMN (Public Land Mobile Network) operator details
-  this->sendAT(GF("+COPS"));
+  this->sendAT(GF("+COPS?"));
   if (waitResponse("+COPS:") != 1) {
     return "";
   }
-  streamSkipUntil('"');  // skip mode and format
-  String operatorName = this->stream.readStringUntil('"');
+  String plmn_details = this->stream.readStringUntil('\n');
   waitResponse();
-  return operatorName;
+  int start = plmn_details.indexOf('"');
+  if (start == -1) { return ""; }
+  int end = plmn_details.indexOf('"', start + 1);
+  if (end < start + 2) { return ""; }
+  String network = plmn_details.substring(start + 1, end);
+  // TODO: Could include the Access Technology, e.g. "(NB-S1)"
+  return network;
 }
 
 String GsmModemCommon::readResponseLine() {
@@ -91,16 +96,16 @@ String GsmModemCommon::readResponseLine() {
 RegistrationStatus GsmModemCommon::registrationStatus() {
   // Registration status results are aligned across versions.
   // Override if needed:
-  //  +CREG
-  //  +CGREP (GPRS)
-  //  +CEREG (EPS)
-  //  +C5GREG (5G)
-  this->sendAT(GF("+CEREG"));
+  //  +CREG?
+  //  +CGREP? (GPRS)
+  //  +CEREG? (EPS)
+  //  +C5GREG? (5G)
+  this->sendAT(GF("+CEREG?"));
   if (waitResponse("+CEREG:") != 1) {
     return RegistrationStatus::Unknown;
   }
   streamSkipUntil(',');  // skip mode
-  int16_t status = streamGetIntBefore(',');
+  int16_t status = this->stream.parseInt();
   if (waitResponse() != 1) {
     return RegistrationStatus::Unknown;
   }

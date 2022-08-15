@@ -32,8 +32,8 @@ ModemDevice modemDevice(SerialAT);
 
 const char apn[] = "telstra.iot";
 
-#define LOOP_INTERVAL_MS 500
-#define LOOP_MAX_MS 10000
+#define LOOP_INTERVAL_MS 200
+#define LOOP_MAX_MS 2500
 
 // Access via the API
 int32_t max_report = 0;
@@ -61,17 +61,24 @@ void setup() {
   Serial.printf("IMSI: %s\n", imsi.c_str());
   Serial.printf("ICCID: %s\n", iccid.c_str());
 
-  max_report = millis() + LOOP_MAX_MS;
   modem.begin(apn);
 }
 
 void loop() {
   int32_t now = millis();
+  if (max_report == 0) {
+      max_report = now + LOOP_MAX_MS;
+  }
   if (now > next_report && now < max_report) {
     next_report = now + LOOP_INTERVAL_MS;
 
     int32_t rssidBm = modem.RSSI();
+    RegistrationStatus registrationStatus = modem.registrationStatus();
+    String network = modem.network();
 
+    Serial.printf("***** [%d] *****\n", now);
     Serial.printf("RSSI (dBm): %d\n", rssidBm);
+    Serial.printf("Registration status: %d (1=home, 2=searching)\n", registrationStatus);
+    Serial.printf("Operator: %s\n", network.c_str());
   }
 }

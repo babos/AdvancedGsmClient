@@ -18,7 +18,7 @@ class GsmModemCommon : public GsmModem {
   void loop() override;
   String manufacturer() override;
   String model() override;
-  String networkOperator() override;
+  String network() override;
   virtual String readResponseLine();
   RegistrationStatus registrationStatus() override;
   String revision() override;

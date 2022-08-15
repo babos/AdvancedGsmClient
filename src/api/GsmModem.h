@@ -40,7 +40,7 @@ class GsmModem {
   virtual void loop() = 0;
   virtual String manufacturer() = 0;
   virtual String model() = 0;
-  virtual String networkOperator() = 0;
+  virtual String network() = 0;
   virtual String readResponseLine() = 0;
   virtual RegistrationStatus registrationStatus() = 0;
   virtual String revision() = 0;
