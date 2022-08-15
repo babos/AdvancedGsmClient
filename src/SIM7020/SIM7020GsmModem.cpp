@@ -9,7 +9,7 @@ SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 String SIM7020GsmModem::ICCID() {
   this->sendAT(GF("+CCID"));
   String response;
-  if (waitResponse(2000L, response) != 1) {
+  if (waitResponse(1000, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");

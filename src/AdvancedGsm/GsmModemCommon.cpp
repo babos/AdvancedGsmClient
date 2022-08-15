@@ -23,7 +23,7 @@ String GsmModemCommon::ICCID() {
 String GsmModemCommon::IMEI() {
   this->sendAT(GF("+CGSN"));
   String response;
-  if (waitResponse(2000L, response) != 1) {
+  if (waitResponse(1000, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");
@@ -35,7 +35,7 @@ String GsmModemCommon::IMEI() {
 String GsmModemCommon::IMSI() {
   this->sendAT(GF("+CIMI"));
   String response;
-  if (waitResponse(2000L, response) != 1) {
+  if (waitResponse(1000, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");
@@ -51,7 +51,7 @@ void GsmModemCommon::loop() {
 String GsmModemCommon::manufacturer() {
   this->sendAT(GF("+CGMI"));
   String response;
-  if (waitResponse(2000L, response) != 1) {
+  if (waitResponse(1000, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");
@@ -63,13 +63,25 @@ String GsmModemCommon::manufacturer() {
 String GsmModemCommon::model() {
   this->sendAT(GF("+CGMM"));
   String response;
-  if (waitResponse(2000L, response) != 1) {
+  if (waitResponse(1000, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");
   response.replace("\rOK\r", "");
   response.trim();
   return response;
+}
+
+String GsmModemCommon::networkOperator() {
+  // Gets the PLMN (Public Land Mobile Network) operator details
+  this->sendAT(GF("+COPS"));
+  if (waitResponse("+COPS:") != 1) {
+    return "";
+  }
+  streamSkipUntil('"');  // skip mode and format
+  String operatorName = this->stream.readStringUntil('"');
+  waitResponse();
+  return operatorName;
 }
 
 String GsmModemCommon::readResponseLine() {
@@ -84,12 +96,12 @@ RegistrationStatus GsmModemCommon::registrationStatus() {
   //  +CEREG (EPS)
   //  +C5GREG (5G)
   this->sendAT(GF("+CEREG"));
-  if (waitResponse(2000L, "+CSQ:") != 1) {
+  if (waitResponse("+CEREG:") != 1) {
     return RegistrationStatus::Unknown;
   }
   streamSkipUntil(',');  // skip mode
   int16_t status = streamGetIntBefore(',');
-  if (waitResponse(2000L) != 1) {
+  if (waitResponse() != 1) {
     return RegistrationStatus::Unknown;
   }
   return static_cast<RegistrationStatus>(status);
@@ -98,7 +110,7 @@ RegistrationStatus GsmModemCommon::registrationStatus() {
 String GsmModemCommon::revision() {
   this->sendAT(GF("+CGMR"));
   String response;
-  if (waitResponse(2000L, response) != 1) {
+  if (waitResponse(1000, response) != 1) {
     return "unknown";
   }
   response.replace("\r\nOK\r\n", "");
@@ -109,11 +121,11 @@ String GsmModemCommon::revision() {
 
 int32_t GsmModemCommon::RSSI() {
   this->sendAT(GF("+CSQ"));
-  if (waitResponse(2000L, "+CSQ:") != 1) {
+  if (waitResponse("+CSQ:") != 1) {
     return 0;
   }
   int16_t rssi_index = streamGetIntBefore(',');
-  if (waitResponse(2000L) != 1) {
+  if (waitResponse() != 1) {
     return 0;
   }
   if (rssi_index == 99) {
