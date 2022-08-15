@@ -31,6 +31,7 @@ class GsmModem {
   virtual String model() = 0;
   virtual String readResponseLine();
   virtual String revision() = 0;
+  virtual double rssidBm() = 0;
   virtual void sendATCommand(const char command[]);
 };
 

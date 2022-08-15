@@ -86,12 +86,43 @@ String GsmModemCommon::revision() {
   return response;
 }
 
+double GsmModemCommon::rssidBm() {
+  this->sendAT(GF("+CSQ"));
+  if (waitResponse(2000L, "+CSQ:") != 1) {
+    return 0;
+  }
+  int16_t rssi = streamGetIntBefore(',');
+  if (waitResponse(2000L) != 1) {
+    return 0;
+  }
+  if (rssi == 99) {
+    return 0;
+  }
+  double rssidBm = -114.0 + (rssi * 2);
+  return rssidBm;
+}
+
+
 void GsmModemCommon::sendATCommand(const char command[]) {
   streamWrite("AT", command, this->gsmNL);
   this->stream.flush();
 }
 
 // Protected
+
+int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
+  char   buf[7];
+  size_t bytesRead = this->stream.readBytesUntil(
+      lastChar, buf, static_cast<size_t>(7));
+  // if we read 7 or more bytes, it's an overflow
+  if (bytesRead && bytesRead < 7) {
+    buf[bytesRead] = '\0';
+    int16_t res = atoi(buf);
+    return res;
+  }
+
+  return -9999;
+}
 
 // inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t
 // timeout_ms = 1000L) {

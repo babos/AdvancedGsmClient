@@ -20,6 +20,7 @@ class GsmModemCommon : public GsmModem {
   String model() override;
   virtual String readResponseLine();
   String revision() override;
+  double rssidBm() override;
   virtual void sendATCommand(const char command[]);
 
  protected:
@@ -30,6 +31,7 @@ class GsmModemCommon : public GsmModem {
                        PacketDataProtocolType pdpType,
                        const char username[],
                        const char password[]) = 0;
+  inline int16_t streamGetIntBefore(char lastChar);
   virtual bool reset() = 0;
 //  template <typename... Args>
 //  void sendAT(Args... command);
