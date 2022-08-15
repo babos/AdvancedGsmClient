@@ -16,6 +16,32 @@ void GsmModemCommon::begin(const char accessPointName[],
   connect(accessPointName, pdpType, username, password);
 }
 
+String GsmModemCommon::iccid() { return ""; }
+
+String GsmModemCommon::imei() {
+  this->sendAT(GF("+CGSN"));
+  String response;
+  if (waitResponse(2000L, response) != 1) {
+    return "unknown";
+  }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
+}
+
+String GsmModemCommon::imsi() {
+  this->sendAT(GF("+CIMI"));
+  String response;
+  if (waitResponse(2000L, response) != 1) {
+    return "unknown";
+  }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
+}
+
 void GsmModemCommon::loop() {
   Serial.print("GsmModemCommon::begin\n");
 }
@@ -33,7 +59,7 @@ String GsmModemCommon::manufacturer() {
 }
 
 String GsmModemCommon::model() {
-  this->sendAT(GF("+GMM"));
+  this->sendAT(GF("+CGMM"));
   String response;
   if (waitResponse(2000L, response) != 1) {
     return "unknown";
@@ -46,6 +72,18 @@ String GsmModemCommon::model() {
 
 String GsmModemCommon::readResponseLine() {
   return this->stream.readStringUntil('\n');
+}
+
+String GsmModemCommon::revision() {
+  this->sendAT(GF("+CGMR"));
+  String response;
+  if (waitResponse(2000L, response) != 1) {
+    return "unknown";
+  }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
 }
 
 void GsmModemCommon::sendATCommand(const char command[]) {

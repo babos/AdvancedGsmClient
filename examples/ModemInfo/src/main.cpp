@@ -44,9 +44,17 @@ void setup() {
 
   String manufacturer = modem.manufacturer();
   String model = modem.model();
+  String revision = modem.revision();
+  String imei = modem.imei();
+  String imsi = modem.imsi();
+  String iccid = modem.iccid();
 
   Serial.printf("Manufacturer: %s\n", manufacturer.c_str());
   Serial.printf("Model: %s\n", model.c_str());
+  Serial.printf("Revision: %s\n", revision.c_str());
+  Serial.printf("IMEI: %s\n", imei.c_str());
+  Serial.printf("IMSI: %s\n", imsi.c_str());
+  Serial.printf("ICCID: %s\n", iccid.c_str());
 }
 
 void loop() {

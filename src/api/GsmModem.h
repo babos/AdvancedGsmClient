@@ -23,10 +23,14 @@ class GsmModem {
                      PacketDataProtocolType pdpType = IPv4v6,
                      const char username[] = NULL,
                      const char password[] = NULL) = 0;
+  virtual String iccid() = 0;
+  virtual String imei() = 0;
+  virtual String imsi() = 0;
   virtual void loop() = 0;
   virtual String manufacturer() = 0;
   virtual String model() = 0;
   virtual String readResponseLine();
+  virtual String revision() = 0;
   virtual void sendATCommand(const char command[]);
 };
 

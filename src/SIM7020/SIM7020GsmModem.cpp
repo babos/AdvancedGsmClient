@@ -4,9 +4,25 @@
 
 SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
+// Public
+
+String SIM7020GsmModem::iccid() {
+  this->sendAT(GF("+CCID"));
+  String response;
+  if (waitResponse(2000L, response) != 1) {
+    return "unknown";
+  }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
+}
+
 void SIM7020GsmModem::test() {
   Serial.print("Test\n");
 }
+
+// Protected
 
 bool SIM7020GsmModem::connect(const char apn[],
                               PacketDataProtocolType pdpType,
