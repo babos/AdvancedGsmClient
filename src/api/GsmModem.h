@@ -17,6 +17,20 @@ enum PacketDataProtocolType {
   IPv4v6
 };
 
+enum RegistrationStatus {
+  Inactive = 0, // Not registered, and not searching
+  RegisteredHome = 1,
+  Searching = 2, // Not registered, but is currently searching
+  Denied = 3,
+  Unknown = 4,
+  RegisteredRoaming = 5,
+  RegisteredHomeSmsOnly = 6,
+  RegisteredRoamingSmsOnly = 7,
+  EmergencyOnly = 8,
+  RegisteredHomeNoCircuitSwitchedFallback = 9,
+  RegisteredRoamingNoCircuitSwitchedFallback = 10
+};
+
 class GsmModem {
  public:
   virtual void begin(const char accessPointName[],
@@ -31,8 +45,8 @@ class GsmModem {
   virtual String manufacturer() = 0;
   virtual String model() = 0;
 //  virtual String operator() = 0;
-  virtual String readResponseLine();
-//  virtual String registrationStatus() = 0;
+  virtual String readResponseLine() = 0;
+  virtual RegistrationStatus registrationStatus() = 0;
   virtual String revision() = 0;
   // RSSI is in dBm
   virtual int32_t RSSI() = 0;

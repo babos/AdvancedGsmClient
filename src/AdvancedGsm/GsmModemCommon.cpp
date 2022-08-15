@@ -16,7 +16,9 @@ void GsmModemCommon::begin(const char accessPointName[],
   connect(accessPointName, pdpType, username, password);
 }
 
-String GsmModemCommon::ICCID() { return ""; }
+String GsmModemCommon::ICCID() {
+  return "";
+}
 
 String GsmModemCommon::IMEI() {
   this->sendAT(GF("+CGSN"));
@@ -74,6 +76,25 @@ String GsmModemCommon::readResponseLine() {
   return this->stream.readStringUntil('\n');
 }
 
+RegistrationStatus GsmModemCommon::registrationStatus() {
+  // Registration status results are aligned across versions.
+  // Override if needed:
+  //  +CREG
+  //  +CGREP (GPRS)
+  //  +CEREG (EPS)
+  //  +C5GREG (5G)
+  this->sendAT(GF("+CEREG"));
+  if (waitResponse(2000L, "+CSQ:") != 1) {
+    return RegistrationStatus::Unknown;
+  }
+  streamSkipUntil(',');  // skip mode
+  int16_t status = streamGetIntBefore(',');
+  if (waitResponse(2000L) != 1) {
+    return RegistrationStatus::Unknown;
+  }
+  return static_cast<RegistrationStatus>(status);
+}
+
 String GsmModemCommon::revision() {
   this->sendAT(GF("+CGMR"));
   String response;
@@ -102,7 +123,6 @@ int32_t GsmModemCommon::RSSI() {
   return rssidBm;
 }
 
-
 void GsmModemCommon::sendATCommand(const char command[]) {
   streamWrite("AT", command, this->gsmNL);
   this->stream.flush();
@@ -110,10 +130,10 @@ void GsmModemCommon::sendATCommand(const char command[]) {
 
 // Protected
 
-int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
-  char   buf[7];
-  size_t bytesRead = this->stream.readBytesUntil(
-      lastChar, buf, static_cast<size_t>(7));
+inline int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
+  char buf[7];
+  size_t bytesRead =
+      this->stream.readBytesUntil(lastChar, buf, static_cast<size_t>(7));
   // if we read 7 or more bytes, it's an overflow
   if (bytesRead && bytesRead < 7) {
     buf[bytesRead] = '\0';
@@ -124,18 +144,19 @@ int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
   return -9999;
 }
 
-// inline bool GsmModemCommon::streamSkipUntil(const char c, const uint32_t
-// timeout_ms = 1000L) {
-//   uint32_t startMillis = millis();
-//   while (millis() - startMillis < timeout_ms) {
-//     while (millis() - startMillis < timeout_ms &&
-//             !thisModem().stream.available()) {
-//       TINY_GSM_YIELD();
-//     }
-//     if (thisModem().stream.read() == c) { return true; }
-//   }
-//   return false;
-// }
+inline bool GsmModemCommon::streamSkipUntil(const char c,
+                                            const uint32_t timeout_ms) {
+  uint32_t startMillis = millis();
+  while (millis() - startMillis < timeout_ms) {
+    while (millis() - startMillis < timeout_ms && !this->stream.available()) {
+      TINY_GSM_YIELD();
+    }
+    if (this->stream.read() == c) {
+      return true;
+    }
+  }
+  return false;
+}
 
 int8_t GsmModemCommon::waitResponse() {
   return waitResponse(GSM_OK);
