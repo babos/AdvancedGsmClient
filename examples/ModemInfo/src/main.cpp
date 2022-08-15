@@ -50,9 +50,9 @@ void setup() {
   String manufacturer = modem.manufacturer();
   String model = modem.model();
   String revision = modem.revision();
-  String imei = modem.imei();
-  String imsi = modem.imsi();
-  String iccid = modem.iccid();
+  String imei = modem.IMEI();
+  String imsi = modem.IMSI();
+  String iccid = modem.ICCID();
 
   Serial.printf("Manufacturer: %s\n", manufacturer.c_str());
   Serial.printf("Model: %s\n", model.c_str());
@@ -70,8 +70,8 @@ void loop() {
   if (now > next_report && now < max_report) {
     next_report = now + LOOP_INTERVAL_MS;
 
-    double rssidBm = modem.rssidBm();
+    int32_t rssidBm = modem.RSSI();
 
-    Serial.printf("RSSI (dBm): %.1f\n", rssidBm);
+    Serial.printf("RSSI (dBm): %d\n", rssidBm);
   }
 }

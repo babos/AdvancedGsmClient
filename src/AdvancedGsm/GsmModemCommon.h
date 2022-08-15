@@ -12,15 +12,15 @@ class GsmModemCommon : public GsmModem {
              PacketDataProtocolType pdpType,
              const char username[],
              const char password[]) override;
-  String iccid() override;
-  String imei() override;
-  String imsi() override;
+  String ICCID() override;
+  String IMEI() override;
+  String IMSI() override;
   void loop() override;
   String manufacturer() override;
   String model() override;
   virtual String readResponseLine();
   String revision() override;
-  double rssidBm() override;
+  int32_t RSSI() override;
   virtual void sendATCommand(const char command[]);
 
  protected:

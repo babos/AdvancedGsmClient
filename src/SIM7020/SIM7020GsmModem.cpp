@@ -6,7 +6,7 @@ SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
 // Public
 
-String SIM7020GsmModem::iccid() {
+String SIM7020GsmModem::ICCID() {
   this->sendAT(GF("+CCID"));
   String response;
   if (waitResponse(2000L, response) != 1) {

@@ -6,7 +6,7 @@
 class SIM7020GsmModem : public GsmModemCommon {
  public:
   explicit SIM7020GsmModem(Stream& stream);
-  String iccid() override;
+  String ICCID() override;
   void test();
 
  protected:

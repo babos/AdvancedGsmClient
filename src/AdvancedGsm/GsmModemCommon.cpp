@@ -16,9 +16,9 @@ void GsmModemCommon::begin(const char accessPointName[],
   connect(accessPointName, pdpType, username, password);
 }
 
-String GsmModemCommon::iccid() { return ""; }
+String GsmModemCommon::ICCID() { return ""; }
 
-String GsmModemCommon::imei() {
+String GsmModemCommon::IMEI() {
   this->sendAT(GF("+CGSN"));
   String response;
   if (waitResponse(2000L, response) != 1) {
@@ -30,7 +30,7 @@ String GsmModemCommon::imei() {
   return response;
 }
 
-String GsmModemCommon::imsi() {
+String GsmModemCommon::IMSI() {
   this->sendAT(GF("+CIMI"));
   String response;
   if (waitResponse(2000L, response) != 1) {
@@ -86,19 +86,19 @@ String GsmModemCommon::revision() {
   return response;
 }
 
-double GsmModemCommon::rssidBm() {
+int32_t GsmModemCommon::RSSI() {
   this->sendAT(GF("+CSQ"));
   if (waitResponse(2000L, "+CSQ:") != 1) {
     return 0;
   }
-  int16_t rssi = streamGetIntBefore(',');
+  int16_t rssi_index = streamGetIntBefore(',');
   if (waitResponse(2000L) != 1) {
     return 0;
   }
-  if (rssi == 99) {
+  if (rssi_index == 99) {
     return 0;
   }
-  double rssidBm = -113.0 + (rssi * 2);
+  double rssidBm = -113.0 + (rssi_index * 2);
   return rssidBm;
 }
 
