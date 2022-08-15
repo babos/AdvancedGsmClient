@@ -33,7 +33,7 @@ ModemDevice modemDevice(SerialAT);
 const char apn[] = "telstra.iot";
 
 #define LOOP_INTERVAL_MS 500
-#define LOOP_MAX_MS 500
+#define LOOP_MAX_MS 10000
 
 // Access via the API
 int32_t max_report = 0;
@@ -62,6 +62,7 @@ void setup() {
   Serial.printf("ICCID: %s\n", iccid.c_str());
 
   max_report = millis() + LOOP_MAX_MS;
+  modem.begin(apn);
 }
 
 void loop() {

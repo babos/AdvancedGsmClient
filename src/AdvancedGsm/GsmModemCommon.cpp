@@ -98,7 +98,7 @@ double GsmModemCommon::rssidBm() {
   if (rssi == 99) {
     return 0;
   }
-  double rssidBm = -114.0 + (rssi * 2);
+  double rssidBm = -113.0 + (rssi * 2);
   return rssidBm;
 }
 
