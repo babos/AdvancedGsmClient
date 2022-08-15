@@ -35,9 +35,8 @@ class GsmModemCommon : public GsmModem {
   inline int16_t streamGetIntBefore(char lastChar);
   inline bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);
   virtual bool reset() = 0;
-//  template <typename... Args>
-//  void sendAT(Args... command);
-
+  //  template <typename... Args>
+  //  void sendAT(Args... command);
 
   // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
   // 1000L):
@@ -54,22 +53,23 @@ class GsmModemCommon : public GsmModem {
                       GsmConstStr r4 = NULL,
                       GsmConstStr r5 = NULL);
   int8_t waitResponse(uint32_t timeout_ms,
-                              String& data,
-                              GsmConstStr r1 = GFP(GSM_OK),
-                              GsmConstStr r2 = GFP(GSM_ERROR),
-                              GsmConstStr r3 = NULL,
-                              GsmConstStr r4 = NULL,
-                              GsmConstStr r5 = NULL);
+                      String& data,
+                      GsmConstStr r1 = GFP(GSM_OK),
+                      GsmConstStr r2 = GFP(GSM_ERROR),
+                      GsmConstStr r3 = NULL,
+                      GsmConstStr r4 = NULL,
+                      GsmConstStr r5 = NULL);
   virtual int8_t waitResponseDevice(uint32_t timeout_ms,
-                              String& data,
-                              GsmConstStr r1 = GFP(GSM_OK),
-                              GsmConstStr r2 = GFP(GSM_ERROR),
-                              GsmConstStr r3 = NULL,
-                              GsmConstStr r4 = NULL,
-                              GsmConstStr r5 = NULL) = 0;
+                                    String& data,
+                                    GsmConstStr r1 = GFP(GSM_OK),
+                                    GsmConstStr r2 = GFP(GSM_ERROR),
+                                    GsmConstStr r3 = NULL,
+                                    GsmConstStr r4 = NULL,
+                                    GsmConstStr r5 = NULL) = 0;
 
- // Define template functions in the header, so that derived classes instantiate
- // See: https://www.modernescpp.com/index.php/surprise-included-inheritance-and-member-functions-of-class-templates
+  // Define template functions in the header, so that derived classes
+  // instantiate See:
+  // https://www.modernescpp.com/index.php/surprise-included-inheritance-and-member-functions-of-class-templates
  protected:
   template <typename... Args>
   void sendAT(Args... command) {

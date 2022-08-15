@@ -62,7 +62,7 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
   modem.begin(apn);
-  //modem.test();
+  // modem.test();
   modemDevice.test();
 
   String manufacturer = modem.manufacturer();

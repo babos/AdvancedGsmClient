@@ -30,9 +30,10 @@ bool SIM7020GsmModem::connect(const char apn[],
                               const char password[]) {
   // Based on "APN Manual Configuration", from SIM7020 TCPIP Application Note
 
-  const char* pdpTypeString = pdpType == PacketDataProtocolType::IPv4v6 ? "IPV4V6"
-                    : PacketDataProtocolType::IPv6            ? "IPV6"
-                                                              : "IP";
+  const char* pdpTypeString = pdpType == PacketDataProtocolType::IPv4v6
+                                  ? "IPV4V6"
+                              : PacketDataProtocolType::IPv6 ? "IPV6"
+                                                             : "IP";
 
   sendAT(GF("+CFUN=0"));
   waitResponse();
@@ -45,19 +46,24 @@ bool SIM7020GsmModem::connect(const char apn[],
   //            IP: Internet Protocol Version 4
   //            Non-IP: external packet data network
   if (password && strlen(password) > 0 && username && strlen(username) > 0) {
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, "\",\"",
-           password, '"');
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username,
+           "\",\"", password, '"');
   } else if (username && strlen(username) > 0) {
     // Set the user name only
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username, '"');
+    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username,
+           '"');
   } else {
     // Set the APN only
     sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
   }
-  if (waitResponse() != 1) { return false; }
+  if (waitResponse() != 1) {
+    return false;
+  }
 
   sendAT(GF("+CFUN=1"));
-  if (waitResponse(20000L, GF(GSM_NL "+CPIN: READY")) != 1) { return false; }
+  if (waitResponse(20000L, GF(GSM_NL "+CPIN: READY")) != 1) {
+    return false;
+  }
   waitResponse();
 
   // // Check signal strength
@@ -139,12 +145,12 @@ bool SIM7020GsmModem::reset() {
 }
 
 int8_t SIM7020GsmModem::waitResponseDevice(uint32_t timeout_ms,
-                                     String& data,
-                                     GsmConstStr r1,
-                                     GsmConstStr r2,
-                                     GsmConstStr r3,
-                                     GsmConstStr r4,
-                                     GsmConstStr r5) {
+                                           String& data,
+                                           GsmConstStr r1,
+                                           GsmConstStr r2,
+                                           GsmConstStr r3,
+                                           GsmConstStr r4,
+                                           GsmConstStr r5) {
   /*String r1s(r1); r1s.trim();
   String r2s(r2); r2s.trim();
   String r3s(r3); r3s.trim();
