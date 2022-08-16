@@ -79,6 +79,8 @@ bool SIM7020GsmModem::connect(const char apn[],
                               : PacketDataProtocolType::IPv6 ? "IPV6"
                                                              : "IP";
 
+  ADVGSM_LOGI("SIM7200" GF("### Connecting %s %s"), pdpTypeString, apn);
+
   sendAT(GF("+CFUN=0"));
   waitResponse();
 
