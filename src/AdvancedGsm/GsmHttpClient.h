@@ -10,10 +10,15 @@ enum UrlScheme {
   SCHEME_HTTPS = 2,
 };
 
-const char* PREFIX_HTTP = "http://";
-const int8_t PREFIX_HTTP_LENGTH = 7;
-const char* PREFIX_HTTPS = "https://";
-const int8_t PREFIX_HTTPS_LENGTH = 8;
+// const char* GSM_PREFIX_HTTP = "http://";
+// const int8_t GSM_PREFIX_HTTP_LENGTH = 7;
+// const char* GSM_PREFIX_HTTPS = "https://";
+// const int8_t GSM_PREFIX_HTTPS_LENGTH = 8;
+
+#define GSM_PREFIX_HTTP "http://"
+#define GSM_PREFIX_HTTP_LENGTH 7
+#define GSM_PREFIX_HTTPS "https://"
+#define GSM_PREFIX_HTTPS_LENGTH 8
 
 class GsmHttpClient : public HttpClient
 {
@@ -55,7 +60,7 @@ class GsmHttpClient : public HttpClient
 
   virtual int responseStatusCode();
 
-  virtual bool headerAvailable();
+//  virtual bool headerAvailable();
 
   virtual bool completed();
 

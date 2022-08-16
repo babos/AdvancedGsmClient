@@ -20,7 +20,7 @@ int SIM7020HttpClient::startRequest(const char* url_path,
 
       // Create
       if (scheme == SCHEME_HTTP) {
-        this->modem.sendAT(GF("+CHTTPCREATE=\""), PREFIX_HTTP, server_name, ':', server_port, "/\"");
+        this->modem.sendAT(GF("+CHTTPCREATE=\""), GSM_PREFIX_HTTP, server_name, ':', server_port, "/\"");
       } else if (scheme == SCHEME_HTTPS) {
         // TODO: with cert
       } else {

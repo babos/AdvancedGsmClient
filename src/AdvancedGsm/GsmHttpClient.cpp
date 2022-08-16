@@ -131,6 +131,11 @@ int GsmHttpClient::del(const char* aURLPath, const char* aContentType, int aCont
 
 // ========================================================
 
+bool GsmHttpClient::completed()
+{
+    return false;
+}
+
 void GsmHttpClient::resetState()
 {
   //iState = eIdle;
@@ -152,6 +157,7 @@ void GsmHttpClient::resetState()
 
 int GsmHttpClient::responseStatusCode()
 {
+    return 0;
 }
 
 int GsmHttpClient::contentLength()
@@ -167,6 +173,7 @@ int GsmHttpClient::contentLength()
 
 String GsmHttpClient::responseBody()
 {
+    return "";
 }
 
 // bool GsmHttpClient::endOfBodyReached()

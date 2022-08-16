@@ -143,7 +143,7 @@ class HttpClient
     read the header value
     MUST be called after responseStatusCode() and before contentLength()
   */
-  virtual bool headerAvailable() = 0;
+//  virtual bool headerAvailable() = 0;
 
   /** Test whether the end of the body has been reached.
     Only works if the Content-Length header was returned by the server

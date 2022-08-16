@@ -18,7 +18,7 @@
 #define DUMP_AT_COMMANDS
 
 #include "../../../src/SIM7020/SIM7020GsmModem.h"
-#include "../../../src/SIM7020/SIM7020TcpClient.h"
+#include "../../../src/SIM7020/SIM7020HttpClient.h"
 
 #include <Arduino.h>
 
@@ -79,28 +79,28 @@ void connectedLoop() {
     next_message_ms = now + SEND_INTERVAL_MS;
 
     TestTcpClient testTcpClient(testModem);
-    Client& client = testTcpClient;
+    //Client& client = testTcpClient;
 
-    // TestHttpClient = testHttpClient(client, server, 80);
-    // HttpClient& http = testHttpClient;
+    TestHttpClient testHttpClient(testTcpClient, server, 80);
+    HttpClient& http = testHttpClient;
 
-    // int rc = http.get("/api/myip.php");
-    // if (rc != 0) {
-    //   Serial.printf("HTTP GET error: %d", rc);
-    // } else {
-    //   int httpCode = http.responseStatusCode();
-    //   if (httpCode != 200 && httpCode != 301) {
-    //     Serial.printf("HTTP response code error: %d", httpCode);
-    //   } else {
-    //     Serial.printf("HTTP response code: ", httpCode);
-    //     String payload = http.responseBody();
+    int rc = http.get("/api/myip.php");
+    if (rc != 0) {
+      Serial.printf("HTTP GET error: %d", rc);
+    } else {
+      int httpCode = http.responseStatusCode();
+      if (httpCode != 200 && httpCode != 301) {
+        Serial.printf("HTTP response code error: %d", httpCode);
+      } else {
+        Serial.printf("HTTP response code: ", httpCode);
+        String payload = http.responseBody();
 
-    //     Serial.print("##### PAYLOAD:\n");
-    //     Serial.printf("%s", payload.c_str());
-    //   }
-    // }
+        Serial.print("##### PAYLOAD:\n");
+        Serial.printf("%s", payload.c_str());
+      }
+    }
 
-    // http.stop();
+    http.stop();
   }
 }
 
