@@ -10,7 +10,7 @@ int SIM7020HttpClient::startRequest(const char* url_path,
                     const char* content_type,
                     int content_length,
                     const byte body[]) {
-//    DBG(GF("### HTTP"), http_method, url_path);
+  ADVGSM_LOGI("SIM7200" GF("### HTTP %s %s"), http_method, url_path);
 
   // Connect if needed
   if (!is_connected) {
