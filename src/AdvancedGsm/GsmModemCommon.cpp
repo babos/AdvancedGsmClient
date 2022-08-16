@@ -44,8 +44,55 @@ String GsmModemCommon::IMSI() {
   return response;
 }
 
+String GsmModemCommon::localIP(uint8_t index) {
+  // TS 27.007: no context should return addresses for all contexts
+  // NOTE: +CGPADDR gets the address assigned during the last activation (even if not current connected)
+  this->sendAT(GF("+CGPADDR"));
+  int8_t address_index = -1;
+  String ip_address = "";
+
+  int8_t response;
+  while (true) {
+    response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+CGPADDR:");
+    if (response != 3) {
+      break;
+    }
+    String address_line = this->stream.readStringUntil('\n');
+
+    // Check first returned address
+    int start1 = address_line.indexOf('"');
+    if (start1 == -1) {
+      continue;
+    }
+    int end1 = address_line.indexOf('"', start1 + 1);
+    if (end1 < start1 + 2) {
+      continue;
+    }
+    ip_address = address_line.substring(start1 + 1, end1);
+    if (++address_index == index) {
+      break;
+    }
+
+    // Check if there is a second address (index 1)
+    int start2 = address_line.indexOf('"', end1 + 1);
+    if (start2 == -1) {
+      continue;
+    }
+    int end2 = address_line.indexOf('"', start2 + 1);
+    if (end2 < start1 + 2) {
+      continue;
+    }
+    ip_address = address_line.substring(start2 + 1, end2);
+    if (++address_index == index) {
+      break;
+    }
+  }
+  return ip_address;
+}
+
 void GsmModemCommon::loop() {
-  Serial.print("GsmModemCommon::begin\n");
+  // Serial.print("GsmModemCommon::loop\n");
+  //  TODO: Heartbeat check on connection
 }
 
 String GsmModemCommon::manufacturer() {
@@ -81,9 +128,13 @@ String GsmModemCommon::network() {
   String plmn_details = this->stream.readStringUntil('\n');
   waitResponse();
   int start = plmn_details.indexOf('"');
-  if (start == -1) { return ""; }
+  if (start == -1) {
+    return "";
+  }
   int end = plmn_details.indexOf('"', start + 1);
-  if (end < start + 2) { return ""; }
+  if (end < start + 2) {
+    return "";
+  }
   String network = plmn_details.substring(start + 1, end);
   // TODO: Could include the Access Technology, e.g. "(NB-S1)"
   return network;

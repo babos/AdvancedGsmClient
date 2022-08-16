@@ -18,8 +18,49 @@ String SIM7020GsmModem::ICCID() {
   return response;
 }
 
-void SIM7020GsmModem::test() {
-  Serial.print("Test\n");
+String SIM7020GsmModem::localIP(uint8_t index) {
+  // SIM7020 requires to specify the context
+  this->sendAT(GF("+CGPADDR=1"));
+  int8_t address_index = -1;
+  String ip_address = "";
+
+  int8_t response;
+  while (true) {
+    response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+CGPADDR:");
+    if (response != 3) {
+      break;
+    }
+    String address_line = this->stream.readStringUntil('\n');
+
+    // Check first returned address
+    int start1 = address_line.indexOf('"');
+    if (start1 == -1) {
+      continue;
+    }
+    int end1 = address_line.indexOf('"', start1 + 1);
+    if (end1 < start1 + 2) {
+      continue;
+    }
+    ip_address = address_line.substring(start1 + 1, end1);
+    if (++address_index == index) {
+      break;
+    }
+
+    // Check if there is a second address (index 1)
+    int start2 = address_line.indexOf('"', end1 + 1);
+    if (start2 == -1) {
+      continue;
+    }
+    int end2 = address_line.indexOf('"', start2 + 1);
+    if (end2 < start1 + 2) {
+      continue;
+    }
+    ip_address = address_line.substring(start2 + 1, end2);
+    if (++address_index == index) {
+      break;
+    }
+  }
+  return ip_address;
 }
 
 // Protected

@@ -65,20 +65,48 @@ void setup() {
 }
 
 void loop() {
+  modem.loop();
+
   int32_t now = millis();
   if (max_report == 0) {
-      max_report = now + LOOP_MAX_MS;
+    max_report = now + LOOP_MAX_MS;
   }
+
   if (now > next_report && now < max_report) {
     next_report = now + LOOP_INTERVAL_MS;
 
+    // Lifecycle (after radio enabled)
+    // - Initially no signal (RSSI 0)
+    // - Once get signal, registration status becomes 2 (= Searching)
+    // - Once network found, registration status becomes 1, and the network operator details are available
+    // - Once the packet data protocol connection is established, the dynamic parameters (+CGCONTRDP) are available
+
     int32_t rssidBm = modem.RSSI();
+
     RegistrationStatus registrationStatus = modem.registrationStatus();
     String network = modem.network();
 
+    modem.sendATCommand("+CGCONTRDP");  // read dynamic parameters
+    String line;
+    for (int i = 0; i < 10; i++) {
+      line = modem.readResponseLine();
+      if (line.indexOf("OK") > -1 || line.indexOf("ERROR") > -1) {
+        break;
+      }
+    }
+    String local_ip1 = modem.localIP(1);
+
     Serial.printf("***** [%d] *****\n", now);
     Serial.printf("RSSI (dBm): %d\n", rssidBm);
-    Serial.printf("Registration status: %d (1=home, 2=searching)\n", registrationStatus);
+    Serial.printf(
+        "Registration status: %d%s\n",
+        (registrationStatus, registrationStatus == RegisrationStatus::Searching)
+            ? " (= Searching)"
+        : (registrationStatus,
+           registrationStatus == RegisrationStatus::RegisteredHome)
+            ? " (= Home)"
+            : "");
     Serial.printf("Operator: %s\n", network.c_str());
+    Serial.printf("Local IP: %s\n", local_ip1.c_str());
   }
 }

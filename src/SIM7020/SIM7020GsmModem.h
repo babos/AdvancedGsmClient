@@ -7,7 +7,7 @@ class SIM7020GsmModem : public GsmModemCommon {
  public:
   explicit SIM7020GsmModem(Stream& stream);
   String ICCID() override;
-  void test();
+  String localIP(uint8_t index = 0) override;
 
  protected:
   bool connect(const char apn[],

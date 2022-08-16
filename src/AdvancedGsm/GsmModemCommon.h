@@ -15,6 +15,7 @@ class GsmModemCommon : public GsmModem {
   String ICCID() override;
   String IMEI() override;
   String IMSI() override;
+  String localIP(uint8_t index = 0) override;
   void loop() override;
   String manufacturer() override;
   String model() override;
