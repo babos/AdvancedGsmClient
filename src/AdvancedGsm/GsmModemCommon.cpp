@@ -16,6 +16,52 @@ void GsmModemCommon::begin(const char accessPointName[],
   connect(accessPointName, pdpType, username, password);
 }
 
+int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
+  // TS 27.007: no context should return addresses for all contexts
+  // NOTE: +CGPADDR gets the address assigned during the last activation (even
+  // if not currently connected)
+  this->sendAT(GF("+CGPADDR"));
+  bool response_finished = false;
+  int8_t address_index = 0;
+  while (address_index < max) {
+    int8_t response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+CGPADDR:");
+    if (response != 3) {
+      response_finished = true;
+      break;
+    }
+    String address_line = this->stream.readStringUntil('\n');
+
+    // Check first returned address
+    int start1 = address_line.indexOf('"');
+    if (start1 == -1) {
+      continue;
+    }
+    int end1 = address_line.indexOf('"', start1 + 1);
+    if (end1 < start1 + 2) {
+      continue;
+    }
+    addresses[address_index] = address_line.substring(start1 + 1, end1);
+    if (++address_index >= max) {
+      break;
+    }
+
+    // Check if there is a second address (index 1)
+    int start2 = address_line.indexOf('"', end1 + 1);
+    if (start2 == -1) {
+      continue;
+    }
+    int end2 = address_line.indexOf('"', start2 + 1);
+    if (end2 < start1 + 2) {
+      continue;
+    }
+    addresses[address_index] = address_line.substring(start2 + 1, end2);
+  }
+  if (!response_finished) {
+    waitResponse();
+  }
+  return address_index;
+}
+
 String GsmModemCommon::ICCID() {
   return "";
 }
@@ -45,49 +91,12 @@ String GsmModemCommon::IMSI() {
 }
 
 String GsmModemCommon::localIP(uint8_t index) {
-  // TS 27.007: no context should return addresses for all contexts
-  // NOTE: +CGPADDR gets the address assigned during the last activation (even if not current connected)
-  this->sendAT(GF("+CGPADDR"));
-  int8_t address_index = -1;
-  String ip_address = "";
-
-  int8_t response;
-  while (true) {
-    response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+CGPADDR:");
-    if (response != 3) {
-      break;
-    }
-    String address_line = this->stream.readStringUntil('\n');
-
-    // Check first returned address
-    int start1 = address_line.indexOf('"');
-    if (start1 == -1) {
-      continue;
-    }
-    int end1 = address_line.indexOf('"', start1 + 1);
-    if (end1 < start1 + 2) {
-      continue;
-    }
-    ip_address = address_line.substring(start1 + 1, end1);
-    if (++address_index == index) {
-      break;
-    }
-
-    // Check if there is a second address (index 1)
-    int start2 = address_line.indexOf('"', end1 + 1);
-    if (start2 == -1) {
-      continue;
-    }
-    int end2 = address_line.indexOf('"', start2 + 1);
-    if (end2 < start1 + 2) {
-      continue;
-    }
-    ip_address = address_line.substring(start2 + 1, end2);
-    if (++address_index == index) {
-      break;
-    }
+  String addresses[index];
+  uint8_t count = getLocalIPs(addresses, index);
+  if (count == 0) {
+    return "";
   }
-  return ip_address;
+  return addresses[count];
 }
 
 void GsmModemCommon::loop() {

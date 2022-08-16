@@ -33,6 +33,8 @@ class GsmModem {
                      PacketDataProtocolType pdpType = IPv4v6,
                      const char username[] = NULL,
                      const char password[] = NULL) = 0;
+  //virtual int8_t getLocalIPs(IPAddress addresses[], uint8_t max) = 0;
+  virtual int8_t getLocalIPs(String addresses[], uint8_t max) = 0;
   virtual String ICCID() = 0;
   virtual String IMEI() = 0;
   virtual String IMSI() = 0;

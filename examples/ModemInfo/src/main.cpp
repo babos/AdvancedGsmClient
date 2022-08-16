@@ -78,8 +78,10 @@ void loop() {
     // Lifecycle (after radio enabled)
     // - Initially no signal (RSSI 0)
     // - Once get signal, registration status becomes 2 (= Searching)
-    // - Once network found, registration status becomes 1, and the network operator details are available
-    // - Once the packet data protocol connection is established, the dynamic parameters (+CGCONTRDP) are available
+    // - Once network found, registration status becomes 1, and the network
+    // operator details are available
+    // - Once the packet data protocol connection is established, the dynamic
+    // parameters (+CGCONTRDP) are available
 
     int32_t rssidBm = modem.RSSI();
 
@@ -94,19 +96,29 @@ void loop() {
         break;
       }
     }
-    String local_ip1 = modem.localIP(1);
+
+    // Get non-link-local IP address
+    String addresses[4];
+    int8_t count = modem.getLocalIPs(addresses, 4);
+    String ip_address = "";
+    for (int8_t index = 0; index < count; index++) {
+      // ignore IPv6 link local
+      if (!addresses[index].startsWith("fe80:")) {
+        ip_address = addresses[index];
+        break;
+      }
+    }
 
     Serial.printf("***** [%d] *****\n", now);
     Serial.printf("RSSI (dBm): %d\n", rssidBm);
-    Serial.printf(
-        "Registration status: %d%s\n",
-        (registrationStatus, registrationStatus == RegisrationStatus::Searching)
-            ? " (= Searching)"
-        : (registrationStatus,
-           registrationStatus == RegisrationStatus::RegisteredHome)
-            ? " (= Home)"
-            : "");
+    Serial.printf("Registration status: %d%s\n", registrationStatus,
+                  (registrationStatus == RegistrationStatus::Searching)
+                      ? " (= Searching)"
+                  : (registrationStatus,
+                     registrationStatus == RegistrationStatus::RegisteredHome)
+                      ? " (= Home)"
+                      : "");
     Serial.printf("Operator: %s\n", network.c_str());
-    Serial.printf("Local IP: %s\n", local_ip1.c_str());
+    Serial.printf("IP Address: %s\n", ip_address.c_str());
   }
 }

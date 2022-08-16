@@ -12,6 +12,7 @@ class GsmModemCommon : public GsmModem {
              PacketDataProtocolType pdpType,
              const char username[],
              const char password[]) override;
+  int8_t getLocalIPs(String addresses[], uint8_t max) override;
   String ICCID() override;
   String IMEI() override;
   String IMSI() override;

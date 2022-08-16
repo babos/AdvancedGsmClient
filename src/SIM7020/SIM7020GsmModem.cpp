@@ -6,6 +6,52 @@ SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
 // Public
 
+int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
+  // SIM7020 requires to specify the context ID to query addresses, i.e.
+  // "+CGPADDR=1" works (but "+CGPADDR" does not). The value returned for IPv6
+  // (address 2) is only the suffix:
+  //   +CGPADDR: 1,"10.89.132.147","::5B5B:EA87:AF0C:8447"
+  //
+  // Reading the dynamic parameters ("AT+CGCONTRDP") shows the DNS settings, but
+  // also only has the IPv6 suffix:
+  //   +CGCONTRDP:
+  //   1,5,"telstra.iot","10.89.132.147.255.255.255.0",,"101.168.244.101","101.168.244.103",,,,,1500
+  //   +CGCONTRDP:
+  //   1,5,"telstra.iot","::5B5B:EA87:AF0C:8447/64",,"2001:8004:2D43:C00::","2001:8004:2C42:B16::1",,,,,1500
+  //
+  // The "+IPCONFIG" command shows full addresses
+  // Before connection, it has a single localhost address "127.0.0.1".
+  // Once the context is connected (as above), it shows: link local IPv6 ("fe80..."), IPv4, and localhost
+  // (It can calculate the link local from the suffix)
+  // After getting the network prefix it then shows four addresses: link local IPv6, then global IPv6, then IPv4, then localhost
+  //   +IPCONFIG: fe80:0:0:0:719d:1439:899a:42d7
+  //   +IPCONFIG: 2001:8004:4810:0:719d:1439:899a:42d7
+  //   +IPCONFIG: 10.88.134.167
+  //   +IPCONFIG: 127.0.0.1
+  // 
+  // The global IPv6 address has to wait for a router advertisement with the prefix (not exposed in AT commands)
+
+  this->sendAT(GF("+IPCONFIG"));
+
+  bool response_finished = false;
+  int8_t address_index = 0;
+  while (address_index < max) {
+    int8_t response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+IPCONFIG:");
+    if (response != 3) {
+      response_finished = true;
+      break;
+    }
+    String address_line = this->stream.readStringUntil('\n');
+    address_line.trim();
+    addresses[address_index] = address_line;
+    address_index++;
+  }
+  if (!response_finished) {
+    waitResponse();
+  }
+  return address_index;
+}
+
 String SIM7020GsmModem::ICCID() {
   this->sendAT(GF("+CCID"));
   String response;
@@ -16,51 +62,6 @@ String SIM7020GsmModem::ICCID() {
   response.replace("\rOK\r", "");
   response.trim();
   return response;
-}
-
-String SIM7020GsmModem::localIP(uint8_t index) {
-  // SIM7020 requires to specify the context
-  this->sendAT(GF("+CGPADDR=1"));
-  int8_t address_index = -1;
-  String ip_address = "";
-
-  int8_t response;
-  while (true) {
-    response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+CGPADDR:");
-    if (response != 3) {
-      break;
-    }
-    String address_line = this->stream.readStringUntil('\n');
-
-    // Check first returned address
-    int start1 = address_line.indexOf('"');
-    if (start1 == -1) {
-      continue;
-    }
-    int end1 = address_line.indexOf('"', start1 + 1);
-    if (end1 < start1 + 2) {
-      continue;
-    }
-    ip_address = address_line.substring(start1 + 1, end1);
-    if (++address_index == index) {
-      break;
-    }
-
-    // Check if there is a second address (index 1)
-    int start2 = address_line.indexOf('"', end1 + 1);
-    if (start2 == -1) {
-      continue;
-    }
-    int end2 = address_line.indexOf('"', start2 + 1);
-    if (end2 < start1 + 2) {
-      continue;
-    }
-    ip_address = address_line.substring(start2 + 1, end2);
-    if (++address_index == index) {
-      break;
-    }
-  }
-  return ip_address;
 }
 
 // Protected
