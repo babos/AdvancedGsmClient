@@ -17,23 +17,19 @@ class HttpClient
   static const int HttpPort = 80;
   static const int HttpsPort = 443;
 
-  HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort = HttpPort);
-  HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = HttpPort);
-  //HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
-
   /** Connect to the server and start to send a GET request.
     @param aURLPath     Url to request
     @return 0 if successful, else error
   */
-  int get(const char* aURLPath);
-  int get(const String& aURLPath);
+  virtual int get(const char* aURLPath) = 0;
+  virtual int get(const String& aURLPath) = 0;
 
   /** Connect to the server and start to send a POST request.
     @param aURLPath     Url to request
     @return 0 if successful, else error
   */
-  int post(const char* aURLPath);
-  int post(const String& aURLPath);
+  virtual int post(const char* aURLPath) = 0;
+  virtual int post(const String& aURLPath) = 0;
 
   /** Connect to the server and send a POST request
       with body and content type
@@ -42,16 +38,16 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  int post(const char* aURLPath, const char* aContentType, const char* aBody);
-  int post(const String& aURLPath, const String& aContentType, const String& aBody);
-  int post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+  virtual int post(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
+  virtual int post(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
+  virtual int post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
 
   /** Connect to the server and start to send a PUT request.
     @param aURLPath     Url to request
     @return 0 if successful, else error
   */
-  int put(const char* aURLPath);
-  int put(const String& aURLPath);
+  virtual int put(const char* aURLPath) = 0;
+  virtual int put(const String& aURLPath) = 0;
 
   /** Connect to the server and send a PUT request
       with body and content type
@@ -60,16 +56,16 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  int put(const char* aURLPath, const char* aContentType, const char* aBody);
-  int put(const String& aURLPath, const String& aContentType, const String& aBody);
-  int put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+  virtual int put(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
+  virtual int put(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
+  virtual int put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
 
   /** Connect to the server and start to send a PATCH request.
     @param aURLPath     Url to request
     @return 0 if successful, else error
   */
-  int patch(const char* aURLPath);
-  int patch(const String& aURLPath);
+  virtual int patch(const char* aURLPath) = 0;
+  virtual int patch(const String& aURLPath) = 0;
 
   /** Connect to the server and send a PATCH request
       with body and content type
@@ -78,16 +74,16 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  int patch(const char* aURLPath, const char* aContentType, const char* aBody);
-  int patch(const String& aURLPath, const String& aContentType, const String& aBody);
-  int patch(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+  virtual int patch(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
+  virtual int patch(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
+  virtual int patch(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
 
   /** Connect to the server and start to send a DELETE request.
     @param aURLPath     Url to request
     @return 0 if successful, else error
   */
-  int del(const char* aURLPath);
-  int del(const String& aURLPath);
+  virtual int del(const char* aURLPath) = 0;
+  virtual int del(const String& aURLPath) = 0;
 
   /** Connect to the server and send a DELETE request
       with body and content type
@@ -96,9 +92,9 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  int del(const char* aURLPath, const char* aContentType, const char* aBody);
-  int del(const String& aURLPath, const String& aContentType, const String& aBody);
-  int del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+  virtual int del(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
+  virtual int del(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
+  virtual int del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
 
   // ================================================================
 
@@ -115,25 +111,25 @@ class HttpClient
                     const char* aHttpMethod,
                     const char* aContentType = NULL,
                     int aContentLength = -1,
-                    const byte aBody[] = NULL);
+                    const byte aBody[] = NULL) = 0;
 
   /** Get the HTTP status code contained in the response.
     For example, 200 for successful request, 404 for file not found, etc.
   */
-  virtual int responseStatusCode();
+  virtual int responseStatusCode() = 0;
 
   /** Check if a header is available to be read.
     Use readHeaderName() to read header name, and readHeaderValue() to
     read the header value
     MUST be called after responseStatusCode() and before contentLength()
   */
-  virtual bool headerAvailable();
+  virtual bool headerAvailable() = 0;
 
   /** Test whether the end of the body has been reached.
     Only works if the Content-Length header was returned by the server
     @return true if we are now at the end of the body, else false
   */
-  virtual bool completed();
+  virtual bool completed() = 0;
 
   /** Return the length of the body.
     Also skips response headers if they have not been read already
@@ -141,40 +137,26 @@ class HttpClient
     @return Length of the body, in bytes, or kNoContentLengthHeader if no
     Content-Length header was returned by the server
   */
-  virtual int contentLength();
+  virtual int contentLength() = 0;
 
   /** Return the response body as a String
     Also skips response headers if they have not been read already
     MUST be called after responseStatusCode()
     @return response body of request as a String
   */
-  virtual String responseBody();
+  virtual String responseBody() = 0;
 
   // From Client
-  virtual void stop();
-  virtual uint8_t connected() { return iClient->connected(); };
-  virtual operator bool() { return bool(iClient); };
-  virtual uint32_t httpResponseTimeout() { return iHttpResponseTimeout; };
-  virtual void setHttpResponseTimeout(uint32_t timeout) { iHttpResponseTimeout = timeout; };
+  virtual void stop() = 0;
+  virtual uint8_t connected() = 0;
+  virtual operator bool() = 0;
+  virtual uint32_t httpResponseTimeout() = 0;
+  virtual void setHttpResponseTimeout(uint32_t timeout) = 0;
 
  protected:
   /** Reset internal state data back to the "just initialised" state
   */
-  virtual void resetState();
-
-  // Client we're using
-  Client* iClient;
-  // Server we are connecting to
-  const char* iServerName;
-  IPAddress iServerAddress;
-  // Port of server we are connecting to
-  uint16_t iServerPort;
-  // Stores the status code for the response, once known
-  int iStatusCode;
-  // Stores the value of the Content-Length header, if present
-  int iContentLength;
-  uint32_t iHttpResponseTimeout;
-  bool iConnectionClose;
+  virtual void resetState() = 0;
 };
 
 #endif
