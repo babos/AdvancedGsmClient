@@ -1,11 +1,8 @@
-#if 0
 #include "HttpClient.h"
-
-namespace advanced {
 
 HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
  : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
-   iConnectionClose(true), iSendDefaultRequestHeaders(true)
+   iConnectionClose(true) //, iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
@@ -15,12 +12,12 @@ HttpClient::HttpClient(Client& aClient, const String& aServerName, uint16_t aSer
 {
 }
 
-HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
- : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
-   iConnectionClose(true), iSendDefaultRequestHeaders(true)
-{
-  resetState();
-}
+// HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
+//  : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
+//    iConnectionClose(true), iSendDefaultRequestHeaders(true)
+// {
+//   resetState();
+// }
 
 int HttpClient::get(const char* aURLPath)
 {
@@ -134,48 +131,45 @@ int HttpClient::del(const char* aURLPath, const char* aContentType, int aContent
 
 // ========================================================
 
-virtual void HttpClient::resetState()
+void HttpClient::resetState()
 {
-  iState = eIdle;
+  //iState = eIdle;
   iStatusCode = 0;
-  iContentLength = kNoContentLengthHeader;
-  iBodyLengthConsumed = 0;
-  iContentLengthPtr = kContentLengthPrefix;
-  iTransferEncodingChunkedPtr = kTransferEncodingChunked;
-  iIsChunked = false;
-  iChunkLength = 0;
-  iHttpResponseTimeout = kHttpResponseTimeout;
+  //iContentLength = kNoContentLengthHeader;
+  //iBodyLengthConsumed = 0;
+  //iContentLengthPtr = kContentLengthPrefix;
+  //iTransferEncodingChunkedPtr = kTransferEncodingChunked;
+  //iIsChunked = false;
+  //iChunkLength = 0;
+  //iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
-virtual void HttpClient::stop()
+void HttpClient::stop()
 {
   iClient->stop();
   resetState();
 }
 
-virtual int HttpClient::responseStatusCode()
+int HttpClient::responseStatusCode()
 {
 }
 
-virtual int HttpClient::contentLength()
+int HttpClient::contentLength()
 {
     // skip the response headers, if they haven't been read already 
-    if (!endOfHeadersReached())
-    {
-        skipResponseHeaders();
-    }
+    // if (!endOfHeadersReached())
+    // {
+    //     skipResponseHeaders();
+    // }
 
     return iContentLength;
 }
 
-virtual String HttpClient::responseBody()
+String HttpClient::responseBody()
 {
 }
 
-virtual bool HttpClient::endOfBodyReached()
-{
-    return false;
-}
-
-}
-#endif
+// bool HttpClient::endOfBodyReached()
+// {
+//     return false;
+// }

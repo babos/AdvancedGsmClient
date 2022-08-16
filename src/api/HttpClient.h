@@ -1,10 +1,15 @@
-#if 0
-#ifndef AdvancedHttpClient_h
-#define AdvancedHttpClient_h
+#ifndef Advanced_HttpClient_h
+#define Advanced_HttpClient_h
 
-#include <arduino::HttpClient.h>
+//#ifndef HTTP_METHOD_GET
+#define HTTP_METHOD_GET    "GET"
+#define HTTP_METHOD_POST   "POST"
+#define HTTP_METHOD_PUT    "PUT"
+#define HTTP_METHOD_PATCH  "PATCH"
+#define HTTP_METHOD_DELETE "DELETE"
 
-namespace advanced {
+#include <Client.h>
+#include <Arduino.h>
 
 class HttpClient
 {
@@ -12,9 +17,9 @@ class HttpClient
   static const int HttpPort = 80;
   static const int HttpsPort = 443;
 
-  HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort = kHttpPort);
-  HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = kHttpPort);
-  HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
+  HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort = HttpPort);
+  HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = HttpPort);
+  //HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
 
   /** Connect to the server and start to send a GET request.
     @param aURLPath     Url to request
@@ -172,7 +177,4 @@ class HttpClient
   bool iConnectionClose;
 };
 
-}
-
-#endif
 #endif
