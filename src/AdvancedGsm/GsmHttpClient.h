@@ -2,12 +2,24 @@
 #define Advanced_GsmHttpClient_h
 
 #include "../api/HttpClient.h"
+#include "GsmTcpClient.h"
+
+enum UrlScheme {
+  SCHEME_UNKNOWN = 0,
+  SCHEME_HTTP = 1,
+  SCHEME_HTTPS = 2,
+};
+
+const char* PREFIX_HTTP = "http://";
+const int8_t PREFIX_HTTP_LENGTH = 7;
+const char* PREFIX_HTTPS = "https://";
+const int8_t PREFIX_HTTPS_LENGTH = 8;
 
 class GsmHttpClient : public HttpClient
 {
  public:
-  GsmHttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort = HttpPort);
-  GsmHttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = HttpPort);
+  GsmHttpClient(GsmTcpClient& aClient, const char* aServerName, uint16_t aServerPort = HttpPort);
+  //GsmHttpClient(GsmTcpClient& aClient, const String& aServerName, uint16_t aServerPort = HttpPort);
   //HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
 
   int get(const char* aURLPath);
@@ -39,7 +51,7 @@ class GsmHttpClient : public HttpClient
                     const char* aHttpMethod,
                     const char* aContentType = NULL,
                     int aContentLength = -1,
-                    const byte aBody[] = NULL);
+                    const byte aBody[] = NULL) = 0;
 
   virtual int responseStatusCode();
 
@@ -52,7 +64,7 @@ class GsmHttpClient : public HttpClient
   virtual String responseBody();
 
   // From Client
-  virtual void stop();
+  virtual void stop() = 0;
   virtual uint8_t connected() { return iClient->connected(); };
   virtual operator bool() { return bool(iClient); };
   virtual uint32_t httpResponseTimeout() { return iHttpResponseTimeout; };
@@ -63,13 +75,16 @@ class GsmHttpClient : public HttpClient
   */
   virtual void resetState();
 
+  //GsmModem& modem;
+  UrlScheme scheme;
+
   // Client we're using
-  Client* iClient;
+  GsmTcpClient* iClient;
   // Server we are connecting to
-  const char* iServerName;
+  const char* server_name;
   IPAddress iServerAddress;
   // Port of server we are connecting to
-  uint16_t iServerPort;
+  uint16_t server_port;
   // Stores the status code for the response, once known
   int iStatusCode;
   // Stores the value of the Content-Length header, if present

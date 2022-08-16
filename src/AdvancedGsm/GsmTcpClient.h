@@ -6,8 +6,8 @@
 
 class GsmTcpClient : public Client {
  public:
-  GsmTcpClient(GsmModem& modem);
-  GsmModem& getModem();
+  // GsmTcpClient(GsmModem& modem);
+  // GsmModem& getModem();
 
   // Client.h implementation
  public:
@@ -24,8 +24,8 @@ class GsmTcpClient : public Client {
   virtual uint8_t connected();
   virtual operator bool();
 
- protected:
-  GsmModem& modem;
+//  protected:
+//   GsmModem& modem;
 };
 
 #endif

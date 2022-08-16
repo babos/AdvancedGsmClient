@@ -1,10 +1,10 @@
 #include "GsmTcpClient.h"
 
-GsmTcpClient::GsmTcpClient(GsmModem& modem) : modem(modem) {}
+// GsmTcpClient::GsmTcpClient(GsmModem& modem) : modem(modem) {}
 
-GsmModem& GsmTcpClient::getModem() {
-  return this->modem;
-}
+// GsmModem& GsmTcpClient::getModem() {
+//   return this->modem;
+// }
 
 // Client.h implementation
 

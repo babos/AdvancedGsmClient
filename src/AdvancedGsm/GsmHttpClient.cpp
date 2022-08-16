@@ -1,16 +1,16 @@
 #include "GsmHttpClient.h"
 
-GsmHttpClient::GsmHttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
- : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
+GsmHttpClient::GsmHttpClient(GsmTcpClient& aClient, const char* aServerName, uint16_t aServerPort)
+ : iClient(&aClient), server_name(aServerName), iServerAddress(), server_port(aServerPort),
    iConnectionClose(true) //, iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
 
-GsmHttpClient::GsmHttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort)
- : GsmHttpClient(aClient, aServerName.c_str(), aServerPort)
-{
-}
+// GsmHttpClient::GsmHttpClient(GsmTcpClient& aClient, const String& aServerName, uint16_t aServerPort)
+//  : GsmHttpClient(aClient, aServerName.c_str(), aServerPort)
+// {
+// }
 
 // GsmHttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
 //  : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
@@ -144,11 +144,11 @@ void GsmHttpClient::resetState()
   //iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
-void GsmHttpClient::stop()
-{
-  iClient->stop();
-  resetState();
-}
+// void GsmHttpClient::stop()
+// {
+//   iClient->stop();
+//   resetState();
+// }
 
 int GsmHttpClient::responseStatusCode()
 {

@@ -3,13 +3,21 @@
 
 #include "../AdvancedGsm/GsmModemCommon.h"
 
+#define GSM_MUX_COUNT 5
+
+class SIM7020HttpClient;
+
 class SIM7020GsmModem : public GsmModemCommon {
+  friend class SIM7020HttpClient;
+
  public:
   explicit SIM7020GsmModem(Stream& stream);
   int8_t getLocalIPs(String addresses[], uint8_t max) override;
   String ICCID() override;
 
  protected:
+  SIM7020HttpClient* http_clients[GSM_MUX_COUNT];
+
   bool connect(const char apn[],
                PacketDataProtocolType pdpType,
                const char username[],

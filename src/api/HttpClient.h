@@ -8,6 +8,26 @@
 #define HTTP_METHOD_PATCH  "PATCH"
 #define HTTP_METHOD_DELETE "DELETE"
 
+// static const int HTTP_SUCCESS =0;
+// // The end of the headers has been reached.  This consumes the '\n'
+// // Could not connect to the server
+// static const int HTTP_ERROR_CONNECTION_FAILED =-1;
+// // This call was made when the HttpClient class wasn't expecting it
+// // to be called.  Usually indicates your code is using the class
+// // incorrectly
+// static const int HTTP_ERROR_API =-2;
+// // Spent too long waiting for a reply
+// static const int HTTP_ERROR_TIMED_OUT =-3;
+// // The response from the server is invalid, is it definitely an HTTP
+// // server?
+// static const int HTTP_ERROR_INVALID_RESPONSE =-4;
+
+#define HTTP_SUCCESS 0;
+#define HTTP_ERROR_CONNECTION_FAILED -1;
+#define HTTP_ERROR_API -2;
+#define HTTP_ERROR_TIMED_OUT -3;
+#define HTTP_ERROR_INVALID_RESPONSE -4;
+
 #include <Client.h>
 #include <Arduino.h>
 

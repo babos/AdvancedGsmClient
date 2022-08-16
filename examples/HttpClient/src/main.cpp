@@ -78,7 +78,7 @@ void connectedLoop() {
   if (now > next_message_ms) {
     next_message_ms = now + SEND_INTERVAL_MS;
 
-    TestTcpClient testTcpClient(modem);
+    TestTcpClient testTcpClient(testModem);
     Client& client = testTcpClient;
 
     // TestHttpClient = testHttpClient(client, server, 80);
