@@ -53,3 +53,28 @@ Some guidelines for writing the code:
 * https://docs.arduino.cc/learn/contributions/arduino-library-style-guide
 * https://docs.arduino.cc/learn/contributions/arduino-writing-style-guide
 * https://isocpp.github.io/CppCoreGuidelines/
+
+## Implementation notes
+
+### M5Stack
+
+
+// M5 Atom NB-IoT DTU, Serial1
+//#define GSM_TX_PIN 22
+//#define GSM_RX_PIN 19
+
+// M5 Atom, PORT.A: GPIO26 I2C0_SDA, GPIO32 I2C0_SCL
+
+// M5 StickC, PORT.A: GPIO32 I2C0_SDA, GPIO33 I2C0_SCL
+
+// M5 Stack Core2, PORT.A (Red): GPIO32 I2C0_SDA, GPIO33 I2C0_SCL
+// M5 Stack Core2, PORT.B (Black): GPIO26 DAC2, GPIO36 ADC1_CH0
+
+// M5 Stack Core2, PORT.C (Blue), Serial2: GPIO14 TXD2, GPIO13 RXD2
+//#define GSM_TX_PIN 14
+//#define GSM_RX_PIN 13
+
+// M5 Stack, PORT.A: GPIO21 I2C0_SDA, GPIO22 I2C0_SCL
+// M5 Stack Fire, PORT.B: GPIO26 DAC2, GPIO36 ADC1_CH0
+
+// M5 Stack, PORT.C: GPIO16 RXD2, GPIO17 TXD2

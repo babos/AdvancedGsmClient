@@ -1,29 +1,12 @@
 #define GSM_BAUDRATE 115200
 
+//#define WAIT_FOR_NON_LOCAL_IPV6
+#define SEND_INTERVAL_MS 5000
+
 // Set serial for AT commands (to the module)
 #ifndef SerialAT
 #define SerialAT Serial1
 #endif
-
-// M5 Atom NB-IoT DTU, Serial1
-//#define GSM_TX_PIN 22
-//#define GSM_RX_PIN 19
-
-// M5 Atom, PORT.A: GPIO26 I2C0_SDA, GPIO32 I2C0_SCL
-
-// M5 StickC, PORT.A: GPIO32 I2C0_SDA, GPIO33 I2C0_SCL
-
-// M5 Stack Core2, PORT.A (Red): GPIO32 I2C0_SDA, GPIO33 I2C0_SCL
-// M5 Stack Core2, PORT.B (Black): GPIO26 DAC2, GPIO36 ADC1_CH0
-
-// M5 Stack Core2, PORT.C (Blue), Serial2: GPIO14 TXD2, GPIO13 RXD2
-//#define GSM_TX_PIN 14
-//#define GSM_RX_PIN 13
-
-// M5 Stack, PORT.A: GPIO21 I2C0_SDA, GPIO22 I2C0_SCL
-// M5 Stack Fire, PORT.B: GPIO26 DAC2, GPIO36 ADC1_CH0
-
-// M5 Stack, PORT.C: GPIO16 RXD2, GPIO17 TXD2
 
 // Set serial for output console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
@@ -34,45 +17,97 @@
 // See all AT commands, if wanted
 #define DUMP_AT_COMMANDS
 
+#include "../../../src/SIM7020/SIM7020TcpClient.h"
 #include "../../../src/SIM7020/SIM7020GsmModem.h"
 
 #include <Arduino.h>
 
-#define ModemDevice SIM7020GsmModem
-//#define ModemDevice SIM7080GsmModem
+#define TestModem SIM7020GsmModem
+#define TestTcpClient SIM7020TcpClient
+#define TestHttpClient SIM7020HttpClient
+
+//#define TestModem SIM7080GsmModem
 
 // Allocate memory for concrete object
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, SerialMon);
-ModemDevice modemDevice(debugger);
+TestModem testModem(debugger);
 #else
-ModemDevice modemDevice(SerialAT);
+TestModem testModem(SerialAT);
 #endif
 
 const char apn[] = "telstra.iot";
-
+int next_message_ms = 0;
 // Access via the API
-GsmModem& modem = modemDevice;
+GsmModem& modem = testModem;
+bool ready = false;
+const char server[] = "v4v6.ipv6-test.com";
 
 void setup() {
   SerialMon.begin(115200);
   delay(5000);
-  SerialMon.print("GsmHttpClient\n(with Arduino framework)\nvia PlatformIO\n");
+  SerialMon.print("HTTP client example\n");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
+
   modem.begin(apn);
-  // modem.test();
-  modemDevice.test();
+}
 
-  String manufacturer = modem.manufacturer();
-  Serial.printf("Manufacturer: %s\n", manufacturer.c_str());
+bool isReady() {
+  // Get non-link-local IP address
+  String addresses[4];
+  int8_t count = modem.getLocalIPs(addresses, 4);
+  for (int8_t index = 0; index < count; index++) {
+#ifdef WAIT_FOR_NON_LOCAL_IPV6
+    if (addresses[index].indexOf(":") > 0 && !addresses[index].startsWith("fe80:")) {
+      return true;
+    }
+#else
+    if (addresses[index] != "127.0.0.1") {
+      return true;
+    }
+#endif
+  }
+  return false;
+}
 
-  modem.sendATCommand(GF("I"));
-  for (size_t i = 0; i < 3; i++) {
-    String line = modem.readResponseLine();
-    Serial.println(line);
+void connectedLoop() {
+  int now = millis();
+  if (now > next_message_ms) {
+    next_message_ms = now + SEND_INTERVAL_MS;
+
+    TestTcpClient testTcpClient(modem);
+    Client& client = testTcpClient;
+
+    // TestHttpClient = testHttpClient(client, server, 80);
+    // HttpClient& http = testHttpClient;
+
+    // int rc = http.get("/api/myip.php");
+    // if (rc != 0) {
+    //   Serial.printf("HTTP GET error: %d", rc);
+    // } else {
+    //   int httpCode = http.responseStatusCode();
+    //   if (httpCode != 200 && httpCode != 301) {
+    //     Serial.printf("HTTP response code error: %d", httpCode);
+    //   } else {
+    //     Serial.printf("HTTP response code: ", httpCode);
+    //     String payload = http.responseBody();
+
+    //     Serial.print("##### PAYLOAD:\n");
+    //     Serial.printf("%s", payload.c_str());
+    //   }
+    // }
+
+    // http.stop();
   }
 }
 
-void loop() {}
+void loop() {
+  if (!ready) {
+    ready = isReady();
+  }
+  if (ready) {
+    connectedLoop();
+  }
+}

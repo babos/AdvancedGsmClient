@@ -18,16 +18,16 @@
 
 #include <Arduino.h>
 
-#define ModemDevice SIM7020GsmModem
-//#define ModemDevice SIM7080GsmModem
+#define TestModem SIM7020GsmModem
+//#define TestModem SIM7080GsmModem
 
 // Allocate memory for concrete object
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, SerialMon);
-ModemDevice modemDevice(debugger);
+TestModem testModem(debugger);
 #else
-ModemDevice modemDevice(SerialAT);
+TestModem testModem(SerialAT);
 #endif
 
 const char apn[] = "telstra.iot";
@@ -37,13 +37,13 @@ const char apn[] = "telstra.iot";
 
 // Access via the API
 int32_t max_report = 0;
-GsmModem& modem = modemDevice;
+GsmModem& modem = testModem;
 int32_t next_report = 0;
 
 void setup() {
   SerialMon.begin(115200);
   delay(5000);
-  SerialMon.print("Modem Info");
+  SerialMon.print("Modem information\n");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
