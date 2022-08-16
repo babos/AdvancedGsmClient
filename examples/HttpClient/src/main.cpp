@@ -17,8 +17,8 @@
 // See all AT commands, if wanted
 #define DUMP_AT_COMMANDS
 
-#include "../../../src/SIM7020/SIM7020TcpClient.h"
 #include "../../../src/SIM7020/SIM7020GsmModem.h"
+#include "../../../src/SIM7020/SIM7020TcpClient.h"
 
 #include <Arduino.h>
 
@@ -60,7 +60,8 @@ bool isReady() {
   int8_t count = modem.getLocalIPs(addresses, 4);
   for (int8_t index = 0; index < count; index++) {
 #ifdef WAIT_FOR_NON_LOCAL_IPV6
-    if (addresses[index].indexOf(":") > 0 && !addresses[index].startsWith("fe80:")) {
+    if (addresses[index].indexOf(":") > 0 &&
+        !addresses[index].startsWith("fe80:")) {
       return true;
     }
 #else

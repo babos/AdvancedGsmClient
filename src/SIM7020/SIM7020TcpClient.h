@@ -3,8 +3,7 @@
 
 #include "../AdvancedGsm/GsmTcpClient.h"
 
-class SIM7020TcpClient : public GsmTcpClient
-{
+class SIM7020TcpClient : public GsmTcpClient {
  public:
   SIM7020TcpClient(GsmModem& modem);
 };

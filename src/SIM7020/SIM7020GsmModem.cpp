@@ -21,15 +21,17 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
   //
   // The "+IPCONFIG" command shows full addresses
   // Before connection, it has a single localhost address "127.0.0.1".
-  // Once the context is connected (as above), it shows: link local IPv6 ("fe80..."), IPv4, and localhost
-  // (It can calculate the link local from the suffix)
-  // After getting the network prefix it then shows four addresses: link local IPv6, then global IPv6, then IPv4, then localhost
+  // Once the context is connected (as above), it shows: link local IPv6
+  // ("fe80..."), IPv4, and localhost (It can calculate the link local from the
+  // suffix) After getting the network prefix it then shows four addresses: link
+  // local IPv6, then global IPv6, then IPv4, then localhost
   //   +IPCONFIG: fe80:0:0:0:719d:1439:899a:42d7
   //   +IPCONFIG: 2001:8004:4810:0:719d:1439:899a:42d7
   //   +IPCONFIG: 10.88.134.167
   //   +IPCONFIG: 127.0.0.1
-  // 
-  // The global IPv6 address has to wait for a router advertisement with the prefix (not exposed in AT commands)
+  //
+  // The global IPv6 address has to wait for a router advertisement with the
+  // prefix (not exposed in AT commands)
 
   this->sendAT(GF("+IPCONFIG"));
 
