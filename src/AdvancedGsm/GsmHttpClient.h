@@ -3,6 +3,7 @@
 
 #include "../api/HttpClient.h"
 #include "GsmTcpClient.h"
+#include "GsmLog.h"
 
 enum UrlScheme {
   SCHEME_UNKNOWN = 0,

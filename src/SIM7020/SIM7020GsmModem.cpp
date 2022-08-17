@@ -1,5 +1,6 @@
 #include "SIM7020GsmModem.h"
 
+#include "../AdvancedGsm/GsmLog.h"
 #include <Arduino.h>
 
 SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
@@ -78,6 +79,8 @@ bool SIM7020GsmModem::connect(const char apn[],
                                   ? "IPV4V6"
                               : PacketDataProtocolType::IPv6 ? "IPV6"
                                                              : "IP";
+
+  ADVGSM_LOG(6, "SIM7200", GF("### Connecting %s %s"), pdpTypeString, apn);
 
   sendAT(GF("+CFUN=0"));
   waitResponse();

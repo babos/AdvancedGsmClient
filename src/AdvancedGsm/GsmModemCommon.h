@@ -2,6 +2,7 @@
 #define Advanced_GsmModemCommon_h
 
 #include "../api/GsmModem.h"
+#include "GsmLog.h"
 
 #include <Stream.h>
 

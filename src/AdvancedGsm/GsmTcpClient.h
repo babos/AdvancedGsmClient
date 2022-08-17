@@ -3,6 +3,8 @@
 
 #include <Client.h>
 #include "../api/GsmModem.h"
+#include "GsmLog.h"
+
 
 class GsmTcpClient : public Client {
  public:
