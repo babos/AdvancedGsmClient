@@ -10,9 +10,6 @@ View result: pio device monitor --baud 115200
 Log settings (set before including modem)
 */
 
-#define ADVGSM_LOG_DESTINATION Serial
-#define ADVGSM_LOG_LEVEL 4
-
 // See all AT commands, if wanted
 #define DUMP_AT_COMMANDS
 
@@ -50,7 +47,7 @@ Sample code
 const char apn[] = "telstra.iot";
 const char server[] = "v4v6.ipv6-test.com";
 
-
+#include "../../../src/AdvancedGsm/GsmLog.h"
 #include <Arduino.h>
 
 //#define WAIT_FOR_NON_LOCAL_IPV6
@@ -71,11 +68,13 @@ GsmModem& modem = testModem;
 bool ready = false;
 
 void setup() {
+#ifdef ADVGSM_LOG_ENABLED
+AdvancedGsmLog.Log = &SerialMon;
+#endif
   SerialMon.begin(115200);
   delay(5000);
   SerialMon.print("HTTP client example\n");
-  ADVGSM_LOGI("MAIN", "Start");
-  ADVGSM_LOGI("MAIN", "at %d", millis());
+  ADVGSM_LOG(6, "MAIN", "Started at %d", millis());
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
@@ -114,13 +113,13 @@ void connectedLoop() {
 
     int rc = http.get("/api/myip.php");
     if (rc != 0) {
-      Serial.printf("HTTP GET error: %d", rc);
+      Serial.printf("HTTP GET error: %d\n", rc);
     } else {
       int httpCode = http.responseStatusCode();
       if (httpCode != 200 && httpCode != 301) {
-        Serial.printf("HTTP response code error: %d", httpCode);
+        Serial.printf("HTTP response code error: %d\n", httpCode);
       } else {
-        Serial.printf("HTTP response code: ", httpCode);
+        Serial.printf("HTTP response code: %d\n", httpCode);
         String payload = http.responseBody();
 
         Serial.print("##### PAYLOAD:\n");
