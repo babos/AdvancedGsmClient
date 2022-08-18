@@ -264,5 +264,5 @@ int8_t GsmModemCommon::waitResponse(uint32_t timeout_ms,
                                     GsmConstStr r3,
                                     GsmConstStr r4,
                                     GsmConstStr r5) {
-  return waitResponseDevice(timeout_ms, data, r1, r2, r3, r4, r5);
+  return checkResponse(timeout_ms, data, r1, r2, r3, r4, r5);
 }

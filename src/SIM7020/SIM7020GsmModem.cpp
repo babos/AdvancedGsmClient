@@ -80,7 +80,7 @@ bool SIM7020GsmModem::connect(const char apn[],
                               : PacketDataProtocolType::IPv6 ? "IPV6"
                                                              : "IP";
 
-  ADVGSM_LOG(6, "SIM7200", GF("### Connecting %s %s"), pdpTypeString, apn);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("### Connecting %s %s"), pdpTypeString, apn);
 
   sendAT(GF("+CFUN=0"));
   waitResponse();
@@ -113,35 +113,10 @@ bool SIM7020GsmModem::connect(const char apn[],
   }
   waitResponse();
 
-  // // Check signal strength
-  // sendAT(GF("+CSQ"));
-  // if (waitResponse() != 1) { return false; }
-
-  // // Check attached
-  // sendAT(GF("+CGATT?"));
-  // if (waitResponse() != 1) { return false; }
-
-  // // Check operator
-  // sendAT(GF("+COPS?"));
-  // if (waitResponse() != 1) { return false; }
-
-  // sendAT(GF("+CGREG?"));
-  // res = waitResponse(20000L, GF(GSM_NL "+CGREG: 0,1"));
-  // waitResponse();
-  // res = waitForNetwork(60000, true);
-  // delay(100);
-
-  // // Check registeration details
-  // sendAT(GF("+CGCONTRDP"));
-  // if (waitResponse() != 1) { return false; }
-
   return true;
 }
 
 bool SIM7020GsmModem::reset() {
-  //    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
-  //    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientSIM7020"));
-
   //    if (!testAT()) { return false; }
 
   sendAT(GF("Z"));  // Reset (to user settings)
@@ -157,8 +132,6 @@ bool SIM7020GsmModem::reset() {
   // TODO: Support error codes
   sendAT(GF("+CMEE=0"));  // turn off error codes
   waitResponse();
-
-  //  DBG(GF("### Modem:"), getModemName());
 
   // Enable Local Time Stamp for getting network time
   sendAT(GF("+CLTS=1"));
@@ -191,7 +164,7 @@ bool SIM7020GsmModem::reset() {
   return true;
 }
 
-int8_t SIM7020GsmModem::waitResponseDevice(uint32_t timeout_ms,
+int8_t SIM7020GsmModem::checkResponse(uint32_t timeout_ms,
                                            String& data,
                                            GsmConstStr r1,
                                            GsmConstStr r2,
@@ -206,7 +179,7 @@ int8_t SIM7020GsmModem::waitResponseDevice(uint32_t timeout_ms,
   DBG("### ..:", r1s, ",", r2s, ",", r3s, ",", r4s, ",", r5s);*/
   data.reserve(64);
   uint8_t index = 0;
-  uint32_t startMillis = millis();
+  uint32_t finish_millis = millis() + timeout_ms;
   do {
     TINY_GSM_YIELD();
     while (this->stream.available() > 0) {
@@ -214,6 +187,7 @@ int8_t SIM7020GsmModem::waitResponseDevice(uint32_t timeout_ms,
       int8_t a = stream.read();
       if (a <= 0)
         continue;  // Skip 0x00 bytes, just in case
+
       data += static_cast<char>(a);
       if (r1 && data.endsWith(r1)) {
         index = 1;
@@ -235,33 +209,43 @@ int8_t SIM7020GsmModem::waitResponseDevice(uint32_t timeout_ms,
       } else if (r5 && data.endsWith(r5)) {
         index = 5;
         goto finish;
-      } else if (data.endsWith(GF("+CLTS:"))) {
-        //        streamSkipUntil('\n');  // Refresh time and time zone by
-        //        network
-        data = "";
-        //        DBG("### Unsolicited local timestamp.");
-      } else if (data.endsWith(GF("+CTZV:"))) {
-        //        streamSkipUntil('\n');  // Refresh network time zone by
-        //        network
-        data = "";
-        //        DBG("### Unsolicited time zone updated.");
-      } else if (data.endsWith(GF(GSM_NL "SMS Ready" GSM_NL))) {
-        data = "";
-        //        DBG("### Unexpected module reset!");
-        //        init();
-        data = "";
+      } else {
+        checkUnsolicitedResponse(data);
       }
     }
-  } while (millis() - startMillis < timeout_ms);
+  } while (millis() < finish_millis);
 finish:
   if (!index) {
     data.trim();
     if (data.length()) {
-      //      DBG("### Unhandled:", data);
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "### Unhandled: %s", data.c_str());
     }
     data = "";
   }
   // data.replace(GSM_NL, "/");
   // DBG('<', index, '>', data);
   return index;
+}
+
+bool SIM7020GsmModem::checkUnsolicitedResponse(String &data) {
+  if (data.endsWith(GF("+CLTS:"))) {
+    //        streamSkipUntil('\n');  // Refresh time and time zone by
+    //        network
+    data = "";
+    //        DBG("### Unsolicited local timestamp.");
+    return true;
+  } else if (data.endsWith(GF("+CTZV:"))) {
+    //        streamSkipUntil('\n');  // Refresh network time zone by
+    //        network
+    data = "";
+    //        DBG("### Unsolicited time zone updated.");
+    return true;
+  } else if (data.endsWith(GF(GSM_NL "SMS Ready" GSM_NL))) {
+    data = "";
+    //        DBG("### Unexpected module reset!");
+    //        init();
+    data = "";
+    return true;
+  }
+  return false;
 }

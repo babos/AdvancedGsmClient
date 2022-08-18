@@ -19,13 +19,13 @@ int SIM7020HttpClient::startRequest(const char* url_path,
                                     const char* content_type,
                                     int content_length,
                                     const byte body[]) {
-  ADVGSM_LOG(6, "SIM7200", GF("### HTTP %s %s"), http_method, url_path);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("### HTTP %s %s"), http_method, url_path);
 
   // Connect if needed
   if (!is_connected) {
     // Create if needed
     if (this->http_client_id == -1) {
-      ADVGSM_LOG(7, "SIM7200", GF("### HTTP creating"));
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("### HTTP creating"));
 
       // Create
       if (scheme == SCHEME_HTTP) {
@@ -43,7 +43,7 @@ int SIM7020HttpClient::startRequest(const char* url_path,
         return HTTP_ERROR_API;
       }
       int8_t http_client_id = this->modem.streamGetIntBefore('\n');
-      ADVGSM_LOG(7, "SIM7200", GF("### HTTP client created:"), http_client_id);
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("### HTTP client created:"), http_client_id);
       if (this->modem.waitResponse() != 1) {
         return HTTP_ERROR_API;
       }
@@ -53,7 +53,7 @@ int SIM7020HttpClient::startRequest(const char* url_path,
       this->modem.http_clients[this->http_client_id] = this;
     }
 
-    ADVGSM_LOG(7, "SIM7200", GF("### HTTP connecting"), http_client_id);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("### HTTP connecting"), http_client_id);
 
     // Connect
     this->modem.sendAT(GF("+CHTTPCON="), this->http_client_id);

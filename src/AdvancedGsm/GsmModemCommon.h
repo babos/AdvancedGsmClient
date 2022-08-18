@@ -64,7 +64,7 @@ class GsmModemCommon : public GsmModem {
 
   // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
   // 1000L):
-  virtual int8_t waitResponseDevice(uint32_t timeout_ms,
+  virtual int8_t checkResponse(uint32_t timeout_ms,
                                     String& data,
                                     GsmConstStr r1 = GFP(GSM_OK),
                                     GsmConstStr r2 = GFP(GSM_ERROR),

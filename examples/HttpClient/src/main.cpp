@@ -74,7 +74,7 @@ void setup() {
   SerialMon.begin(115200);
   delay(5000);
   SerialMon.print("HTTP client example\n");
-  ADVGSM_LOG(6, "MAIN", "Started at %d", millis());
+  ADVGSM_LOG(GsmSeverity::Info, "main", "Started at %d", millis());
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
