@@ -154,8 +154,32 @@ int GsmHttpClient::del(const char* aURLPath,
 // ========================================================
 
 bool GsmHttpClient::completed() {
-  return false;
+  return body_completed;
 }
+
+uint8_t GsmHttpClient::connected() {
+  return client->connected();
+};
+
+// void GsmHttpClient::stop()
+// {
+//   iClient->stop();
+//   resetState();
+// }
+
+int GsmHttpClient::contentLength() {
+  // skip the response headers, if they haven't been read already
+  // if (!endOfHeadersReached())
+  // {
+  //     skipResponseHeaders();
+  // }
+
+  return content_length;
+}
+
+uint32_t GsmHttpClient::httpResponseTimeout() {
+  return this->http_response_timeout;
+};
 
 void GsmHttpClient::resetState() {
   // iState = eIdle;
@@ -169,11 +193,16 @@ void GsmHttpClient::resetState() {
   // iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
-// void GsmHttpClient::stop()
-// {
-//   iClient->stop();
-//   resetState();
-// }
+String GsmHttpClient::responseBody() {
+  unsigned long timeout_end = millis() + this->http_response_timeout;
+  while (!this->body_completed) {
+    if (millis() > timeout_end) {
+      return String((const char*)NULL);
+    }
+    getModem().waitResponse(GSM_HTTP_RESPONSE_WAIT);
+  }
+  return String(this->body);
+}
 
 int GsmHttpClient::responseStatusCode() {
   unsigned long timeout_end = millis() + this->http_response_timeout;
@@ -186,28 +215,15 @@ int GsmHttpClient::responseStatusCode() {
   return response_status_code;
 }
 
-int GsmHttpClient::contentLength() {
-  // skip the response headers, if they haven't been read already
-  // if (!endOfHeadersReached())
-  // {
-  //     skipResponseHeaders();
-  // }
-
-  return content_length;
-}
-
-String GsmHttpClient::responseBody() {
-  unsigned long timeout_end = millis() + this->http_response_timeout;
-  while (!this->body_completed) {
-    if (millis() > timeout_end) {
-      return String((const char*)NULL);
-    }
-    getModem().waitResponse(GSM_HTTP_RESPONSE_WAIT);
-  }
-  return String(this->body);
-}
+void GsmHttpClient::setHttpResponseTimeout(uint32_t timeout) {
+  this->http_response_timeout = timeout;
+};
 
 // bool GsmHttpClient::endOfBodyReached()
 // {
 //     return false;
 // }
+
+GsmHttpClient::operator bool() {
+  return bool(client);
+};

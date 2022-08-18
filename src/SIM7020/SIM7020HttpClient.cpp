@@ -10,11 +10,27 @@ SIM7020HttpClient::SIM7020HttpClient(SIM7020TcpClient& client,
   this->scheme = https ? SCHEME_HTTPS : SCHEME_HTTP;
 }
 
+uint8_t SIM7020HttpClient::connected() {
+  return is_connected;
+};
+
 SIM7020GsmModem& SIM7020HttpClient::getModem() {
   return this->modem;
 }
 
-// Protected
+bool SIM7020HttpClient::setClientCA(const String& certificate) {
+  this->server_ca = certificate.c_str();
+  return true;
+}
+
+bool SIM7020HttpClient::setClientPrivateKey(const String& certificate) {
+  this->client_certificate = certificate.c_str();
+  return true;
+}
+
+bool SIM7020HttpClient::setRootCA(const String& certificate) {
+  this->client_private_key = certificate.c_str();
+}
 
 int SIM7020HttpClient::startRequest(const char* url_path,
                                     const char* http_method,
