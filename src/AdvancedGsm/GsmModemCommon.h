@@ -55,7 +55,7 @@ class GsmModemCommon : public GsmModem {
                        PacketDataProtocolType pdpType,
                        const char username[],
                        const char password[]) = 0;
-  //inline int16_t streamGetIntBefore(char lastChar);
+  // inline int16_t streamGetIntBefore(char lastChar);
   virtual int16_t streamGetIntBefore(char lastChar);
   inline bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);
   virtual bool reset() = 0;

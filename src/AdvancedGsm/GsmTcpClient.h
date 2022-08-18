@@ -5,7 +5,6 @@
 #include "../api/GsmModem.h"
 #include "GsmLog.h"
 
-
 class GsmTcpClient : public Client {
  public:
   // GsmTcpClient(GsmModem& modem);
@@ -26,8 +25,8 @@ class GsmTcpClient : public Client {
   virtual uint8_t connected();
   virtual operator bool();
 
-//  protected:
-//   GsmModem& modem;
+  //  protected:
+  //   GsmModem& modem;
 };
 
 #endif

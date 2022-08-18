@@ -47,8 +47,8 @@ Sample code
 const char apn[] = "telstra.iot";
 const char server[] = "v4v6.ipv6-test.com";
 
-#include "../../../src/AdvancedGsm/GsmLog.h"
 #include <Arduino.h>
+#include "../../../src/AdvancedGsm/GsmLog.h"
 
 //#define WAIT_FOR_NON_LOCAL_IPV6
 #define SEND_INTERVAL_MS 5000
@@ -69,7 +69,7 @@ bool ready = false;
 
 void setup() {
 #ifdef ADVGSM_LOG_ENABLED
-AdvancedGsmLog.Log = &SerialMon;
+  AdvancedGsmLog.Log = &SerialMon;
 #endif
   SerialMon.begin(115200);
   delay(5000);
@@ -106,7 +106,7 @@ void connectedLoop() {
     next_message_ms = now + SEND_INTERVAL_MS;
 
     TestTcpClient testTcpClient(testModem);
-    //Client& client = testTcpClient;
+    // Client& client = testTcpClient;
 
     TestHttpClient testHttpClient(testTcpClient, server, 80);
     HttpClient& http = testHttpClient;

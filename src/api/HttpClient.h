@@ -2,10 +2,10 @@
 #define Advanced_HttpClient_h
 
 //#ifndef HTTP_METHOD_GET
-#define HTTP_METHOD_GET    "GET"
-#define HTTP_METHOD_POST   "POST"
-#define HTTP_METHOD_PUT    "PUT"
-#define HTTP_METHOD_PATCH  "PATCH"
+#define HTTP_METHOD_GET "GET"
+#define HTTP_METHOD_POST "POST"
+#define HTTP_METHOD_PUT "PUT"
+#define HTTP_METHOD_PATCH "PATCH"
 #define HTTP_METHOD_DELETE "DELETE"
 
 // static const int HTTP_SUCCESS =0;
@@ -28,11 +28,10 @@
 #define HTTP_ERROR_TIMED_OUT -3;
 #define HTTP_ERROR_INVALID_RESPONSE -4;
 
-#include <Client.h>
 #include <Arduino.h>
+#include <Client.h>
 
-class HttpClient
-{
+class HttpClient {
  public:
   static const int HttpPort = 80;
   static const int HttpsPort = 443;
@@ -58,9 +57,16 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  virtual int post(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
-  virtual int post(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
-  virtual int post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
+  virtual int post(const char* aURLPath,
+                   const char* aContentType,
+                   const char* aBody) = 0;
+  virtual int post(const String& aURLPath,
+                   const String& aContentType,
+                   const String& aBody) = 0;
+  virtual int post(const char* aURLPath,
+                   const char* aContentType,
+                   int aContentLength,
+                   const byte aBody[]) = 0;
 
   /** Connect to the server and start to send a PUT request.
     @param aURLPath     Url to request
@@ -76,9 +82,16 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  virtual int put(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
-  virtual int put(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
-  virtual int put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
+  virtual int put(const char* aURLPath,
+                  const char* aContentType,
+                  const char* aBody) = 0;
+  virtual int put(const String& aURLPath,
+                  const String& aContentType,
+                  const String& aBody) = 0;
+  virtual int put(const char* aURLPath,
+                  const char* aContentType,
+                  int aContentLength,
+                  const byte aBody[]) = 0;
 
   /** Connect to the server and start to send a PATCH request.
     @param aURLPath     Url to request
@@ -94,9 +107,16 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  virtual int patch(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
-  virtual int patch(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
-  virtual int patch(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
+  virtual int patch(const char* aURLPath,
+                    const char* aContentType,
+                    const char* aBody) = 0;
+  virtual int patch(const String& aURLPath,
+                    const String& aContentType,
+                    const String& aBody) = 0;
+  virtual int patch(const char* aURLPath,
+                    const char* aContentType,
+                    int aContentLength,
+                    const byte aBody[]) = 0;
 
   /** Connect to the server and start to send a DELETE request.
     @param aURLPath     Url to request
@@ -112,26 +132,35 @@ class HttpClient
     @param aBody        Body of the request
     @return 0 if successful, else error
   */
-  virtual int del(const char* aURLPath, const char* aContentType, const char* aBody) = 0;
-  virtual int del(const String& aURLPath, const String& aContentType, const String& aBody) = 0;
-  virtual int del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]) = 0;
+  virtual int del(const char* aURLPath,
+                  const char* aContentType,
+                  const char* aBody) = 0;
+  virtual int del(const String& aURLPath,
+                  const String& aContentType,
+                  const String& aBody) = 0;
+  virtual int del(const char* aURLPath,
+                  const char* aContentType,
+                  int aContentLength,
+                  const byte aBody[]) = 0;
 
   // ================================================================
 
   /** Connect to the server and start to send the request.
-      If a body is provided, the entire request (including headers and body) will be sent
+      If a body is provided, the entire request (including headers and body)
+    will be sent
     @param aURLPath        Url to request
-    @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST", etc.
+    @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST",
+    etc.
     @param aContentType    Content type of request body (optional)
     @param aContentLength  Length of request body (optional)
     @param aBody           Body of request (optional)
     @return 0 if successful, else error
   */
   virtual int startRequest(const char* aURLPath,
-                    const char* aHttpMethod,
-                    const char* aContentType = NULL,
-                    int aContentLength = -1,
-                    const byte aBody[] = NULL) = 0;
+                           const char* aHttpMethod,
+                           const char* aContentType = NULL,
+                           int aContentLength = -1,
+                           const byte aBody[] = NULL) = 0;
 
   /** Get the HTTP status code contained in the response.
     For example, 200 for successful request, 404 for file not found, etc.
@@ -143,7 +172,7 @@ class HttpClient
     read the header value
     MUST be called after responseStatusCode() and before contentLength()
   */
-//  virtual bool headerAvailable() = 0;
+  //  virtual bool headerAvailable() = 0;
 
   /** Test whether the end of the body has been reached.
     Only works if the Content-Length header was returned by the server
@@ -175,7 +204,7 @@ class HttpClient
 
  protected:
   /** Reset internal state data back to the "just initialised" state
-  */
+   */
   virtual void resetState() = 0;
 };
 

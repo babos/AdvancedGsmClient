@@ -1,7 +1,7 @@
 #include "SIM7020GsmModem.h"
 
-#include "../AdvancedGsm/GsmLog.h"
 #include <Arduino.h>
+#include "../AdvancedGsm/GsmLog.h"
 
 SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
