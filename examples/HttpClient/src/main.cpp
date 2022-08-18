@@ -11,7 +11,7 @@ Log settings (set before including modem)
 */
 
 // See all AT commands, if wanted
-#define DUMP_AT_COMMANDS
+//#define DUMP_AT_COMMANDS
 
 /*
 Modem device
