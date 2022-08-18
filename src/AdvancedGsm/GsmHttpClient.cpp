@@ -198,7 +198,7 @@ int GsmHttpClient::contentLength() {
 
 String GsmHttpClient::responseBody() {
   unsigned long timeout_end = millis() + this->http_response_timeout;
-  while (!this->body_complete) {
+  while (!this->body_completed) {
     if (millis() > timeout_end) {
       return String((const char*)NULL);
     }

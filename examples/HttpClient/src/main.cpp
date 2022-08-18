@@ -93,6 +93,7 @@ bool isReady() {
     }
 #else
     if (addresses[index] != "127.0.0.1") {
+      ADVGSM_LOG(GsmSeverity::Info, "main", "Ready with address %s", addresses[index].c_str());
       return true;
     }
 #endif
@@ -122,8 +123,8 @@ void connectedLoop() {
         Serial.printf("HTTP response code: %d\n", httpCode);
         String payload = http.responseBody();
 
-        Serial.print("##### PAYLOAD:\n");
-        Serial.printf("%s", payload.c_str());
+        Serial.print("\n##### PAYLOAD:\n");
+        Serial.printf("%s\n\n", payload.c_str());
       }
     }
 

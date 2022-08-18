@@ -32,6 +32,7 @@ class SIM7020GsmModem : public GsmModemCommon {
   bool reset() override;
   
  private:
+  bool checkUnsolicitedHttpResponse(String &data);
   bool checkUnsolicitedResponse(String &data);
 };
 

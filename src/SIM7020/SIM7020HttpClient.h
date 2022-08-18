@@ -7,6 +7,8 @@
 #include "SIM7020TcpClient.h"
 
 class SIM7020HttpClient : public GsmHttpClient {
+  friend class SIM7020GsmModem;
+
  public:
   explicit SIM7020HttpClient(SIM7020TcpClient& client,
                              const char* server_name,

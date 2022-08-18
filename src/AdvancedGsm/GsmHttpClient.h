@@ -114,13 +114,13 @@ class GsmHttpClient : public HttpClient {
   virtual void resetState();
 
   char body[GSM_HTTP_BODY_BUFFER] = {0};
-  bool body_complete = false;
+  bool body_completed = false;
   GsmTcpClient* client;
   // bool iConnectionClose;
   int content_length;
   char headers[GSM_HTTP_HEADER_BUFFER] = {0};
   uint32_t http_response_timeout = GSM_HTTP_RESPONSE_TIMEOUT_DEFAULT;
-  int response_status_code;
+  int response_status_code = 0;
   UrlScheme scheme;
   // IPAddress iServerAddress;
   const char* server_name;
