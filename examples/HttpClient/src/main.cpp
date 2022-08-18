@@ -12,6 +12,7 @@ Log settings (set before including modem)
 
 // See all AT commands, if wanted
 //#define DUMP_AT_COMMANDS
+//#define LOG_OUTPUT Serial
 
 /*
 Modem device
@@ -50,7 +51,7 @@ const char server[] = "v4v6.ipv6-test.com";
 #include <Arduino.h>
 #include "../../../src/AdvancedGsm/GsmLog.h"
 
-//#define WAIT_FOR_NON_LOCAL_IPV6
+#define WAIT_FOR_NON_LOCAL_IPV6
 #define SEND_INTERVAL_MS 5000
 
 // Allocate memory for concrete object
@@ -69,11 +70,13 @@ bool ready = false;
 
 void setup() {
 #ifdef ADVGSM_LOG_ENABLED
-  AdvancedGsmLog.Log = &SerialMon;
+#ifdef LOG_OUTPUT
+  AdvancedGsmLog.Log = &LOG_OUTPUT;
+#endif
 #endif
   SerialMon.begin(115200);
   delay(5000);
-  SerialMon.printf("HTTP client example started at %d\n", millis());
+  SerialMon.printf("### HTTP client example started at %d\n", millis());
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
@@ -104,8 +107,7 @@ bool isReady() {
 void connectedLoop() {
   int now = millis();
   if (now > next_message_ms) {
-    next_message_ms = now + SEND_INTERVAL_MS;
-
+    Serial.printf("Testing HTTP to: %s\n", server);
     TestTcpClient testTcpClient(testModem);
     // Client& client = testTcpClient;
 
@@ -128,6 +130,7 @@ void connectedLoop() {
     }
 
     http.stop();
+    next_message_ms = millis() + SEND_INTERVAL_MS;
   }
 }
 
