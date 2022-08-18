@@ -50,7 +50,10 @@ class GsmModem {
   // RSSI is in dBm
   virtual int32_t RSSI() = 0;
   //  virtual uint8_t status() = 0
-  virtual void sendATCommand(const char command[]);
+  virtual void sendATCommand(const char command[]) = 0;
+  virtual bool setClientCA(const String& certificate) = 0;
+  virtual bool setClientPrivateKey(const String& certificate) = 0;
+  virtual bool setRootCA(const String& certificate) = 0;
 };
 
 #endif

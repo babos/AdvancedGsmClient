@@ -13,14 +13,10 @@ enum UrlScheme {
 };
 
 // const char* GSM_PREFIX_HTTP = "http://";
-// const int8_t GSM_PREFIX_HTTP_LENGTH = 7;
 // const char* GSM_PREFIX_HTTPS = "https://";
-// const int8_t GSM_PREFIX_HTTPS_LENGTH = 8;
 
 #define GSM_PREFIX_HTTP "http://"
-#define GSM_PREFIX_HTTP_LENGTH 7
 #define GSM_PREFIX_HTTPS "https://"
-#define GSM_PREFIX_HTTPS_LENGTH 8
 
 #define GSM_HTTP_HEADER_BUFFER 500
 #define GSM_HTTP_BODY_BUFFER 2000

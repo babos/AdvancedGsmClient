@@ -12,7 +12,8 @@ class SIM7020HttpClient : public GsmHttpClient {
  public:
   explicit SIM7020HttpClient(SIM7020TcpClient& client,
                              const char* server_name,
-                             uint16_t server_port = 80);
+                             uint16_t server_port = 80,
+                             bool https = false);
   SIM7020GsmModem& getModem() override;
 
  protected:

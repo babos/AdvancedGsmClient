@@ -82,7 +82,8 @@ bool SIM7020GsmModem::connect(const char apn[],
                               : PacketDataProtocolType::IPv6 ? "IPV6"
                                                              : "IP";
 
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"), pdpTypeString, apn);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"),
+             pdpTypeString, apn);
 
   sendAT(GF("+CFUN=0"));
   waitResponse();
@@ -123,7 +124,7 @@ bool SIM7020GsmModem::reset() {
   //    if (!testAT()) { return false; }
 
   sendAT(GF("Z"));  // Reset (to user settings)
-  if (waitResponse(5000) != 1) {
+  if (waitResponse(30000) != 1) {
     return false;
   }
 
@@ -168,12 +169,12 @@ bool SIM7020GsmModem::reset() {
 }
 
 int8_t SIM7020GsmModem::checkResponse(uint32_t timeout_ms,
-                                           String& data,
-                                           GsmConstStr r1,
-                                           GsmConstStr r2,
-                                           GsmConstStr r3,
-                                           GsmConstStr r4,
-                                           GsmConstStr r5) {
+                                      String& data,
+                                      GsmConstStr r1,
+                                      GsmConstStr r2,
+                                      GsmConstStr r3,
+                                      GsmConstStr r4,
+                                      GsmConstStr r5) {
   /*String r1s(r1); r1s.trim();
   String r2s(r2); r2s.trim();
   String r3s(r3); r3s.trim();
@@ -213,8 +214,10 @@ int8_t SIM7020GsmModem::checkResponse(uint32_t timeout_ms,
         index = 5;
         goto finish;
       } else {
-        if (checkUnsolicitedResponse(data)) continue;
-        if (checkUnsolicitedHttpResponse(data)) continue;
+        if (checkUnsolicitedResponse(data))
+          continue;
+        if (checkUnsolicitedHttpResponse(data))
+          continue;
       }
     }
   } while (millis() < finish_millis);
@@ -231,72 +234,83 @@ finish:
   return index;
 }
 
-bool SIM7020GsmModem::checkUnsolicitedHttpResponse(String &data) {
+bool SIM7020GsmModem::checkUnsolicitedHttpResponse(String& data) {
   if (data.endsWith(GF("+CHTTPNMIH:"))) {
     int8_t http_client_id = streamGetIntBefore(',');
-    SIM7020HttpClient& http_client = *http_clients[http_client_id];
+    SIM7020HttpClient* http_client = http_clients[http_client_id];
     int16_t response_code = streamGetIntBefore(',');
-    http_client.response_status_code = response_code;
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d got response code %d", http_client_id, response_code);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d got response code %d",
+               http_client_id, response_code);
+    if (http_client != nullptr) {
+      http_client->response_status_code = response_code;
+    }
     int16_t header_length = streamGetIntBefore(',');
     if (header_length > 0) {
       for (int i = 0; i < header_length; i++) {
         uint32_t startMillis = millis();
-        while (!stream.available() &&
-              (millis() - startMillis < 1000)) {
+        while (!stream.available() && (millis() - startMillis < 1000)) {
           TINY_GSM_YIELD();
         }
         char c = stream.read();
-        if (http_client != NULL) {
-          http_client.headers[i] = c;
+        if (http_client != nullptr) {
+          http_client->headers[i] = c;
         }
       }
-      http_client.headers[header_length] = '\0';
+      http_client->headers[header_length] = '\0';
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d header length %d", http_client_id, header_length);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d header length %d",
+               http_client_id, header_length);
     data = "";
     return true;
   } else if (data.endsWith(GF("+CHTTPNMIC:"))) {
     int8_t http_client_id = streamGetIntBefore(',');
-    SIM7020HttpClient& http_client = *http_clients[http_client_id];
+    SIM7020HttpClient* http_client = http_clients[http_client_id];
     int16_t more_flag = streamGetIntBefore(',');
     int16_t content_length = streamGetIntBefore(',');
     int16_t package_length = streamGetIntBefore(',');
     if (package_length > 0) {
-      int16_t previous_data_length = strlen(http_client.body);
-      char hex[3] = { 0, 0, 0 };
-      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d reading hex %d to %d ", http_client_id, previous_data_length, previous_data_length + package_length);
-      for (int i = previous_data_length; i < previous_data_length + package_length; i++) {
+      int16_t previous_data_length = strlen(http_client->body);
+      char hex[3] = {0, 0, 0};
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d reading hex %d to %d ",
+                 http_client_id, previous_data_length,
+                 previous_data_length + package_length);
+      for (int i = previous_data_length;
+           i < previous_data_length + package_length; i++) {
         uint32_t startMillis = millis();
-        while (!stream.available() &&
-              (millis() - startMillis < 1000)) {
+        while (!stream.available() && (millis() - startMillis < 1000)) {
           TINY_GSM_YIELD();
         }
         hex[0] = stream.read();
         hex[1] = stream.read();
-        if (http_client) {
-          http_client.body[i] = strtol(hex, NULL, 16);
+        if (http_client != nullptr) {
+          http_client->body[i] = strtol(hex, NULL, 16);
         }
       }
-      http_client.body[previous_data_length + package_length] = '\0';
+      http_client->body[previous_data_length + package_length] = '\0';
     }
-    if (more_flag == 0) { 
-      http_client.body_completed = true;
+    if (more_flag == 0) {
+      http_client->body_completed = true;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d got content length %d (more %d)", http_client_id, package_length, more_flag);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+               "HTTP %d got content length %d (more %d)", http_client_id,
+               package_length, more_flag);
     data = "";
     return true;
   } else if (data.endsWith(GF("+CHTTPERR:"))) {
     int8_t http_client_id = streamGetIntBefore(',');
     int8_t error_code = streamGetIntBefore('\n');
-    SIM7020HttpClient& http_client = *http_clients[http_client_id];
-    http_client.is_connected = false;
+    SIM7020HttpClient* http_client = http_clients[http_client_id];
+    http_client->is_connected = false;
     if (http_client_id >= 0) {
       if (error_code == -2) {
-        // <error code> -2 = closed by remote host (expected automatic disconnection)
-        ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "HTTP %d closed by remote host", http_client_id);
+        // <error code> -2 = closed by remote host (expected automatic
+        // disconnection)
+        ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+                   "HTTP %d closed by remote host", http_client_id);
       } else {
-        ADVGSM_LOG(GsmSeverity::Error, "SIM7200", "### HTTP %d closed with error: %d", http_client_id, error_code);
+        ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
+                   "### HTTP %d closed with error: %d", http_client_id,
+                   error_code);
       }
     }
     data = "";
@@ -305,7 +319,7 @@ bool SIM7020GsmModem::checkUnsolicitedHttpResponse(String &data) {
   return false;
 }
 
-bool SIM7020GsmModem::checkUnsolicitedResponse(String &data) {
+bool SIM7020GsmModem::checkUnsolicitedResponse(String& data) {
   if (data.endsWith(GF("+CLTS:"))) {
     //        streamSkipUntil('\n');  // Refresh time and time zone by
     //        network
@@ -326,4 +340,86 @@ bool SIM7020GsmModem::checkUnsolicitedResponse(String &data) {
     return true;
   }
   return false;
+}
+
+bool SIM7020GsmModem::setCertificate(int8_t type, const char* certificate, int8_t connection_id) {
+  /*  type 0 : Root CA
+      type 1 : Client CA
+      type 2 : Client Private Key
+  */
+  const int16_t chunk_size = 500;
+  if (certificate == NULL) {
+    return false;
+  }
+
+  int16_t length = strlen_P(certificate);
+  int16_t count_escaped = 0;
+  for (int16_t i = 0; i < length; i++) {
+    if (certificate[i] == '\r' || certificate[i] == '\n') {
+      count_escaped++;
+    }
+  }
+  int16_t total_length = length + count_escaped;
+  int8_t is_more = 1;
+  int16_t index = 0;
+  int16_t chunk_end = 0;
+  char c = '\0';
+
+  while (index < length) {
+    chunk_end += chunk_size;
+    if (chunk_end >= length) {
+      chunk_end = length;
+      is_more = 0;
+    }
+
+    if (connection_id == -1) {
+      stream.print(GF("AT+CSETCA="));
+      stream.print(type);
+      stream.print(',');
+      stream.print(total_length);
+      stream.print(',');
+      stream.print(is_more);
+      stream.print(",0,\"");
+    } else {
+      int8_t mux_type = 6 + type;
+      stream.print(GF("AT+CTLSCFG="));
+      stream.print(connection_id);
+      stream.print(',');
+      stream.print(mux_type);
+      stream.print(',');
+      stream.print(total_length);
+      stream.print(',');
+      stream.print(is_more);
+      stream.print(",\"");
+    }
+    while (index < chunk_end) {
+      c = certificate[index];
+      if (c == '\r') {
+        stream.print("\\r");
+      }
+      if (c == '\n') {
+        stream.print("\\n");
+      } else {
+        stream.print(c);
+      }
+      index++;
+    }
+    stream.print("\"" GSM_NL);
+    if (waitResponse() != 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool SIM7020GsmModem::setClientCA(const String& certificate) {
+  return setCertificate(1, certificate.c_str());
+}
+
+bool SIM7020GsmModem::setClientPrivateKey(const String& certificate) {
+  return setCertificate(2, certificate.c_str());
+}
+
+bool SIM7020GsmModem::setRootCA(const String& certificate) {
+  return setCertificate(0, certificate.c_str());
 }
