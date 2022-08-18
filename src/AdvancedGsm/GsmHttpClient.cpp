@@ -1,8 +1,8 @@
 #include "GsmHttpClient.h"
 
-GsmHttpClient::GsmHttpClient(GsmTcpClient& aClient, const char* aServerName, uint16_t aServerPort)
- : iClient(&aClient), server_name(aServerName), iServerAddress(), server_port(aServerPort),
-   iConnectionClose(true) //, iSendDefaultRequestHeaders(true)
+GsmHttpClient::GsmHttpClient(GsmTcpClient& client, const char* server_name, uint16_t server_port)
+ : client(&client), server_name(server_name), server_port(server_port) //, //iServerAddress(),
+   //iConnectionClose(true) //, iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
@@ -139,7 +139,7 @@ bool GsmHttpClient::completed()
 void GsmHttpClient::resetState()
 {
   //iState = eIdle;
-  iStatusCode = 0;
+  //iStatusCode = 0;
   //iContentLength = kNoContentLengthHeader;
   //iBodyLengthConsumed = 0;
   //iContentLengthPtr = kContentLengthPrefix;
@@ -157,7 +157,12 @@ void GsmHttpClient::resetState()
 
 int GsmHttpClient::responseStatusCode()
 {
-    return 0;
+  unsigned long timeout_end = millis() + this->http_response_timeout;
+  while (response_status_code == 0) {
+    if (millis() > timeout_end) { return GSM_HTTP_ERROR_TIMED_OUT; }
+    getModem().waitResponse(GSM_HTTP_RESPONSE_WAIT);
+  }
+  return response_status_code;
 }
 
 int GsmHttpClient::contentLength()
@@ -168,12 +173,17 @@ int GsmHttpClient::contentLength()
     //     skipResponseHeaders();
     // }
 
-    return iContentLength;
+    return content_length;
 }
 
 String GsmHttpClient::responseBody()
 {
-    return "";
+  unsigned long timeout_end = millis() + this->http_response_timeout;
+  while (!this->body_complete) {
+    if (millis() > timeout_end) { return String((const char*)NULL); }
+    getModem().waitResponse(GSM_HTTP_RESPONSE_WAIT);
+  }
+  return String(this->body);
 }
 
 // bool GsmHttpClient::endOfBodyReached()

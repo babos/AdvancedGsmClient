@@ -6,6 +6,12 @@ SIM7020HttpClient::SIM7020HttpClient(SIM7020TcpClient& client, const char* serve
     this->scheme = SCHEME_HTTP;
 }
 
+SIM7020GsmModem& SIM7020HttpClient::getModem() {
+  return this->modem;
+}
+
+// Protected
+
 int SIM7020HttpClient::startRequest(const char* url_path,
                     const char* http_method,
                     const char* content_type,

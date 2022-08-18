@@ -2,6 +2,7 @@
 #define Advanced_GsmHttpClient_h
 
 #include "../api/HttpClient.h"
+#include "GsmModemCommon.h"
 #include "GsmTcpClient.h"
 #include "GsmLog.h"
 
@@ -20,6 +21,13 @@ enum UrlScheme {
 #define GSM_PREFIX_HTTP_LENGTH 7
 #define GSM_PREFIX_HTTPS "https://"
 #define GSM_PREFIX_HTTPS_LENGTH 8
+
+#define GSM_HTTP_HEADER_BUFFER 500
+#define GSM_HTTP_BODY_BUFFER 2000
+#define GSM_HTTP_RESPONSE_WAIT 500
+#define GSM_HTTP_RESPONSE_TIMEOUT_DEFAULT 30000
+
+#define GSM_HTTP_ERROR_TIMED_OUT -1
 
 class GsmHttpClient : public HttpClient
 {
@@ -53,50 +61,47 @@ class GsmHttpClient : public HttpClient
 
   // ================================================================
 
+  virtual GsmModemCommon& getModem() = 0;
+
+  // From HttpClient
+
+  virtual bool completed();
+  virtual int contentLength();
+//  virtual bool headerAvailable();
+  virtual String responseBody();
+  virtual int responseStatusCode();
   virtual int startRequest(const char* aURLPath,
                     const char* aHttpMethod,
                     const char* aContentType = NULL,
                     int aContentLength = -1,
                     const byte aBody[] = NULL) = 0;
 
-  virtual int responseStatusCode();
-
-//  virtual bool headerAvailable();
-
-  virtual bool completed();
-
-  virtual int contentLength();
-
-  virtual String responseBody();
-
   // From Client
+
   virtual void stop() = 0;
-  virtual uint8_t connected() { return iClient->connected(); };
-  virtual operator bool() { return bool(iClient); };
-  virtual uint32_t httpResponseTimeout() { return iHttpResponseTimeout; };
-  virtual void setHttpResponseTimeout(uint32_t timeout) { iHttpResponseTimeout = timeout; };
+  virtual uint8_t connected() { return client->connected(); };
+  virtual operator bool() { return bool(client); };
+  virtual uint32_t httpResponseTimeout() { return http_response_timeout; };
+  virtual void setHttpResponseTimeout(uint32_t timeout) { http_response_timeout = timeout; };
 
  protected:
   /** Reset internal state data back to the "just initialised" state
   */
   virtual void resetState();
 
-  //GsmModem& modem;
+  char body[GSM_HTTP_BODY_BUFFER] = { 0 };
+  bool body_complete = false;
+  GsmTcpClient* client;
+  //bool iConnectionClose;
+  int content_length;
+  char headers[GSM_HTTP_HEADER_BUFFER] = { 0 };
+  uint32_t http_response_timeout = GSM_HTTP_RESPONSE_TIMEOUT_DEFAULT;
+  int response_status_code;
   UrlScheme scheme;
-
-  // Client we're using
-  GsmTcpClient* iClient;
-  // Server we are connecting to
+  //IPAddress iServerAddress;
   const char* server_name;
-  IPAddress iServerAddress;
-  // Port of server we are connecting to
   uint16_t server_port;
-  // Stores the status code for the response, once known
-  int iStatusCode;
-  // Stores the value of the Content-Length header, if present
-  int iContentLength;
-  uint32_t iHttpResponseTimeout;
-  bool iConnectionClose;
+
 };
 
 #endif

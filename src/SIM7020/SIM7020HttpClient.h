@@ -1,13 +1,16 @@
 #ifndef Advanced_HttpClientSIM7020_h
 #define Advanced_HttpClientSIM7020_h
 
+#include "../api/GsmModem.h"
 #include "../AdvancedGsm/GsmHttpClient.h"
+#include "SIM7020GsmModem.h"
 #include "SIM7020TcpClient.h"
 
 class SIM7020HttpClient : public GsmHttpClient
 {
  public:
   explicit SIM7020HttpClient(SIM7020TcpClient& client, const char* server_name, uint16_t server_port = 80);
+  SIM7020GsmModem& getModem() override;
 
  protected:
   int8_t http_client_id;

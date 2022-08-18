@@ -27,24 +27,6 @@ class GsmModemCommon : public GsmModem {
   String revision() override;
   int32_t RSSI() override;
   virtual void sendATCommand(const char command[]);
-
- protected:
-  char gsmNL[3] = GSM_NL;
-  Stream& stream;
-
-  virtual bool connect(const char apn[],
-                       PacketDataProtocolType pdpType,
-                       const char username[],
-                       const char password[]) = 0;
-  //inline int16_t streamGetIntBefore(char lastChar);
-  virtual int16_t streamGetIntBefore(char lastChar);
-  inline bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);
-  virtual bool reset() = 0;
-  //  template <typename... Args>
-  //  void sendAT(Args... command);
-
-  // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
-  // 1000L):
   int8_t waitResponse();
   int8_t waitResponse(GsmConstStr r1,
                       GsmConstStr r2 = GFP(GSM_ERROR),
@@ -64,6 +46,24 @@ class GsmModemCommon : public GsmModem {
                       GsmConstStr r3 = NULL,
                       GsmConstStr r4 = NULL,
                       GsmConstStr r5 = NULL);
+
+ protected:
+  char gsmNL[3] = GSM_NL;
+  Stream& stream;
+
+  virtual bool connect(const char apn[],
+                       PacketDataProtocolType pdpType,
+                       const char username[],
+                       const char password[]) = 0;
+  //inline int16_t streamGetIntBefore(char lastChar);
+  virtual int16_t streamGetIntBefore(char lastChar);
+  inline bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);
+  virtual bool reset() = 0;
+  //  template <typename... Args>
+  //  void sendAT(Args... command);
+
+  // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
+  // 1000L):
   virtual int8_t waitResponseDevice(uint32_t timeout_ms,
                                     String& data,
                                     GsmConstStr r1 = GFP(GSM_OK),
