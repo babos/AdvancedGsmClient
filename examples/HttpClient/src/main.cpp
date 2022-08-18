@@ -73,12 +73,11 @@ void setup() {
 #endif
   SerialMon.begin(115200);
   delay(5000);
-  SerialMon.print("HTTP client example\n");
-  ADVGSM_LOG(GsmSeverity::Info, "main", "Started at %d", millis());
+  SerialMon.printf("HTTP client example started at %d\n", millis());
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
-  modem.begin(apn);
+  modem.begin(apn, IPv4v6);
 }
 
 bool isReady() {
@@ -89,11 +88,12 @@ bool isReady() {
 #ifdef WAIT_FOR_NON_LOCAL_IPV6
     if (addresses[index].indexOf(":") > 0 &&
         !addresses[index].startsWith("fe80:")) {
+      SerialMon.printf("### Ready with IPv6 address %s\n", addresses[index].c_str());
       return true;
     }
 #else
     if (addresses[index] != "127.0.0.1") {
-      ADVGSM_LOG(GsmSeverity::Info, "main", "Ready with address %s", addresses[index].c_str());
+      SerialMon.printf("### Ready with address %s\n", addresses[index].c_str());
       return true;
     }
 #endif
@@ -120,10 +120,9 @@ void connectedLoop() {
       if (httpCode != 200 && httpCode != 301) {
         Serial.printf("HTTP response code error: %d\n", httpCode);
       } else {
-        Serial.printf("HTTP response code: %d\n", httpCode);
+        Serial.printf("\nHTTP response code: %d\n", httpCode);
         String payload = http.responseBody();
-
-        Serial.print("\n##### PAYLOAD:\n");
+        Serial.print("### PAYLOAD:\n");
         Serial.printf("%s\n\n", payload.c_str());
       }
     }

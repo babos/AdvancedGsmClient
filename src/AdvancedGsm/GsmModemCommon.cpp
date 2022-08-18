@@ -11,6 +11,7 @@ void GsmModemCommon::begin(const char accessPointName[],
                            const char username[],
                            const char password[]) {
   if (!reset()) {
+    ADVGSM_LOG(GsmSeverity::Error, "GsmModemCommon", GF("Reset failed"));
     return;
   }
   connect(accessPointName, pdpType, username, password);

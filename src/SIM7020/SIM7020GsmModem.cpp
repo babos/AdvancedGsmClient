@@ -82,7 +82,7 @@ bool SIM7020GsmModem::connect(const char apn[],
                               : PacketDataProtocolType::IPv6 ? "IPV6"
                                                              : "IP";
 
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("### Connecting %s %s"), pdpTypeString, apn);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"), pdpTypeString, apn);
 
   sendAT(GF("+CFUN=0"));
   waitResponse();
@@ -119,10 +119,11 @@ bool SIM7020GsmModem::connect(const char apn[],
 }
 
 bool SIM7020GsmModem::reset() {
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Resetting"));
   //    if (!testAT()) { return false; }
 
   sendAT(GF("Z"));  // Reset (to user settings)
-  if (waitResponse() != 1) {
+  if (waitResponse(5000) != 1) {
     return false;
   }
 
@@ -221,7 +222,7 @@ finish:
   if (!index) {
     data.trim();
     if (data.length()) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "### Unhandled: %s", data.c_str());
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Unhandled: %s", data.c_str());
     }
     data = "";
   }
