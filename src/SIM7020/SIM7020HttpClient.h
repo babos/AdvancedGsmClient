@@ -35,6 +35,7 @@ class SIM7020HttpClient : public GsmHttpClient {
 
  private:
   int16_t createClientInstance();
+  int16_t createClientInstanceExtended();
 
   const char* server_ca;
   const char* client_certificate;

@@ -119,55 +119,6 @@ bool SIM7020GsmModem::connect(const char apn[],
   return true;
 }
 
-bool SIM7020GsmModem::reset() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Resetting"));
-  //    if (!testAT()) { return false; }
-
-  sendAT(GF("Z"));  // Reset (to user settings)
-  if (waitResponse(30000) != 1) {
-    return false;
-  }
-
-  sendAT(GF("E0"));  // Echo Off
-  if (waitResponse() != 1) {
-    return false;
-  }
-
-  // TODO: Support error codes
-  sendAT(GF("+CMEE=0"));  // turn off error codes
-  waitResponse();
-
-  // Enable Local Time Stamp for getting network time
-  sendAT(GF("+CLTS=1"));
-  if (waitResponse(10000) != 1) {
-    return false;
-  }
-
-  // Enable battery checks
-  sendAT(GF("+CBATCHK=1"));
-  if (waitResponse() != 1) {
-    return false;
-  }
-
-  // Set IPv6 format
-  sendAT(GF("+CGPIAF=1,1,0,1"));
-  if (waitResponse() != 1) {
-    return false;
-  }
-
-  // SimStatus ret = getSimStatus();
-  // // if the sim isn't ready and a pin has been provided, try to unlock the
-  // sim if (ret != SIM_READY && pin != NULL && strlen(pin) > 0) {
-  //   simUnlock(pin);
-  //   return (getSimStatus() == SIM_READY);
-  // } else {
-  //   // if the sim is ready, or it's locked but no pin has been provided,
-  //   // return true
-  //   return (ret == SIM_READY || ret == SIM_LOCKED);
-  // }
-  return true;
-}
-
 int8_t SIM7020GsmModem::checkResponse(uint32_t timeout_ms,
                                       String& data,
                                       GsmConstStr r1,
@@ -340,6 +291,66 @@ bool SIM7020GsmModem::checkUnsolicitedResponse(String& data) {
     return true;
   }
   return false;
+}
+
+bool SIM7020GsmModem::reset() {
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Resetting"));
+  //    if (!testAT()) { return false; }
+  sendAT(GF(""));
+  if (waitResponse(30000) != 1) {
+    return false;
+  }
+
+
+  sendAT(GF("Z"));  // Reset (to user settings)
+  if (waitResponse(30000) != 1) {
+    return false;
+  }
+
+  sendAT(GF("E0"));  // Echo Off
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  // TODO: Support error codes
+  sendAT(GF("+CMEE=0"));  // turn off error codes
+  waitResponse();
+
+  // Enable Local Time Stamp for getting network time
+  sendAT(GF("+CLTS=1"));
+  if (waitResponse(10000) != 1) {
+    return false;
+  }
+
+  // Enable battery checks
+  sendAT(GF("+CBATCHK=1"));
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  // Set IPv6 format
+  sendAT(GF("+CGPIAF=1,1,0,1"));
+  if (waitResponse() != 1) {
+    return false;
+  }
+
+  // Clean up any old connections
+  for (int8_t client_id = 0; client_id < 5; client_id++) {
+    sendAT(GF("+CHTTPDESTROY="), client_id);
+    waitResponse();
+  }
+
+  // SimStatus ret = getSimStatus();
+  // // if the sim isn't ready and a pin has been provided, try to unlock the
+  // sim if (ret != SIM_READY && pin != NULL && strlen(pin) > 0) {
+  //   simUnlock(pin);
+  //   return (getSimStatus() == SIM_READY);
+  // } else {
+  //   // if the sim is ready, or it's locked but no pin has been provided,
+  //   // return true
+  //   return (ret == SIM_READY || ret == SIM_LOCKED);
+  // }
+  return true;
 }
 
 bool SIM7020GsmModem::setCertificate(int8_t type, const char* certificate, int8_t connection_id) {
