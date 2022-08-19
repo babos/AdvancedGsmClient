@@ -151,7 +151,7 @@ void connectedLoop() {
     SerialMon.printf("Testing HTTP to: %s\n", server);
 #else
     SerialMon.printf("Testing HTTPS to: %s\n", server);
-    modem.setRootCA(root_ca);
+    //modem.setRootCA(root_ca);
 #endif
     TestTcpClient testTcpClient(testModem);
     // Client& client = testTcpClient;
@@ -162,6 +162,10 @@ void connectedLoop() {
     TestHttpClient testHttpClient(testTcpClient, server, 443, true);
 #endif
     HttpClient& http = testHttpClient;
+#ifndef USE_INSECURE_HTTP
+    SerialMon.print("Setting certificate\n");
+    http.setRootCA(root_ca.c_str());
+#endif
 
     int rc = http.get("/api/myip.php");
     if (rc != 0) {

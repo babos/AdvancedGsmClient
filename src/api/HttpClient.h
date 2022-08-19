@@ -203,9 +203,9 @@ class HttpClient {
   virtual operator bool() = 0;
 
   // TLS
-  virtual bool setClientCA(const String& certificate) = 0;
-  virtual bool setClientPrivateKey(const String& certificate) = 0;
-  virtual bool setRootCA(const String& certificate) = 0;
+  virtual bool setClientCA(const char certificate[]) = 0;
+  virtual bool setClientPrivateKey(const char  certificate[]) = 0;
+  virtual bool setRootCA(const char certificate[]) = 0;
 
  protected:
   /** Reset internal state data back to the "just initialised" state

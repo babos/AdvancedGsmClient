@@ -17,9 +17,9 @@ class SIM7020HttpClient : public GsmHttpClient {
 
   uint8_t connected() override;
   SIM7020GsmModem& getModem() override;
-  bool setClientCA(const String& certificate) override;
-  bool setClientPrivateKey(const String& certificate) override;
-  bool setRootCA(const String& certificate) override;
+  bool setClientCA(const char certificate[]) override;
+  bool setClientPrivateKey(const char certificate[]) override;
+  bool setRootCA(const char certificate[]) override;
   void stop() override;
 
  protected:
