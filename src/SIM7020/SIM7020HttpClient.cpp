@@ -64,19 +64,23 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
   char comma[] = ",";
   int16_t prefix_length = 8;
   int16_t server_name_length = strlen(server_name);
+  int16_t server_port_length = 1 + (server_port >= 10 ? 1 : 0) + (server_port >= 100 ? 1 : 0) + (server_port >= 1000 ? 1 : 0) + (server_port >= 10000 ? 1 : 0);
   int16_t server_ca_length = strlen(this->server_ca);
+  int16_t server_ca_length_string_length = 1 + (server_ca_length >= 10 ? 1 : 0) + (server_ca_length >= 100 ? 1 : 0) + (server_ca_length >= 1000 ? 1 : 0) + (server_ca_length >= 10000 ? 1 : 0);
   int16_t server_ca_hex_length = server_ca_length * 2;
   int16_t server_ca_hex_length_string_length = 1 + (server_ca_hex_length >= 10 ? 1 : 0) + (server_ca_hex_length >= 100 ? 1 : 0) + (server_ca_hex_length >= 1000 ? 1 : 0) + (server_ca_hex_length >= 10000 ? 1 : 0);
-  int16_t header_length = prefix_length + server_name_length + 1 + 1 + 1 + 1;
+  int16_t header_length = prefix_length + server_name_length + 1 + server_port_length + 1 + 1 + 1 + 1;
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Header length pref=%d nm=%d pt=%d t=%d"), prefix_length, server_name_length, server_port_length, header_length);
   int16_t tail_length = 1 + 1 + 1 + 1 + 1 + 1;
-  int16_t total_length = header_length + server_ca_hex_length_string_length + 1 + server_ca_hex_length + tail_length;
+//  int16_t total_length = header_length + server_ca_hex_length_string_length + 1 + server_ca_hex_length + tail_length;
+  int16_t total_length = header_length + server_ca_length_string_length + 1 + server_ca_hex_length + tail_length;
 
   int8_t is_more = 1;
   char c = '\0';
 
   // First chunk (header)
   ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Create first chunk %d"), header_length);
-  this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",", header_length, ",\"", GSM_PREFIX_HTTPS, server_name, "/,,,\"");
+  this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",", header_length, ",\"", GSM_PREFIX_HTTPS, server_name, ':', server_port, "/,,,\"");
   rc = this->modem.waitResponse();
   if (rc == 0) {
     return -721;
@@ -89,7 +93,8 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
   int16_t cert_section_end = 0;
   while (cert_index < server_ca_length) {
     if (cert_index == 0) {
-      cert_section_end = (max_chunk_size - server_ca_hex_length_string_length - 1) / 2;
+      //cert_section_end = (max_chunk_size - server_ca_hex_length_string_length - 1) / 2;
+      cert_section_end = (max_chunk_size - server_ca_length_string_length - 1) / 2;
     } else {
       cert_section_end += max_chunk_size / 2;
     }
@@ -109,7 +114,8 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
     this->modem.stream.print(chunk_length);
     this->modem.stream.print(",\"");
     if (cert_index == 0) {
-      this->modem.stream.print(server_ca_hex_length);
+      //this->modem.stream.print(server_ca_hex_length);
+      this->modem.stream.print(server_ca_length);
       this->modem.stream.print(",");
     }
     while (cert_index < cert_section_end) {
