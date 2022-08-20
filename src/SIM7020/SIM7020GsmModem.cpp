@@ -301,11 +301,10 @@ bool SIM7020GsmModem::reset() {
     return false;
   }
 
-
-  sendAT(GF("Z"));  // Reset (to user settings)
-  if (waitResponse(30000) != 1) {
-    return false;
-  }
+  // sendAT(GF("Z"));  // Reset (to user settings)
+  // if (waitResponse(30000) != 1) {
+  //   return false;
+  // }
 
   sendAT(GF("E0"));  // Echo Off
   if (waitResponse() != 1) {
