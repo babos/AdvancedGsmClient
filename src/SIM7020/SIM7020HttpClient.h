@@ -12,8 +12,15 @@ class SIM7020HttpClient : public GsmHttpClient {
  public:
   explicit SIM7020HttpClient(SIM7020TcpClient& client,
                              const char* server_name,
-                             uint16_t server_port = 80);
+                             uint16_t server_port = 80,
+                             bool https = false);
+
+  uint8_t connected() override;
   SIM7020GsmModem& getModem() override;
+  bool setClientCA(const char certificate[]) override;
+  bool setClientPrivateKey(const char certificate[]) override;
+  bool setRootCA(const char certificate[]) override;
+  void stop() override;
 
  protected:
   int8_t http_client_id;
@@ -25,7 +32,14 @@ class SIM7020HttpClient : public GsmHttpClient {
                    const char* content_type = NULL,
                    int content_length = -1,
                    const byte body[] = NULL) override;
-  void stop() override;
+
+ private:
+  int16_t createClientInstance();
+  int16_t createClientInstanceExtended();
+
+  const char* server_ca;
+  const char* client_certificate;
+  const char* client_private_key;
 };
 
 #endif

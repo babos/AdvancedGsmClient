@@ -14,6 +14,9 @@ class SIM7020GsmModem : public GsmModemCommon {
   explicit SIM7020GsmModem(Stream& stream);
   int8_t getLocalIPs(String addresses[], uint8_t max) override;
   String ICCID() override;
+  bool setClientCA(const String& certificate) override;
+  bool setClientPrivateKey(const String& certificate) override;
+  bool setRootCA(const String& certificate) override;
 
  protected:
   SIM7020HttpClient* http_clients[GSM_MUX_COUNT];
@@ -34,6 +37,7 @@ class SIM7020GsmModem : public GsmModemCommon {
  private:
   bool checkUnsolicitedHttpResponse(String &data);
   bool checkUnsolicitedResponse(String &data);
+  bool setCertificate(int8_t type, const char* certificate, int8_t connection_id = -1);
 };
 
 #endif

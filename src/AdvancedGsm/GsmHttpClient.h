@@ -13,14 +13,10 @@ enum UrlScheme {
 };
 
 // const char* GSM_PREFIX_HTTP = "http://";
-// const int8_t GSM_PREFIX_HTTP_LENGTH = 7;
 // const char* GSM_PREFIX_HTTPS = "https://";
-// const int8_t GSM_PREFIX_HTTPS_LENGTH = 8;
 
 #define GSM_PREFIX_HTTP "http://"
-#define GSM_PREFIX_HTTP_LENGTH 7
 #define GSM_PREFIX_HTTPS "https://"
-#define GSM_PREFIX_HTTPS_LENGTH 8
 
 #define GSM_HTTP_HEADER_BUFFER 500
 #define GSM_HTTP_BODY_BUFFER 2000
@@ -87,31 +83,20 @@ class GsmHttpClient : public HttpClient {
 
   // From HttpClient
 
-  virtual bool completed();
-  virtual int contentLength();
+  bool completed() override;
+  uint8_t connected() override;
+  int contentLength() override;
   //  virtual bool headerAvailable();
-  virtual String responseBody();
-  virtual int responseStatusCode();
-  virtual int startRequest(const char* aURLPath,
-                           const char* aHttpMethod,
-                           const char* aContentType = NULL,
-                           int aContentLength = -1,
-                           const byte aBody[] = NULL) = 0;
-
-  // From Client
-
-  virtual void stop() = 0;
-  virtual uint8_t connected() { return client->connected(); };
-  virtual operator bool() { return bool(client); };
-  virtual uint32_t httpResponseTimeout() { return http_response_timeout; };
-  virtual void setHttpResponseTimeout(uint32_t timeout) {
-    http_response_timeout = timeout;
-  };
+  uint32_t httpResponseTimeout() override;
+  String responseBody() override;
+  int responseStatusCode() override;
+  void setHttpResponseTimeout(uint32_t timeout) override;
+  operator bool() override;
 
  protected:
   /** Reset internal state data back to the "just initialised" state
    */
-  virtual void resetState();
+  void resetState() override;
 
   char body[GSM_HTTP_BODY_BUFFER] = {0};
   bool body_completed = false;

@@ -145,28 +145,6 @@ class HttpClient {
 
   // ================================================================
 
-  /** Connect to the server and start to send the request.
-      If a body is provided, the entire request (including headers and body)
-    will be sent
-    @param aURLPath        Url to request
-    @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST",
-    etc.
-    @param aContentType    Content type of request body (optional)
-    @param aContentLength  Length of request body (optional)
-    @param aBody           Body of request (optional)
-    @return 0 if successful, else error
-  */
-  virtual int startRequest(const char* aURLPath,
-                           const char* aHttpMethod,
-                           const char* aContentType = NULL,
-                           int aContentLength = -1,
-                           const byte aBody[] = NULL) = 0;
-
-  /** Get the HTTP status code contained in the response.
-    For example, 200 for successful request, 404 for file not found, etc.
-  */
-  virtual int responseStatusCode() = 0;
-
   /** Check if a header is available to be read.
     Use readHeaderName() to read header name, and readHeaderValue() to
     read the header value
@@ -195,12 +173,39 @@ class HttpClient {
   */
   virtual String responseBody() = 0;
 
+  /** Get the HTTP status code contained in the response.
+    For example, 200 for successful request, 404 for file not found, etc.
+  */
+  virtual int responseStatusCode() = 0;
+
+  /** Connect to the server and start to send the request.
+      If a body is provided, the entire request (including headers and body)
+    will be sent
+    @param aURLPath        Url to request
+    @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST",
+    etc.
+    @param aContentType    Content type of request body (optional)
+    @param aContentLength  Length of request body (optional)
+    @param aBody           Body of request (optional)
+    @return 0 if successful, else error
+  */
+  virtual int startRequest(const char* aURLPath,
+                           const char* aHttpMethod,
+                           const char* aContentType = NULL,
+                           int aContentLength = -1,
+                           const byte aBody[] = NULL) = 0;
+
   // From Client
-  virtual void stop() = 0;
   virtual uint8_t connected() = 0;
-  virtual operator bool() = 0;
   virtual uint32_t httpResponseTimeout() = 0;
   virtual void setHttpResponseTimeout(uint32_t timeout) = 0;
+  virtual void stop() = 0;
+  virtual operator bool() = 0;
+
+  // TLS
+  virtual bool setClientCA(const char certificate[]) = 0;
+  virtual bool setClientPrivateKey(const char  certificate[]) = 0;
+  virtual bool setRootCA(const char certificate[]) = 0;
 
  protected:
   /** Reset internal state data back to the "just initialised" state
