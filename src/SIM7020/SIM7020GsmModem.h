@@ -1,5 +1,5 @@
-#ifndef Advanced_GsmModemSIM7020_h
-#define Advanced_GsmModemSIM7020_h
+#ifndef Advanced_SIM7020GsmModem_h
+#define Advanced_SIM7020GsmModem_h
 
 #include "../AdvancedGsm/GsmModemCommon.h"
 
@@ -9,6 +9,7 @@ class SIM7020HttpClient;
 
 class SIM7020GsmModem : public GsmModemCommon {
   friend class SIM7020HttpClient;
+  friend class SIM7020MqttClient;
 
  public:
   explicit SIM7020GsmModem(Stream& stream);
@@ -22,22 +23,24 @@ class SIM7020GsmModem : public GsmModemCommon {
   SIM7020HttpClient* http_clients[GSM_MUX_COUNT];
 
   virtual int8_t checkResponse(uint32_t timeout_ms,
-                                    String& data,
-                                    GsmConstStr r1 = GFP(GSM_OK),
-                                    GsmConstStr r2 = GFP(GSM_ERROR),
-                                    GsmConstStr r3 = NULL,
-                                    GsmConstStr r4 = NULL,
-                                    GsmConstStr r5 = NULL) override;
+                               String& data,
+                               GsmConstStr r1 = GFP(GSM_OK),
+                               GsmConstStr r2 = GFP(GSM_ERROR),
+                               GsmConstStr r3 = NULL,
+                               GsmConstStr r4 = NULL,
+                               GsmConstStr r5 = NULL) override;
   bool connect(const char apn[],
                PacketDataProtocolType pdpType,
                const char username[],
                const char password[]) override;
   bool reset() override;
-  
+
  private:
-  bool checkUnsolicitedHttpResponse(String &data);
-  bool checkUnsolicitedResponse(String &data);
-  bool setCertificate(int8_t type, const char* certificate, int8_t connection_id = -1);
+  bool checkUnsolicitedHttpResponse(String& data);
+  bool checkUnsolicitedResponse(String& data);
+  bool setCertificate(int8_t type,
+                      const char* certificate,
+                      int8_t connection_id = -1);
 };
 
 #endif

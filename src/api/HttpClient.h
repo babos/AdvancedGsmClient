@@ -204,7 +204,7 @@ class HttpClient {
 
   // TLS
   virtual bool setClientCA(const char certificate[]) = 0;
-  virtual bool setClientPrivateKey(const char  certificate[]) = 0;
+  virtual bool setClientPrivateKey(const char certificate[]) = 0;
   virtual bool setRootCA(const char certificate[]) = 0;
 
  protected:

@@ -3,11 +3,12 @@
 SIM7020HttpClient::SIM7020HttpClient(SIM7020TcpClient& client,
                                      const char* server_name,
                                      uint16_t server_port,
-                                     bool https)
-    : GsmHttpClient(client, server_name, server_port), modem(client.modem) {
+                                     bool use_tls)
+    : GsmHttpClient(client, server_name, server_port, use_tls),
+      modem(client.modem) {
   this->is_connected = false;
   this->http_client_id = -1;
-  this->scheme = https ? SCHEME_HTTPS : SCHEME_HTTP;
+  this->scheme = use_tls ? SCHEME_HTTPS : SCHEME_HTTP;
 }
 
 uint8_t SIM7020HttpClient::connected() {
@@ -15,16 +16,17 @@ uint8_t SIM7020HttpClient::connected() {
 };
 
 int16_t SIM7020HttpClient::createClientInstance() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("HTTP creating instance %d, %s, %d"),
-              scheme, server_name, server_port);
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+             GF("HTTP creating instance %d, %s, %d"), scheme, server_name,
+             server_port);
 
   int16_t rc;
   if (scheme == SCHEME_HTTP) {
-    this->modem.sendAT(GF("+CHTTPCREATE=\""), GSM_PREFIX_HTTP, server_name,
-                        ':', server_port, "/\"");
+    this->modem.sendAT(GF("+CHTTPCREATE=\""), GSM_PREFIX_HTTP, server_name, ':',
+                       server_port, "/\"");
   } else if (scheme == SCHEME_HTTPS) {
     this->modem.sendAT(GF("+CHTTPCREATE=\""), GSM_PREFIX_HTTPS, server_name,
-                      ':', server_port, "/\"");
+                       ':', server_port, "/\"");
   } else {
     return -600;
   }
@@ -40,7 +42,7 @@ int16_t SIM7020HttpClient::createClientInstance() {
   }
   int8_t http_client_id = this->modem.streamGetIntBefore('\n');
   ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("HTTP %d instance created"),
-              http_client_id);
+             http_client_id);
   rc = this->modem.waitResponse();
   if (rc == 0) {
     return -704;
@@ -52,35 +54,52 @@ int16_t SIM7020HttpClient::createClientInstance() {
 }
 
 int16_t SIM7020HttpClient::createClientInstanceExtended() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("HTTP creating extended instance %d, %s, %d"),
-              scheme, server_name, server_port);
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+             GF("HTTP creating extended instance %d, %s, %d"), scheme,
+             server_name, server_port);
 
   int16_t rc;
   // Create with certificate
 
   const int16_t max_chunk_size = 1000;
-  char buffer[max_chunk_size] = { 0 };
+  char buffer[max_chunk_size] = {0};
 
   char comma[] = ",";
   int16_t prefix_length = 8;
   int16_t server_name_length = strlen(server_name);
-  int16_t server_port_length = 1 + (server_port >= 10 ? 1 : 0) + (server_port >= 100 ? 1 : 0) + (server_port >= 1000 ? 1 : 0) + (server_port >= 10000 ? 1 : 0);
+  int16_t server_port_length =
+      1 + (server_port >= 10 ? 1 : 0) + (server_port >= 100 ? 1 : 0) +
+      (server_port >= 1000 ? 1 : 0) + (server_port >= 10000 ? 1 : 0);
   int16_t server_ca_length = strlen(this->server_ca);
-  int16_t server_ca_length_string_length = 1 + (server_ca_length >= 10 ? 1 : 0) + (server_ca_length >= 100 ? 1 : 0) + (server_ca_length >= 1000 ? 1 : 0) + (server_ca_length >= 10000 ? 1 : 0);
+  int16_t server_ca_length_string_length =
+      1 + (server_ca_length >= 10 ? 1 : 0) + (server_ca_length >= 100 ? 1 : 0) +
+      (server_ca_length >= 1000 ? 1 : 0) + (server_ca_length >= 10000 ? 1 : 0);
   int16_t server_ca_hex_length = server_ca_length * 2;
-  int16_t server_ca_hex_length_string_length = 1 + (server_ca_hex_length >= 10 ? 1 : 0) + (server_ca_hex_length >= 100 ? 1 : 0) + (server_ca_hex_length >= 1000 ? 1 : 0) + (server_ca_hex_length >= 10000 ? 1 : 0);
-  int16_t header_length = prefix_length + server_name_length + 1 + server_port_length + 1 + 1 + 1 + 1;
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Header length pref=%d nm=%d pt=%d t=%d"), prefix_length, server_name_length, server_port_length, header_length);
+  int16_t server_ca_hex_length_string_length =
+      1 + (server_ca_hex_length >= 10 ? 1 : 0) +
+      (server_ca_hex_length >= 100 ? 1 : 0) +
+      (server_ca_hex_length >= 1000 ? 1 : 0) +
+      (server_ca_hex_length >= 10000 ? 1 : 0);
+  int16_t header_length = prefix_length + server_name_length + 1 +
+                          server_port_length + 1 + 1 + 1 + 1;
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+             GF("Header length pref=%d nm=%d pt=%d t=%d"), prefix_length,
+             server_name_length, server_port_length, header_length);
   int16_t tail_length = 1 + 1 + 1 + 1 + 1 + 1;
-  int16_t total_length = header_length + server_ca_hex_length_string_length + 1 + server_ca_hex_length + tail_length;
-//  int16_t total_length = header_length + server_ca_length_string_length + 1 + server_ca_hex_length + tail_length;
+  int16_t total_length = header_length + server_ca_hex_length_string_length +
+                         1 + server_ca_hex_length + tail_length;
+  //  int16_t total_length = header_length + server_ca_length_string_length + 1
+  //  + server_ca_hex_length + tail_length;
 
   int8_t is_more = 1;
   char c = '\0';
 
   // First chunk (header)
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Create first chunk %d"), header_length);
-  this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",", header_length, ",\"", GSM_PREFIX_HTTPS, server_name, ':', server_port, "/,,,\"");
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Create first chunk %d"),
+             header_length);
+  this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",",
+                     header_length, ",\"", GSM_PREFIX_HTTPS, server_name, ':',
+                     server_port, "/,,,\"");
   rc = this->modem.waitResponse();
   if (rc == 0) {
     return -721;
@@ -93,8 +112,10 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
   int16_t cert_section_end = 0;
   while (cert_index < server_ca_length) {
     if (cert_index == 0) {
-      cert_section_end = (max_chunk_size - server_ca_hex_length_string_length - 1) / 2;
-      //cert_section_end = (max_chunk_size - server_ca_length_string_length - 1) / 2;
+      cert_section_end =
+          (max_chunk_size - server_ca_hex_length_string_length - 1) / 2;
+      // cert_section_end = (max_chunk_size - server_ca_length_string_length -
+      // 1) / 2;
     } else {
       cert_section_end += max_chunk_size / 2;
     }
@@ -105,7 +126,9 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
     if (cert_index == 0) {
       chunk_length = chunk_length + server_ca_hex_length_string_length + 1;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Loop chunk %d, cert start %d, end %d"), chunk_length, cert_index, cert_section_end);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+               GF("Loop chunk %d, cert start %d, end %d"), chunk_length,
+               cert_index, cert_section_end);
     this->modem.stream.print(GF("AT+CHTTPCREATEEXT="));
     this->modem.stream.print(is_more);
     this->modem.stream.print(',');
@@ -115,7 +138,7 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
     this->modem.stream.print(",\"");
     if (cert_index == 0) {
       this->modem.stream.print(server_ca_hex_length);
-      //this->modem.stream.print(server_ca_length);
+      // this->modem.stream.print(server_ca_length);
       this->modem.stream.print(",");
     }
     while (cert_index < cert_section_end) {
@@ -135,7 +158,8 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
 
   // Last chunk (tail)
   is_more = 0;
-  this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",", tail_length, ",\",0,,0,\"");
+  this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",",
+                     tail_length, ",\",0,,0,\"");
 
   // Wait for response
   rc = this->modem.waitResponse(30000, GF(GSM_NL "+CHTTPCREATEEXT:"));
@@ -147,8 +171,8 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
     return -623;
   }
   int8_t http_client_id = this->modem.streamGetIntBefore('\n');
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("HTTP %d extended instance created"),
-              http_client_id);
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+             GF("HTTP %d extended instance created"), http_client_id);
   rc = this->modem.waitResponse();
   if (rc == 0) {
     return -724;
@@ -195,7 +219,9 @@ int SIM7020HttpClient::startRequest(const char* url_path,
       } else {
         rc = createClientInstance();
       }
-      if (rc < 0) { return rc; }
+      if (rc < 0) {
+        return rc;
+      }
 
       // Store the connection
       this->http_client_id = rc;
