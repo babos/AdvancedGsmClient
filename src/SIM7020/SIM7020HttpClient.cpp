@@ -1,7 +1,7 @@
 #include "SIM7020HttpClient.h"
 
 SIM7020HttpClient::SIM7020HttpClient(SIM7020TcpClient& client,
-                                     const char* server_name,
+                                     const char server_name[],
                                      uint16_t server_port,
                                      bool use_tls)
     : GsmHttpClient(client, server_name, server_port, use_tls),
@@ -202,9 +202,9 @@ bool SIM7020HttpClient::setRootCA(const char certificate[]) {
   return true;
 }
 
-int SIM7020HttpClient::startRequest(const char* url_path,
-                                    const char* http_method,
-                                    const char* content_type,
+int SIM7020HttpClient::startRequest(const char url_path[],
+                                    const char http_method[],
+                                    const char content_type[],
                                     int content_length,
                                     const byte body[]) {
   ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("HTTP start %s %s (%d, %d)"),

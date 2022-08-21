@@ -10,7 +10,7 @@ class MqttClient {
   static const int MqttsPort = 8883;
 
   // TODO: Need beginPublish(), write(), endPublish()
-  virtual boolean connect(const char client_id[],
+  virtual int16_t connect(const char client_id[],
                           const char user_name[],
                           const char password[]) = 0;
   // TODO retain, will, etc

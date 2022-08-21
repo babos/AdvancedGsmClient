@@ -10,7 +10,7 @@ class SIM7020HttpClient : public GsmHttpClient {
 
  public:
   SIM7020HttpClient(SIM7020TcpClient& client,
-                    const char* server_name,
+                    const char server_name[],
                     uint16_t server_port = 80,
                     bool use_tls = false);
 
@@ -26,9 +26,9 @@ class SIM7020HttpClient : public GsmHttpClient {
   SIM7020GsmModem& modem;
   bool is_connected;
 
-  int startRequest(const char* url_path,
-                   const char* http_method,
-                   const char* content_type = NULL,
+  int startRequest(const char url_path[],
+                   const char http_method[],
+                   const char content_type[] = NULL,
                    int content_length = -1,
                    const byte body[] = NULL) override;
 

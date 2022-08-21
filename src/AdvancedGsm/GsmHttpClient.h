@@ -28,7 +28,7 @@ enum UrlScheme {
 class GsmHttpClient : public HttpClient {
  public:
   GsmHttpClient(GsmTcpClient& client,
-                const char* server_name,
+                const char server_name[],
                 uint16_t server_port = HttpPort,
                 bool use_tls = false);
   // GsmHttpClient(GsmTcpClient& aClient, const String& aServerName, uint16_t

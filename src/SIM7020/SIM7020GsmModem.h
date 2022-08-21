@@ -6,6 +6,7 @@
 #define GSM_MUX_COUNT 5
 
 class SIM7020HttpClient;
+class SIM7020MqttClient;
 
 class SIM7020GsmModem : public GsmModemCommon {
   friend class SIM7020HttpClient;
@@ -21,6 +22,7 @@ class SIM7020GsmModem : public GsmModemCommon {
 
  protected:
   SIM7020HttpClient* http_clients[GSM_MUX_COUNT];
+  SIM7020MqttClient* mqtt_clients[GSM_MUX_COUNT];
 
   virtual int8_t checkResponse(uint32_t timeout_ms,
                                String& data,

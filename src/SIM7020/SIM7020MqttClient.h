@@ -8,13 +8,20 @@
 class SIM7020MqttClient : public GsmMqttClient {
   friend class SIM7020GsmModem;
 
+ private:
+  static const int16_t buffer_size = 1024;
+  static const int16_t clean_session = 1;
+  static const int16_t mqtt_keep_alive_s = 60;
+  static const int16_t mqtt_version = 4; // MQTT 3.1.1
+  static const int16_t timeout_ms = 12000;
+
  public:
   SIM7020MqttClient(SIM7020TcpClient& client,
                     const char* server_name,
                     uint16_t server_port = 80,
                     bool use_tls = false);
 
-  boolean connect(const char client_id[],
+  int16_t connect(const char client_id[],
                   const char user_name[],
                   const char password[]) override;
   boolean connected() override;
@@ -25,9 +32,18 @@ class SIM7020MqttClient : public GsmMqttClient {
   boolean unsubscribe(const char topic[]) override;
 
  protected:
-  int8_t mqtt_client_id;
+
+  int8_t mqtt_id;
   SIM7020GsmModem& modem;
   bool is_connected;
+
+private:
+  int16_t createClientInstance();
+  int16_t createClientInstanceExtended();
+
+  const char* server_ca;
+  const char* client_certificate;
+  const char* client_private_key;
 };
 
 #endif

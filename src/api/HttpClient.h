@@ -189,11 +189,11 @@ class HttpClient {
     @param aBody           Body of request (optional)
     @return 0 if successful, else error
   */
-  virtual int startRequest(const char* aURLPath,
-                           const char* aHttpMethod,
-                           const char* aContentType = NULL,
-                           int aContentLength = -1,
-                           const byte aBody[] = NULL) = 0;
+  virtual int startRequest(const char url_path[],
+                           const char http_method[],
+                           const char content_type[] = NULL,
+                           int content_length = -1,
+                           const byte body[] = NULL) = 0;
 
   // From Client
   virtual uint8_t connected() = 0;
