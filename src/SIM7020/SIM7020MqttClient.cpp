@@ -6,6 +6,7 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
                                      bool use_tls)
     : GsmMqttClient(client, server_name, server_port, use_tls),
       modem(client.modem) {
+  this->mqtt_id = -1;
   this->is_connected = false;
 }
 
@@ -36,7 +37,7 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
 
     // Connect
     // TODO: Should store client_id as field
-    this->modem.sendAT(GF("+CCMQCON="), this->mqtt_id, ',', mqtt_version, ',', client_id, ',', mqtt_keep_alive_s, ',', clean_session, ",0");
+    this->modem.sendAT(GF("+CMQCON="), this->mqtt_id, ',', mqtt_version, ",\"", client_id, "\",", mqtt_keep_alive_s, ',', clean_session, ",0");
     rc = this->modem.waitResponse(60000);
     if (rc == 0) {
       return -710;
@@ -98,6 +99,7 @@ int16_t SIM7020MqttClient::createClientInstance() {
   } else if (rc != 1) {
     return -604;
   }
+  delay(100);
 
   return mqtt_id;
 }

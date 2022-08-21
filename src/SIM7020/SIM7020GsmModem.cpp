@@ -79,8 +79,8 @@ bool SIM7020GsmModem::connect(const char apn[],
 
   const char* pdpTypeString = pdpType == PacketDataProtocolType::IPv4v6
                                   ? "IPV4V6"
-                              : PacketDataProtocolType::IPv6 ? "IPV6"
-                                                             : "IP";
+                              : pdpType == PacketDataProtocolType::IPv6 ? "IPV6"
+                                                                        : "IP";
 
   ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"),
              pdpTypeString, apn);
@@ -334,8 +334,14 @@ bool SIM7020GsmModem::reset() {
   }
 
   // Clean up any old connections
+  // TODO: Check the list of what exists first
   for (int8_t client_id = 0; client_id < 5; client_id++) {
     sendAT(GF("+CHTTPDESTROY="), client_id);
+    waitResponse();
+  }
+
+  for (int8_t client_id = 0; client_id < 5; client_id++) {
+    sendAT(GF("+CMQDISCON="), client_id);
     waitResponse();
   }
 
@@ -352,7 +358,9 @@ bool SIM7020GsmModem::reset() {
   return true;
 }
 
-bool SIM7020GsmModem::setCertificate(int8_t type, const char* certificate, int8_t connection_id) {
+bool SIM7020GsmModem::setCertificate(int8_t type,
+                                     const char* certificate,
+                                     int8_t connection_id) {
   /*  type 0 : Root CA
       type 1 : Client CA
       type 2 : Client Private Key

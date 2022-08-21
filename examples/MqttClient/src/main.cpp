@@ -46,7 +46,7 @@ Sample code
 */
 
 #define WAIT_FOR_NON_LOCAL_IPV6
-#define SEND_INTERVAL_MS 5000
+#define SEND_INTERVAL_MS 10000
 //#define USE_INSECURE_HTTP
 
 const char apn[] = "telstra.iot";
@@ -57,7 +57,7 @@ const int16_t port = 1883; // unencrypted, unauthenticated
 // const int16_t port = 1884; // unencrypted, authenticated
 // const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
 // const int16_t port = 8887; // encrypted: certificate deliberately expired
-
+const char client_id[] = "testclient";
 
 // Root certificate for http://v4v6.ipv6-test.com/api/myip.php
 const String root_ca = \
@@ -124,6 +124,7 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
+  //modem.begin(apn, PacketDataProtocolType::IP);
   modem.begin(apn, IPv4v6);
   delay(100);
   SerialMon.print("Setup complete\n");
@@ -153,6 +154,25 @@ bool isReady() {
 void connectedLoop() {
   int now = millis();
   if (now > next_message_ms) {
+    SerialMon.printf("Testing MQTT to: %s\n", server);
+    TestTcpClient testTcpClient(testModem);
+    TestMqttClient testMqttClient(testTcpClient, server, 1883);
+    MqttClient& mqtt = testMqttClient;
+
+    int rc = mqtt.connect(client_id);
+    if (rc != 0) {
+      Serial.printf("MQTT connect error: %d\n", rc);
+      return;
+    }
+
+    // Subscribe
+
+    // Publish
+
+    // Wait for messages
+    //next_disconnect_ms = millis() + WAIT_TIME_MS;
+    //mqtt.disconnect();
+    next_message_ms = millis() + SEND_INTERVAL_MS;
   }
 }
 

@@ -11,8 +11,8 @@ class MqttClient {
 
   // TODO: Need beginPublish(), write(), endPublish()
   virtual int16_t connect(const char client_id[],
-                          const char user_name[],
-                          const char password[]) = 0;
+                          const char user_name[] = NULL,
+                          const char password[] = NULL) = 0;
   // TODO retain, will, etc
   virtual boolean connected() = 0;
   virtual void disconnect() = 0;
