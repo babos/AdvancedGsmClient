@@ -10,9 +10,13 @@ GsmMqttClient::GsmMqttClient(GsmTcpClient& client,
       use_tls(use_tls) {}
 
 String GsmMqttClient::receiveBody() {
-  return String(this->received_body);
+  String s = String(this->received_body);
+  this->received_body[0] = '\0';
+  return s;
 }
 
 String GsmMqttClient::receiveTopic() {
-  return String(this->received_topic);
+  String s = String(this->received_topic);
+  this->received_topic[0] = '\0';
+  return s;
 }

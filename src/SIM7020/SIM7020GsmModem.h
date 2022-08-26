@@ -40,6 +40,7 @@ class SIM7020GsmModem : public GsmModemCommon {
 
  private:
   bool checkUnsolicitedHttpResponse(String& data);
+  bool checkUnsolicitedMqttResponse(String& data);
   bool checkUnsolicitedResponse(String& data);
   bool setCertificate(int8_t type,
                       const char* certificate,

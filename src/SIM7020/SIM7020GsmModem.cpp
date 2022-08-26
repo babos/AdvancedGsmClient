@@ -1,9 +1,10 @@
 #include "SIM7020GsmModem.h"
-
 #include "SIM7020HttpClient.h"
+#include "SIM7020MqttClient.h"
+
+#include "../AdvancedGsm/GsmLog.h"
 
 #include <Arduino.h>
-#include "../AdvancedGsm/GsmLog.h"
 
 SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
@@ -170,6 +171,8 @@ int8_t SIM7020GsmModem::checkResponse(uint32_t timeout_ms,
           continue;
         if (checkUnsolicitedHttpResponse(data))
           continue;
+        if (checkUnsolicitedMqttResponse(data))
+          continue;
       }
     }
   } while (millis() < finish_millis);
@@ -265,6 +268,45 @@ bool SIM7020GsmModem::checkUnsolicitedHttpResponse(String& data) {
                    error_code);
       }
     }
+    data = "";
+    return true;
+  }
+  return false;
+}
+
+bool SIM7020GsmModem::checkUnsolicitedMqttResponse(String& data) {
+  if (data.endsWith(GF("+CMQPUB:"))) {
+    int8_t mqtt_id = streamGetIntBefore(',');
+    SIM7020MqttClient* mqtt_client = mqtt_clients[mqtt_id];
+    streamSkipUntil('"');
+    String topic = this->stream.readStringUntil('"');
+    streamSkipUntil(',');
+    int8_t qos = streamGetIntBefore(',');
+    int8_t retained = streamGetIntBefore(',');
+    int8_t duplicate = streamGetIntBefore(',');
+    int16_t payload_hex_length = streamGetIntBefore(',');
+    int16_t payload_length = payload_hex_length / 2;
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received topic '%s'", mqtt_id, topic);
+    streamSkipUntil('"');
+    if (payload_hex_length > 0) {
+      char hex[3] = {0, 0, 0};
+      for (int i = 0; i < payload_length; i++) {
+        uint32_t startMillis = millis();
+        while (!stream.available() && (millis() - startMillis < 1000)) {
+          TINY_GSM_YIELD();
+        }
+        hex[0] = stream.read();
+        hex[1] = stream.read();
+        if (mqtt_client != nullptr && i < mqtt_client->BodyBufferSize - 1) {
+          mqtt_client->received_body[i] = strtol(hex, NULL, 16);
+        }
+      }
+      mqtt_client->received_body[payload_length] = '\0';
+    }
+    streamSkipUntil('\n');
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received length %d",
+               mqtt_id, payload_length);
+    topic.toCharArray(mqtt_client->received_topic, mqtt_client->TopicBufferSize);
     data = "";
     return true;
   }

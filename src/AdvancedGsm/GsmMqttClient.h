@@ -5,7 +5,7 @@
 #include "GsmTcpClient.h"
 
 class GsmMqttClient : public MqttClient {
- private:
+ protected:
   static const int16_t BodyBufferSize = 2000;
   static const int16_t TopicBufferSize = 100;
 
