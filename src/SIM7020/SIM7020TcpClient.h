@@ -8,6 +8,7 @@ class SIM7020HttpClient;
 
 class SIM7020TcpClient : public GsmTcpClient {
   friend class SIM7020HttpClient;
+  friend class SIM7020MqttClient;
 
  public:
   SIM7020TcpClient(SIM7020GsmModem& modem);

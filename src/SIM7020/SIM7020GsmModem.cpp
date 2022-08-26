@@ -1,9 +1,10 @@
 #include "SIM7020GsmModem.h"
-
 #include "SIM7020HttpClient.h"
+#include "SIM7020MqttClient.h"
+
+#include "../AdvancedGsm/GsmLog.h"
 
 #include <Arduino.h>
-#include "../AdvancedGsm/GsmLog.h"
 
 SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
@@ -48,6 +49,7 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
     }
     String address_line = this->stream.readStringUntil('\n');
     address_line.trim();
+    // TODO: Insert sort with a compareIPAddress() function
     addresses[address_index] = address_line;
     address_index++;
   }
@@ -79,8 +81,8 @@ bool SIM7020GsmModem::connect(const char apn[],
 
   const char* pdpTypeString = pdpType == PacketDataProtocolType::IPv4v6
                                   ? "IPV4V6"
-                              : PacketDataProtocolType::IPv6 ? "IPV6"
-                                                             : "IP";
+                              : pdpType == PacketDataProtocolType::IPv6 ? "IPV6"
+                                                                        : "IP";
 
   ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"),
              pdpTypeString, apn);
@@ -168,6 +170,8 @@ int8_t SIM7020GsmModem::checkResponse(uint32_t timeout_ms,
         if (checkUnsolicitedResponse(data))
           continue;
         if (checkUnsolicitedHttpResponse(data))
+          continue;
+        if (checkUnsolicitedMqttResponse(data))
           continue;
       }
     }
@@ -270,6 +274,45 @@ bool SIM7020GsmModem::checkUnsolicitedHttpResponse(String& data) {
   return false;
 }
 
+bool SIM7020GsmModem::checkUnsolicitedMqttResponse(String& data) {
+  if (data.endsWith(GF("+CMQPUB:"))) {
+    int8_t mqtt_id = streamGetIntBefore(',');
+    SIM7020MqttClient* mqtt_client = mqtt_clients[mqtt_id];
+    streamSkipUntil('"');
+    String topic = this->stream.readStringUntil('"');
+    streamSkipUntil(',');
+    int8_t qos = streamGetIntBefore(',');
+    int8_t retained = streamGetIntBefore(',');
+    int8_t duplicate = streamGetIntBefore(',');
+    int16_t payload_hex_length = streamGetIntBefore(',');
+    int16_t payload_length = payload_hex_length / 2;
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received topic '%s'", mqtt_id, topic);
+    streamSkipUntil('"');
+    if (payload_hex_length > 0) {
+      char hex[3] = {0, 0, 0};
+      for (int i = 0; i < payload_length; i++) {
+        uint32_t startMillis = millis();
+        while (!stream.available() && (millis() - startMillis < 1000)) {
+          TINY_GSM_YIELD();
+        }
+        hex[0] = stream.read();
+        hex[1] = stream.read();
+        if (mqtt_client != nullptr && i < mqtt_client->BodyBufferSize - 1) {
+          mqtt_client->received_body[i] = strtol(hex, NULL, 16);
+        }
+      }
+      mqtt_client->received_body[payload_length] = '\0';
+    }
+    streamSkipUntil('\n');
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received length %d",
+               mqtt_id, payload_length);
+    topic.toCharArray(mqtt_client->received_topic, mqtt_client->TopicBufferSize);
+    data = "";
+    return true;
+  }
+  return false;
+}
+
 bool SIM7020GsmModem::checkUnsolicitedResponse(String& data) {
   if (data.endsWith(GF("+CLTS:"))) {
     //        streamSkipUntil('\n');  // Refresh time and time zone by
@@ -291,6 +334,10 @@ bool SIM7020GsmModem::checkUnsolicitedResponse(String& data) {
     return true;
   }
   return false;
+}
+
+void SIM7020GsmModem::loop() {
+  this->waitResponse(200, NULL, NULL);
 }
 
 bool SIM7020GsmModem::reset() {
@@ -334,8 +381,14 @@ bool SIM7020GsmModem::reset() {
   }
 
   // Clean up any old connections
+  // TODO: Check the list of what exists first
   for (int8_t client_id = 0; client_id < 5; client_id++) {
     sendAT(GF("+CHTTPDESTROY="), client_id);
+    waitResponse();
+  }
+
+  for (int8_t client_id = 0; client_id < 5; client_id++) {
+    sendAT(GF("+CMQDISCON="), client_id);
     waitResponse();
   }
 
@@ -352,7 +405,9 @@ bool SIM7020GsmModem::reset() {
   return true;
 }
 
-bool SIM7020GsmModem::setCertificate(int8_t type, const char* certificate, int8_t connection_id) {
+bool SIM7020GsmModem::setCertificate(int8_t type,
+                                     const char* certificate,
+                                     int8_t connection_id) {
   /*  type 0 : Root CA
       type 1 : Client CA
       type 2 : Client Private Key

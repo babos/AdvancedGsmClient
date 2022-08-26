@@ -2,12 +2,14 @@
 
 GsmHttpClient::GsmHttpClient(GsmTcpClient& client,
                              const char* server_name,
-                             uint16_t server_port)
+                             uint16_t server_port,
+                             bool use_tls)
     : client(&client),
       server_name(server_name),
-      server_port(server_port)  //, //iServerAddress(),
-                                // iConnectionClose(true) //,
-                                // iSendDefaultRequestHeaders(true)
+      server_port(server_port),
+      use_tls(use_tls)  //, //iServerAddress(),
+                        // iConnectionClose(true) //,
+                        // iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
