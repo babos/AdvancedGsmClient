@@ -112,6 +112,8 @@ int next_message_ms = 0;
 GsmModem& modem = testModem;
 bool ready = false;
 
+bool publish_done = false;
+
 void setup() {
 #ifdef ADVGSM_LOG_ENABLED
 #ifdef LOG_OUTPUT
@@ -152,27 +154,48 @@ bool isReady() {
 }
 
 void connectedLoop() {
+  modem.loop();
   int now = millis();
   if (now > next_message_ms) {
-    SerialMon.printf("Testing MQTT to: %s\n", server);
-    TestTcpClient testTcpClient(testModem);
-    TestMqttClient testMqttClient(testTcpClient, server, 1883);
-    MqttClient& mqtt = testMqttClient;
+    if (!publish_done) {
+      SerialMon.printf("Testing MQTT to: %s\n", server);
+      TestTcpClient testTcpClient(testModem);
+      TestMqttClient testMqttClient(testTcpClient, server, 1883);
+      MqttClient& mqtt = testMqttClient;
 
-    int rc = mqtt.connect(client_id);
-    if (rc != 0) {
-      Serial.printf("MQTT connect error: %d\n", rc);
-      return;
+      int rc = mqtt.connect(client_id);
+      if (rc != 0) {
+        Serial.printf("MQTT connect error: %d\n", rc);
+        return;
+      }
+
+      // Subscribe
+      Serial.printf("Subscribing\n");
+      mqtt.subscribe("advgsm/t");
+      delay (200);
+
+      // Publish
+      Serial.printf("Publishing\n");
+      mqtt.publish("advgsm/t", "TestMessage");
+
+      // Wait for messages
+      int finish = millis() + SEND_INTERVAL_MS;
+      while (millis() < finish) {
+        modem.loop();
+        String topic = mqtt.receiveTopic();
+        if (topic.length() > 0) {
+          String body = mqtt.receiveBody();
+          Serial.printf("Received [%s]: %s\n", topic.c_str(), body.c_str());
+        }
+        delay(200);
+      }
+
+      Serial.printf("Disconnecting\n");
+      mqtt.disconnect();
+      
+      Serial.printf("Done\n");
+      publish_done = true;
     }
-
-    // Subscribe
-
-    // Publish
-
-    // Wait for messages
-    //next_disconnect_ms = millis() + WAIT_TIME_MS;
-    //mqtt.disconnect();
-    next_message_ms = millis() + SEND_INTERVAL_MS;
   }
 }
 

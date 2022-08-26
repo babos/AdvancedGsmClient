@@ -12,7 +12,7 @@ class SIM7020MqttClient : public GsmMqttClient {
   static const int16_t buffer_size = 1024;
   static const int16_t clean_session = 1;
   static const int16_t mqtt_keep_alive_s = 600;
-  static const int16_t mqtt_version = 3; // MQTT 3.1
+  static const int16_t mqtt_version = 4; // 3=MQTT 3.1, 4=MQTT 3.1.1
   static const int16_t timeout_ms = 12000;
 
  public:

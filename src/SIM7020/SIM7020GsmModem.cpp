@@ -48,6 +48,7 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
     }
     String address_line = this->stream.readStringUntil('\n');
     address_line.trim();
+    // TODO: Insert sort with a compareIPAddress() function
     addresses[address_index] = address_line;
     address_index++;
   }
@@ -291,6 +292,10 @@ bool SIM7020GsmModem::checkUnsolicitedResponse(String& data) {
     return true;
   }
   return false;
+}
+
+void SIM7020GsmModem::loop() {
+  this->waitResponse(200, NULL, NULL);
 }
 
 bool SIM7020GsmModem::reset() {

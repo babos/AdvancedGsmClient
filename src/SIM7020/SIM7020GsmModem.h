@@ -35,6 +35,7 @@ class SIM7020GsmModem : public GsmModemCommon {
                PacketDataProtocolType pdpType,
                const char username[],
                const char password[]) override;
+  void loop() override;
   bool reset() override;
 
  private:
