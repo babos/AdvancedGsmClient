@@ -42,10 +42,14 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
                      ",0");
   rc = this->modem.waitResponse(60000);
   if (rc == 0) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT %s connect client '%s' timed out"), this->mqtt_id, client_id);
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
+               GF("MQTT %s connect client '%s' timed out"), this->mqtt_id,
+               client_id);
     return -710;
   } else if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT %s connect client '%s' error"), this->mqtt_id, client_id);
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
+               GF("MQTT %s connect client '%s' error"), this->mqtt_id,
+               client_id);
     return -610;
   }
 
@@ -75,8 +79,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
 
   if (this->use_tls) {
     this->modem.sendAT(GF("+CMQTTSNEW=\""), server_name, "\",\"", server_port,
-                       "\",", timeout_ms, ',', buffer_size);
-    rc = this->modem.waitResponse(30000, GF(GSM_NL "+CMQTTSNEW:"));
+                       "\",", 60000, ',', buffer_size);
+    rc = this->modem.waitResponse(120000, GF(GSM_NL "+CMQTTSNEW:"));
     if (rc == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTTS new timed out"));
       return -703;
@@ -91,7 +95,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
                        "\",", timeout_ms, ',', buffer_size);
     rc = this->modem.waitResponse(30000, GF(GSM_NL "+CMQNEW:"));
     if (rc == 0) {
-      ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT (no TLS) new timed out"));
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
+                 GF("MQTT (no TLS) new timed out"));
       return -702;
     } else if (rc != 1) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT (no TLS) new error"));
@@ -105,10 +110,12 @@ int16_t SIM7020MqttClient::createClientInstance() {
   ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("MQTT %d created"), mqtt_id);
   rc = this->modem.waitResponse();
   if (rc == 0) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT %d create ok timed out"), mqtt_id);
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT %d create ok timed out"),
+               mqtt_id);
     return -704;
   } else if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT %d create ok error"), mqtt_id);
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTT %d create ok error"),
+               mqtt_id);
     return -604;
   }
   delay(100);
