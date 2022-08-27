@@ -36,10 +36,10 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
   ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("MQTT %d connecting"), mqtt_id);
 
   // Connect
-  // TODO: Should store client_id as field
+  // TODO: Should store client_id as field?
   this->modem.sendAT(GF("+CMQCON="), this->mqtt_id, ',', mqtt_version, ",\"",
-                     client_id, "\",", mqtt_keep_alive_s, ',', clean_session,
-                     ",0");
+                    client_id, "\",", mqtt_keep_alive_s, ',', clean_session,
+                    ",0,", user_name, ",", password);
   rc = this->modem.waitResponse(60000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7200",

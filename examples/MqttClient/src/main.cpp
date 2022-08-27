@@ -53,11 +53,15 @@ const char apn[] = "telstra.iot";
 
 // See https://test.mosquitto.org/
 const char server[] = "test.mosquitto.org";
-//const int16_t port = 1883; // unencrypted, unauthenticated
-// const int16_t port = 1884; // unencrypted, authenticated
-const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
-// const int16_t port = 8887; // encrypted: certificate deliberately expired
 const char client_id[] = "testclient";
+const char user_name[] = "rw";
+const char password[] = "readwrite";
+
+//const int16_t port = 1883; // unencrypted, unauthenticated
+const int16_t port = 1884; // unencrypted, authenticated
+//const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
+//const int16_t port = 8887; // encrypted: certificate deliberately expired
+
 
 // Root certificate for Let's Encrypt
 const String root_ca = \
@@ -155,10 +159,10 @@ void connectedLoop() {
   int now = millis();
   if (now > next_message_ms) {
     if (!publish_done) {
-      SerialMon.printf("Testing MQTT to: %s (%d)\n", server, port);
+      SerialMon.printf("### Testing MQTT to: %s (%d)\n", server, port);
 
       bool use_tls = false;
-      if (port == 8886) {
+      if (port == 8886 || port == 8887) {
         modem.setRootCA(root_ca);
         use_tls = true;
       }
@@ -167,7 +171,12 @@ void connectedLoop() {
       TestMqttClient testMqttClient(testTcpClient, server, port, use_tls);
       MqttClient& mqtt = testMqttClient;
 
-      int rc = mqtt.connect(client_id);
+      int8_t rc;
+      if (port == 1884) {
+        rc = mqtt.connect(client_id, user_name, password);
+      } else {
+        rc = mqtt.connect(client_id);
+      }
       if (rc != 0) {
         Serial.printf("MQTT connect error: %d\n", rc);
         return;
