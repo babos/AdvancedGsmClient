@@ -37,9 +37,14 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
 
   // Connect
   // TODO: Should store client_id as field?
-  this->modem.sendAT(GF("+CMQCON="), this->mqtt_id, ',', mqtt_version, ",\"",
-                    client_id, "\",", mqtt_keep_alive_s, ',', clean_session,
-                    ",0,", user_name, ",", password);
+  this->modem.stream.printf(GF("AT+CMQCON=%d,%d,\"%s\",%d,%d"),
+                            this->mqtt_id, mqtt_version, client_id, mqtt_keep_alive_s, clean_session);
+  this->modem.stream.print(GF(",0")); // Will
+  if (user_name != nullptr) {
+    this->modem.stream.printf(GF(",%s,%s"), user_name, password);
+  }
+  this->modem.stream.print(GSM_NL);
+
   rc = this->modem.waitResponse(60000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
