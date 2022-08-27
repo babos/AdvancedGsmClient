@@ -45,7 +45,7 @@ Board settings (also see the environment settings in platformio.ini)
 Sample code
 */
 
-//#define WAIT_FOR_NON_LOCAL_IPV6
+#define WAIT_FOR_NON_LOCAL_IPV6
 #define SEND_INTERVAL_MS 10000
 //#define USE_INSECURE_HTTP
 
@@ -123,8 +123,8 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
-  modem.begin(apn, PacketDataProtocolType::IP);
-  //modem.begin(apn, IPv4v6);
+  //modem.begin(apn, PacketDataProtocolType::IP);
+  modem.begin(apn, IPv4v6);
   delay(100);
   SerialMon.print("Setup complete\n");
 }
