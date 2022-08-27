@@ -286,7 +286,8 @@ bool SIM7020GsmModem::checkUnsolicitedMqttResponse(String& data) {
     int8_t duplicate = streamGetIntBefore(',');
     int16_t payload_hex_length = streamGetIntBefore(',');
     int16_t payload_length = payload_hex_length / 2;
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received topic '%s'", mqtt_id, topic);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received topic '%s'",
+               mqtt_id, topic);
     streamSkipUntil('"');
     if (payload_hex_length > 0) {
       char hex[3] = {0, 0, 0};
@@ -306,7 +307,8 @@ bool SIM7020GsmModem::checkUnsolicitedMqttResponse(String& data) {
     streamSkipUntil('\n');
     ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "MQTT %d received length %d",
                mqtt_id, payload_length);
-    topic.toCharArray(mqtt_client->received_topic, mqtt_client->TopicBufferSize);
+    topic.toCharArray(mqtt_client->received_topic,
+                      mqtt_client->TopicBufferSize);
     data = "";
     return true;
   }
@@ -382,12 +384,13 @@ bool SIM7020GsmModem::reset() {
 
   // Clean up any old connections
   // TODO: Check the list of what exists first
-  for (int8_t client_id = 0; client_id < 5; client_id++) {
-    sendAT(GF("+CHTTPDESTROY="), client_id);
-    waitResponse();
-  }
+  // for (int8_t client_id = 0; client_id < 5; client_id++) {
+  //   sendAT(GF("+CHTTPDESTROY="), client_id);
+  //   waitResponse();
+  // }
 
-  for (int8_t client_id = 0; client_id < 5; client_id++) {
+  // for (int8_t client_id = 0; client_id < 5; client_id++) {
+  for (int8_t client_id = 0; client_id < 1; client_id++) {
     sendAT(GF("+CMQDISCON="), client_id);
     waitResponse();
   }
@@ -417,13 +420,16 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
     return false;
   }
 
-  int16_t length = strlen_P(certificate);
+  int16_t length = strlen(certificate);
   int16_t count_escaped = 0;
   for (int16_t i = 0; i < length; i++) {
     if (certificate[i] == '\r' || certificate[i] == '\n') {
       count_escaped++;
     }
   }
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200",
+             GF("Set certificate %d length %d with %d escaped characters"),
+             type, length, count_escaped);
   int16_t total_length = length + count_escaped;
   int8_t is_more = 1;
   int16_t index = 0;
@@ -470,7 +476,13 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
       index++;
     }
     stream.print("\"" GSM_NL);
-    if (waitResponse() != 1) {
+    int8_t rc = waitResponse();
+    if (rc == 0) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
+                 GF("Set certificate timed out"));
+      return false;
+    } else if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("Set certificate error"));
       return false;
     }
   }

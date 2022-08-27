@@ -12,13 +12,13 @@ class SIM7020MqttClient : public GsmMqttClient {
   static const int16_t buffer_size = 1024;
   static const int16_t clean_session = 1;
   static const int16_t mqtt_keep_alive_s = 600;
-  static const int16_t mqtt_version = 4; // 3=MQTT 3.1, 4=MQTT 3.1.1
+  static const int16_t mqtt_version = 4;  // 3=MQTT 3.1, 4=MQTT 3.1.1
   static const int16_t timeout_ms = 12000;
 
  public:
   SIM7020MqttClient(SIM7020TcpClient& client,
                     const char* server_name,
-                    uint16_t server_port = 80,
+                    uint16_t server_port = MqttPort,
                     bool use_tls = false);
 
   int16_t connect(const char client_id[],
@@ -36,7 +36,7 @@ class SIM7020MqttClient : public GsmMqttClient {
   SIM7020GsmModem& modem;
   bool is_connected;
 
-private:
+ private:
   int16_t createClientInstance();
   int16_t createClientInstanceExtended();
 

@@ -22,7 +22,8 @@ enum GsmSeverity {
 class GsmLog {
  public:
   Print* Log = nullptr;
-  const char* Severity[6] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+  const char* Severity[6] = {"TRACE", "DEBUG", "INFO",
+                             "WARN",  "ERROR", "FATAL"};
 };
 
 extern GsmLog AdvancedGsmLog;
@@ -30,8 +31,10 @@ extern GsmLog AdvancedGsmLog;
 // See: https://www.graylog.org/post/log-formats-a-complete-guide
 
 #define ADVGSM_LOG(severity, tag, format, ...)                              \
-  if (AdvancedGsmLog.Log != nullptr && severity >= ADVGSM_LOG_SEVERITY) {       \
-    AdvancedGsmLog.Log->printf("[%d] <%s> %s: ",millis(), AdvancedGsmLog.Severity[(severity - 1)/5], tag);                                        \
+  if (AdvancedGsmLog.Log != nullptr && severity >= ADVGSM_LOG_SEVERITY) {   \
+    AdvancedGsmLog.Log->printf("[%d] <%s> %s: ", millis(),                  \
+                               AdvancedGsmLog.Severity[(severity - 1) / 4], \
+                               tag);                                        \
     AdvancedGsmLog.Log->printf(format __VA_OPT__(, ) __VA_ARGS__);          \
     AdvancedGsmLog.Log->print("\n");                                        \
   }
