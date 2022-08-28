@@ -90,8 +90,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
 
   if (this->use_tls) {
     this->modem.sendAT(GF("+CMQTTSNEW=\""), server_name, "\",\"", server_port,
-                       "\",", 60000, ',', buffer_size);
-    rc = this->modem.waitResponse(120000, GF(GSM_NL "+CMQTTSNEW:"));
+                       "\",", timeout_ms, ',', buffer_size);
+    rc = this->modem.waitResponse(timeout_ms, GF(GSM_NL "+CMQTTSNEW:"));
     if (rc == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTTS new timed out"));
       return -703;
@@ -104,7 +104,7 @@ int16_t SIM7020MqttClient::createClientInstance() {
   } else {
     this->modem.sendAT(GF("+CMQNEW=\""), server_name, "\",\"", server_port,
                        "\",", timeout_ms, ',', buffer_size);
-    rc = this->modem.waitResponse(30000, GF(GSM_NL "+CMQNEW:"));
+    rc = this->modem.waitResponse(timeout_ms, GF(GSM_NL "+CMQNEW:"));
     if (rc == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
                  GF("MQTT (no TLS) new timed out"));

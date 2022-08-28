@@ -122,16 +122,17 @@ void GsmModemCommon::loop() {
         if (success) {
           this->next_check = -1;
         } else {
+          this->retry_count++;
           if (this->retry_count > this->retry_max) {
             ADVGSM_LOG(GsmSeverity::Fatal, "GsmModemCommon", "Connection retry count exceeded; modem shutting down");
             this->active = false;
             this->next_check = -1;
             // TODO: high level communication retry after 1 minute / communication sequence retry, with modem hard reset
+          } else {
+            int32_t delay = retry_base_delay_ms * (1 << (this->retry_count - 1));
+            ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Connection not ready, retry %d delaying for %d ms", this->retry_count, delay);
+            this->next_check = millis() + delay;
           }
-          this->retry_count++;
-          int32_t delay = retry_base_delay_ms * (1 << (this->retry_count - 1));
-          ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Connection not ready, retry %d delaying for %d ms", this->retry_count, delay);
-          this->next_check = millis() + delay;
         }
       }
     }
