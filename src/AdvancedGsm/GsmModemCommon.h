@@ -24,11 +24,12 @@ class GsmModemCommon : public GsmModem {
   String model() override;
   ModemStatus modemStatus() override;
   String network() override;
-  virtual String readResponseLine();
+  String readResponseLine() override;
   RegistrationStatus registrationStatus() override;
+  bool resetDefaultConfiguration() override;
   String revision() override;
   int32_t RSSI() override;
-  virtual void sendATCommand(const char command[]);
+  void sendATCommand(const char command[]) override;
   int8_t waitResponse();
   int8_t waitResponse(GsmConstStr r1,
                       GsmConstStr r2 = GFP(GSM_ERROR),

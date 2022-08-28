@@ -1,4 +1,34 @@
+/*
+GSM modem info example
+
+Build:       pio run -e m5stack-atom
+Deploy:      pio run -e m5stack-atom -t upload
+View result: pio device monitor --baud 115200
+*/
+
+/*
+Log settings (set before including modem)
+*/
+
+// See all AT commands, if wanted
+#define DUMP_AT_COMMANDS
+#define LOG_OUTPUT Serial
+
+/*
+Modem device
+*/
+
+#include "../../../src/SIM7020/SIM7020GsmModem.h"
+
+#define TestModem SIM7020GsmModem
+//#define TestModem SIM7080GsmModem
+
+
 #define GSM_BAUDRATE 115200
+
+/*
+Board settings (also see the environment settings in platformio.ini)
+*/
 
 // Set serial for AT commands (to the module)
 #ifndef SerialAT
@@ -8,20 +38,12 @@
 // Set serial for output console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
 
-// Set serial for debug, if wanted
-#define ADVANCED_GSM_DEBUG Serial;
-
-// See all AT commands, if wanted
-#define DUMP_AT_COMMANDS
-
-#include "../../../src/SIM7020/SIM7020GsmModem.h"
+/*
+Sample code
+*/
 
 #include <Arduino.h>
 
-#define TestModem SIM7020GsmModem
-//#define TestModem SIM7080GsmModem
-
-// Allocate memory for concrete object
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, SerialMon);
@@ -31,6 +53,9 @@ TestModem testModem(SerialAT);
 #endif
 
 const char apn[] = "telstra.iot";
+const PacketDataProtocolType pdp_type =
+    PacketDataProtocolType::IPv4v6;  // default
+// const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
 
 #define LOOP_INTERVAL_MS 200
 #define LOOP_MAX_MS 2500
@@ -41,11 +66,24 @@ GsmModem& modem = testModem;
 int32_t next_report = 0;
 
 void setup() {
+#if ADVGSM_LOG_SEVERITY > 0
+#ifdef LOG_OUTPUT
+  AdvancedGsmLog.Log = &LOG_OUTPUT;
+#endif
+#endif
+
   SerialMon.begin(115200);
   delay(5000);
   SerialMon.print("Modem information\n");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
+
+  modem.resetDefaultConfiguration();
+  delay(100);
+  modem.sendATCommand("E0"); // turn echo off
+  while (modem.readResponseLine().indexOf("OK") < 0) {
+    delay(100);
+  }
 
   String manufacturer = modem.manufacturer();
   String model = modem.model();
@@ -61,7 +99,7 @@ void setup() {
   Serial.printf("IMSI: %s\n", imsi.c_str());
   Serial.printf("ICCID: %s\n", iccid.c_str());
 
-  modem.begin(apn);
+  modem.begin(apn, pdp_type);
 }
 
 void loop() {

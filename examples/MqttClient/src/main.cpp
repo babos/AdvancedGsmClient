@@ -124,6 +124,7 @@ void setup() {
   AdvancedGsmLog.Log = &LOG_OUTPUT;
 #endif
 #endif
+
   SerialMon.begin(115200);
   delay(5000);
   SerialMon.printf("### MQTT client example started at %d\n", millis());

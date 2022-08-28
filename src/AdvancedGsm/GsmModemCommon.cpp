@@ -372,6 +372,19 @@ RegistrationStatus GsmModemCommon::registrationStatus() {
   return static_cast<RegistrationStatus>(status);
 }
 
+bool GsmModemCommon::resetDefaultConfiguration() {
+  ADVGSM_LOG(GsmSeverity::Info, "GsmModemCommon", "Resetting default configuration");
+  sendAT(GF("Z"));
+  int8_t rc = waitResponse();
+  if (rc != 1) {
+    ADVGSM_LOG(GsmSeverity::Warn, "GsmModemCommon", "Reset %s",
+                (rc == 0) ? "timed out" : "error");
+    return false;
+  }
+  ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Reset success");
+  return true;
+}
+
 String GsmModemCommon::revision() {
   this->sendAT(GF("+CGMR"));
   String response;

@@ -63,6 +63,7 @@ class GsmModem {
   virtual String network() = 0;
   virtual String readResponseLine() = 0;
   virtual RegistrationStatus registrationStatus() = 0;
+  virtual bool resetDefaultConfiguration() = 0;
   virtual String revision() = 0;
   // RSSI is in dBm
   virtual int32_t RSSI() = 0;

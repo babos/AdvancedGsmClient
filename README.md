@@ -54,6 +54,8 @@ Initialise the modem and output model details, and card details.
 
 Then configure the Access Point Name, enable the radio, and begin.
 
+**NOTE:** This loop in this example is now out of date, as begin() handles checking as much status as it can (see the debug output for timings).
+
 The loop then checks the modem status for if it has signal, if it has connected to an operator, and then when it has started the packet data protocol and started to receive IP addresses.
 
 An IPv4 address is assigned on first connection, as is an IPv6 suffix (if enabled), which allows a link-local address (`fed80:` prefix) to be automatically configured.
@@ -91,8 +93,19 @@ OK
 
 ### MQTT client
 
-TODO
+`examples/MqttClient`
 
+Test connections to test.mosquitto.org are working for plain (1883), authenticated (1884), and with a Lets Encrypt public certificate (8886), using an M5Stack Atom with the NB-IoT Atom DTU, which has a SIM7020. Connections have been tested with both dual stack (test.mosquitto.org has IPv6) and IPv4, with Telstra (Australia).
+
+The test program starts the modem, and once the packet data connection is ready it connects (using certificates and username as needed), subscribes to "advgsm/t", sends a message to the same topic, and then waits for the response to be echoed, then disconnects.
+
+This component 
+
+**NOTE:** Note all features, e.g. QoS, have been implemented yet.
+
+### LwM2M Client
+
+TBA.
 
 ## Sources
 
