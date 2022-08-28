@@ -479,6 +479,14 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
   //
   // The global IPv6 address has to wait for a router advertisement with the
   // prefix (not exposed in AT commands)
+  //
+  // Rather than the above order, use insert sort to sort the largest scope (global) first, then in RFC 6724 precedence order,
+  // which puts the two public addresses first:
+  //
+  //   2001:8004:4810:0:719d:1439:899a:42d7
+  //   10.88.134.167
+  //   fe80:0:0:0:719d:1439:899a:42d7
+  //   127.0.0.1
 
   this->sendAT(GF("+IPCONFIG"));
 
@@ -492,6 +500,7 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
     }
     String address_line = this->stream.readStringUntil('\n');
     address_line.trim();
+    // Insert sort in priority order
     int8_t insert = address_index;
     while (insert > 0 && compareIPAddress(addresses[insert - 1].c_str(), address_line.c_str()) > 0) {
       addresses[insert] = addresses[insert - 1];
