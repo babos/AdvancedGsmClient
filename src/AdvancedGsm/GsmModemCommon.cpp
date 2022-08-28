@@ -15,14 +15,18 @@ void GsmModemCommon::begin(const char access_point_name[],
   this->user_name = user_name ? user_name : "";
   this->password = password ? password : "";
 
-  ADVGSM_LOG(GsmSeverity::Info, "GsmModemCommon", GF("Begin connection to %s@%s (%d)"), this->user_name, this->access_point_name, this->pdp_type);
+  ADVGSM_LOG(GsmSeverity::Info, "GsmModemCommon",
+             GF("Begin connection to %s@%s (%d)"), this->user_name,
+             this->access_point_name, this->pdp_type);
 
   this->active = true;
   bool success = checkConnection();
   if (!success) {
     this->retry_count++;
     int32_t delay = retry_base_delay_ms * (1 << (this->retry_count - 1));
-    ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Connection not ready, retry %d delaying for %d ms", this->retry_count, delay);
+    ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon",
+               "Connection not ready, retry %d delaying for %d ms",
+               this->retry_count, delay);
     this->next_check = millis() + delay;
   }
 }
@@ -101,6 +105,10 @@ String GsmModemCommon::IMSI() {
   return response;
 }
 
+bool GsmModemCommon::isActive() {
+  return this->active;
+}
+
 String GsmModemCommon::localIP(uint8_t index) {
   String addresses[index];
   uint8_t count = getLocalIPs(addresses, index);
@@ -114,7 +122,6 @@ void GsmModemCommon::loop() {
   // Serial.print("GsmModemCommon::loop\n");
   //  TODO: Heartbeat check on connection
   if (this->active) {
-
     // If not ready, then check connection status, with back off delay
     if (this->status < ModemStatus::PacketDataReady) {
       if (this->next_check > -1 && millis() > this->next_check) {
@@ -124,13 +131,18 @@ void GsmModemCommon::loop() {
         } else {
           this->retry_count++;
           if (this->retry_count > this->retry_max) {
-            ADVGSM_LOG(GsmSeverity::Fatal, "GsmModemCommon", "Connection retry count exceeded; modem shutting down");
+            ADVGSM_LOG(GsmSeverity::Fatal, "GsmModemCommon",
+                       "Connection retry count exceeded; modem shutting down");
             this->active = false;
             this->next_check = -1;
-            // TODO: high level communication retry after 1 minute / communication sequence retry, with modem hard reset
+            // TODO: high level communication retry after 1 minute /
+            // communication sequence retry, with modem hard reset
           } else {
-            int32_t delay = retry_base_delay_ms * (1 << (this->retry_count - 1));
-            ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Connection not ready, retry %d delaying for %d ms", this->retry_count, delay);
+            int32_t delay =
+                retry_base_delay_ms * (1 << (this->retry_count - 1));
+            ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon",
+                       "Connection not ready, retry %d delaying for %d ms",
+                       this->retry_count, delay);
             this->next_check = millis() + delay;
           }
         }
@@ -139,7 +151,6 @@ void GsmModemCommon::loop() {
 
     // For any unsolicited responses
     this->waitResponse(GSM_COMMAND_DELAY_MS, NULL, NULL);
-
   }
 }
 

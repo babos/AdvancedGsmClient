@@ -53,6 +53,7 @@ class GsmModem {
   virtual String ICCID() = 0;
   virtual String IMEI() = 0;
   virtual String IMSI() = 0;
+  virtual bool isActive() = 0;
   // virtual IPAddress localIP(uint8_t index = 0) = 0
   virtual String localIP(uint8_t index = 0) = 0;
   virtual void loop() = 0;

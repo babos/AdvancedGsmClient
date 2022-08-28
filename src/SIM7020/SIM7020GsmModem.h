@@ -26,12 +26,12 @@ class SIM7020GsmModem : public GsmModemCommon {
 
   bool checkConnection() override;
   int8_t checkResponse(uint32_t timeout_ms,
-                               String& data,
-                               GsmConstStr r1 = GFP(GSM_OK),
-                               GsmConstStr r2 = GFP(GSM_ERROR),
-                               GsmConstStr r3 = NULL,
-                               GsmConstStr r4 = NULL,
-                               GsmConstStr r5 = NULL) override;
+                       String& data,
+                       GsmConstStr r1 = GFP(GSM_OK),
+                       GsmConstStr r2 = GFP(GSM_ERROR),
+                       GsmConstStr r3 = NULL,
+                       GsmConstStr r4 = NULL,
+                       GsmConstStr r5 = NULL) override;
 
  private:
   bool checkUnsolicitedHttpResponse(String& data);

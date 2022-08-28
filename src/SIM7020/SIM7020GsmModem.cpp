@@ -14,7 +14,8 @@ bool SIM7020GsmModem::checkConnection() {
     sendAT(GF(""));
     rc = waitResponse();
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Attention %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Attention %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Attention success");
@@ -28,7 +29,8 @@ bool SIM7020GsmModem::checkConnection() {
     sendAT(GF("E0"));
     rc = waitResponse();
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting echo off %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting echo off %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     this->status = (ModemStatus)(ModemStatus::Attention + 1);
@@ -37,10 +39,11 @@ bool SIM7020GsmModem::checkConnection() {
 
   if (this->status < ModemStatus::Attention + 2) {
     // TODO: Support error codes, e.g. E2
-    sendAT(GF("+CMEE=0"));  
+    sendAT(GF("+CMEE=0"));
     rc = waitResponse();
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting disable error codes %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting disable error codes %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     this->status = (ModemStatus)(ModemStatus::Attention + 2);
@@ -52,7 +55,8 @@ bool SIM7020GsmModem::checkConnection() {
     sendAT(GF("+CLTS=1"));
     rc = waitResponse();
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting enable timestamp %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting enable timestamp %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     this->status = (ModemStatus)(ModemStatus::Attention + 3);
@@ -64,7 +68,9 @@ bool SIM7020GsmModem::checkConnection() {
     sendAT(GF("+CBATCHK=1"));
     rc = waitResponse();
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting enable battery checks %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200",
+                 "Setting enable battery checks %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     this->status = (ModemStatus)(ModemStatus::Attention + 4);
@@ -76,7 +82,8 @@ bool SIM7020GsmModem::checkConnection() {
     sendAT(GF("+CGPIAF=1,1,0,1"));
     rc = waitResponse();
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting IPv6 address format %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting IPv6 address format %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     this->status = (ModemStatus)(ModemStatus::Attention + 5);
@@ -100,7 +107,8 @@ bool SIM7020GsmModem::checkConnection() {
       ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for signal");
       return false;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Received Signal Strength Indicator: %d dBm", rssi_dbm);
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+               "Received Signal Strength Indicator: %d dBm", rssi_dbm);
     this->status = ModemStatus::HasSignal;
     delay(GSM_COMMAND_DELAY_MS);
   }
@@ -112,20 +120,30 @@ bool SIM7020GsmModem::checkConnection() {
       case RegistrationStatus::RegisteredRoaming:
         break;
       default:
-        ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for registration (%d)%s", registration_status, (registration_status == RegistrationStatus::Searching) ? ": Searching" : "");
+        ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+                   "Waiting for registration (%d)%s", registration_status,
+                   (registration_status == RegistrationStatus::Searching)
+                       ? ": Searching"
+                       : "");
         return false;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Registered (%d)%s", registration_status, (registration_status == RegistrationStatus::RegisteredHome) ? ": Home" : "");
+    ADVGSM_LOG(
+        GsmSeverity::Debug, "SIM7200", "Registered (%d)%s", registration_status,
+        (registration_status == RegistrationStatus::RegisteredHome) ? ": Home"
+                                                                    : "");
     this->status = ModemStatus::Registered;
     delay(GSM_COMMAND_DELAY_MS);
   }
 
   if (this->status < ModemStatus::PacketDataReady) {
-    // SIM7020 Manual says "AT+CGCONTRDP=[<cid>]", however TS 27.007 says "AT+CGCONTRDP[=<cid>]", and adding "=0" returns ERROR
+    // SIM7020 Manual says "AT+CGCONTRDP=[<cid>]", however TS 27.007 says
+    // "AT+CGCONTRDP[=<cid>]", and adding "=0" returns ERROR
     sendAT(GF("+CGCONTRDP"));
     rc = waitResponse("+CGCONTRDP:");
     if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for packet data context dynamic parameters %s", (rc == 0) ? "timed out" : "error");
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+                 "Waiting for packet data context dynamic parameters %s",
+                 (rc == 0) ? "timed out" : "error");
       return false;
     }
     rc = waitResponse();
@@ -141,16 +159,22 @@ bool SIM7020GsmModem::confirmPacketDataConfiguration() {
   int8_t rc;
 
   // Based on "APN Manual Configuration", from SIM7020 TCPIP Application Note
-  const char* pdp_type_string = this->pdp_type == PacketDataProtocolType::IPv4v6
-                                  ? "IPV4V6"
-                              : this->pdp_type == PacketDataProtocolType::IPv6 ? "IPV6"
-                                                                        : "IP";
-  char configuration_string[512] = { 0 };
-  int16_t len1 = snprintf(configuration_string, sizeof(configuration_string), "\"%s\",\"%s\"", pdp_type_string, this->access_point_name);
+  const char* pdp_type_string =
+      this->pdp_type == PacketDataProtocolType::IPv4v6 ? "IPV4V6"
+      : this->pdp_type == PacketDataProtocolType::IPv6 ? "IPV6"
+                                                       : "IP";
+  char configuration_string[512] = {0};
+  int16_t len1 =
+      snprintf(configuration_string, sizeof(configuration_string),
+               "\"%s\",\"%s\"", pdp_type_string, this->access_point_name);
   if (this->user_name && strlen(this->user_name) > 0) {
-    int16_t len2 = snprintf(configuration_string + len1, sizeof(configuration_string) - len1, ",\"%s\"", this->user_name);
+    int16_t len2 = snprintf(configuration_string + len1,
+                            sizeof(configuration_string) - len1, ",\"%s\"",
+                            this->user_name);
     if (this->password && strlen(this->password) > 0) {
-      int16_t len3 = snprintf(configuration_string + len1 + len2, sizeof(configuration_string) - len1 - len2, ",\"%s\"", this->password);
+      int16_t len3 = snprintf(configuration_string + len1 + len2,
+                              sizeof(configuration_string) - len1 - len2,
+                              ",\"%s\"", this->password);
     }
   }
 
@@ -158,23 +182,28 @@ bool SIM7020GsmModem::confirmPacketDataConfiguration() {
   sendAT(GF("*MCGDEFCONT?"));
   rc = waitResponse("*MCGDEFCONT:");
   if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Getting default context %s", (rc == 0) ? "timed out" : "error");
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Getting default context %s",
+               (rc == 0) ? "timed out" : "error");
   } else {
     String default_context = this->stream.readStringUntil('\n');
     default_context.trim();
-    if (default_context == configuration_string)
-    {
-      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Already configured: %s@%s (%s)", this->user_name, this->access_point_name, pdp_type_string);
+    if (default_context == configuration_string) {
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+                 "Already configured: %s@%s (%s)", this->user_name,
+                 this->access_point_name, pdp_type_string);
       return true;
     }
   }
 
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", "Reconfiguring default packet data context: %s@%s (%s)", this->user_name, this->access_point_name, pdp_type_string);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200",
+             "Reconfiguring default packet data context: %s@%s (%s)",
+             this->user_name, this->access_point_name, pdp_type_string);
 
   sendAT(GF("+CFUN=0"));
   rc = waitResponse();
   if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Disabling radio %s", (rc == 0) ? "timed out" : "error");
+    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Disabling radio %s",
+               (rc == 0) ? "timed out" : "error");
   }
   delay(GSM_COMMAND_DELAY_MS);
 
@@ -188,7 +217,8 @@ bool SIM7020GsmModem::confirmPacketDataConfiguration() {
   sendAT(GF("*MCGDEFCONT="), configuration_string);
   rc = waitResponse();
   if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting default context %s", (rc == 0) ? "timed out" : "error");
+    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting default context %s",
+               (rc == 0) ? "timed out" : "error");
     return false;
   }
   delay(GSM_COMMAND_DELAY_MS);
@@ -196,11 +226,13 @@ bool SIM7020GsmModem::confirmPacketDataConfiguration() {
   sendAT(GF("+CFUN=1"));
   rc = waitResponse();
   if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Enabling radio %s", (rc == 0) ? "timed out" : "error");
+    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Enabling radio %s",
+               (rc == 0) ? "timed out" : "error");
     return false;
   }
 
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Default packet data context reconfigured");
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+             "Default packet data context reconfigured");
   return true;
 }
 
@@ -482,37 +514,37 @@ String SIM7020GsmModem::ICCID() {
   return response;
 }
 
-// TODO: Handle these, e.g. move the HTTP / MQTT destroy into the relevant sections
+// TODO: Handle these, e.g. move the HTTP / MQTT destroy into the relevant
+// sections
 
-  // sendAT(GF("Z"));  // Reset (to user settings)
-  // if (waitResponse(30000) != 1) {
-  //   return false;
-  // }
+// sendAT(GF("Z"));  // Reset (to user settings)
+// if (waitResponse(30000) != 1) {
+//   return false;
+// }
 
+// Clean up any old connections
+// TODO: Check the list of what exists first
+// for (int8_t client_id = 0; client_id < 5; client_id++) {
+//   sendAT(GF("+CHTTPDESTROY="), client_id);
+//   waitResponse();
+// }
 
-  // Clean up any old connections
-  // TODO: Check the list of what exists first
-  // for (int8_t client_id = 0; client_id < 5; client_id++) {
-  //   sendAT(GF("+CHTTPDESTROY="), client_id);
-  //   waitResponse();
-  // }
+// for (int8_t client_id = 0; client_id < 5; client_id++) {
+// for (int8_t client_id = 0; client_id < 1; client_id++) {
+//   sendAT(GF("+CMQDISCON="), client_id);
+//   waitResponse();
+// }
 
-  // for (int8_t client_id = 0; client_id < 5; client_id++) {
-  // for (int8_t client_id = 0; client_id < 1; client_id++) {
-  //   sendAT(GF("+CMQDISCON="), client_id);
-  //   waitResponse();
-  // }
-
-  // SimStatus ret = getSimStatus();
-  // // if the sim isn't ready and a pin has been provided, try to unlock the
-  // sim if (ret != SIM_READY && pin != NULL && strlen(pin) > 0) {
-  //   simUnlock(pin);
-  //   return (getSimStatus() == SIM_READY);
-  // } else {
-  //   // if the sim is ready, or it's locked but no pin has been provided,
-  //   // return true
-  //   return (ret == SIM_READY || ret == SIM_LOCKED);
-  // }
+// SimStatus ret = getSimStatus();
+// // if the sim isn't ready and a pin has been provided, try to unlock the
+// sim if (ret != SIM_READY && pin != NULL && strlen(pin) > 0) {
+//   simUnlock(pin);
+//   return (getSimStatus() == SIM_READY);
+// } else {
+//   // if the sim is ready, or it's locked but no pin has been provided,
+//   // return true
+//   return (ret == SIM_READY || ret == SIM_LOCKED);
+// }
 
 bool SIM7020GsmModem::setCertificate(int8_t type,
                                      const char* certificate,

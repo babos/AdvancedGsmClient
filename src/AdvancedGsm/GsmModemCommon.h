@@ -17,6 +17,7 @@ class GsmModemCommon : public GsmModem {
   String ICCID() override;
   String IMEI() override;
   String IMSI() override;
+  bool isActive() override;
   String localIP(uint8_t index = 0) override;
   void loop() override;
   String manufacturer() override;
@@ -57,7 +58,7 @@ class GsmModemCommon : public GsmModem {
   PacketDataProtocolType pdp_type;
   int16_t retry_base_delay_ms = 250;
   int8_t retry_count = 0;
-  int8_t retry_max = 8;    
+  int8_t retry_max = 8;
   ModemStatus status;
   Stream& stream;
   const char* user_name;
@@ -72,12 +73,12 @@ class GsmModemCommon : public GsmModem {
   // inline bool streamSkipUntil(const char c, const uint32_t timeout_ms =
   // 1000L):
   virtual int8_t checkResponse(uint32_t timeout_ms,
-                                    String& data,
-                                    GsmConstStr r1 = GFP(GSM_OK),
-                                    GsmConstStr r2 = GFP(GSM_ERROR),
-                                    GsmConstStr r3 = NULL,
-                                    GsmConstStr r4 = NULL,
-                                    GsmConstStr r5 = NULL) = 0;
+                               String& data,
+                               GsmConstStr r1 = GFP(GSM_OK),
+                               GsmConstStr r2 = GFP(GSM_ERROR),
+                               GsmConstStr r3 = NULL,
+                               GsmConstStr r4 = NULL,
+                               GsmConstStr r5 = NULL) = 0;
 
   // Define template functions in the header, so that derived classes
   // instantiate See:
