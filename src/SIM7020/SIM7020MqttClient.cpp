@@ -13,11 +13,8 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
 int16_t SIM7020MqttClient::connect(const char client_id[],
                                    const char user_name[],
                                    const char password[]) {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("MQTT connect client %s"),
-             client_id);
-
-  int16_t rc;
   // Create if needed
+  int16_t rc;
   if (this->mqtt_id == -1) {
     // if (use_tls && this->server_ca != nullptr) {
     //   rc = createClientInstanceExtended();
@@ -33,13 +30,15 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
     this->modem.mqtt_clients[this->mqtt_id] = this;
   }
 
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("MQTT %d connecting"), mqtt_id);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("MQTT %d connect client %s@%s"),
+             mqtt_id, user_name ? user_name : "", client_id);
 
   // Connect
   // TODO: Should store client_id as field?
-  this->modem.stream.printf(GF("AT+CMQCON=%d,%d,\"%s\",%d,%d"),
-                            this->mqtt_id, mqtt_version, client_id, mqtt_keep_alive_s, clean_session);
-  this->modem.stream.print(GF(",0")); // Will
+  this->modem.stream.printf(GF("AT+CMQCON=%d,%d,\"%s\",%d,%d"), this->mqtt_id,
+                            mqtt_version, client_id, mqtt_keep_alive_s,
+                            clean_session);
+  this->modem.stream.print(GF(",0"));  // Will
   if (user_name != nullptr) {
     this->modem.stream.printf(GF(",%s,%s"), user_name, password);
   }
@@ -67,9 +66,15 @@ boolean SIM7020MqttClient::connected() {
 }
 
 int16_t SIM7020MqttClient::createClientInstance() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
-             GF("MQTT creating instance %s, %d (%d)"), server_name, server_port,
-             use_tls);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200",
+             GF("MQTT creating instance %s, %d (TLS %d)"), server_name,
+             server_port, use_tls);
+
+  // TODO: Confirm if it already exists and selectively clean up
+  for (int8_t client_id = 0; client_id < 1; client_id++) {
+    this->modem.sendAT(GF("+CMQDISCON="), client_id);
+    this->modem.waitResponse();
+  }
 
   int16_t rc;
   this->modem.sendAT(GF("+CMQTSYNC=1"));
@@ -84,8 +89,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
 
   if (this->use_tls) {
     this->modem.sendAT(GF("+CMQTTSNEW=\""), server_name, "\",\"", server_port,
-                       "\",", 60000, ',', buffer_size);
-    rc = this->modem.waitResponse(120000, GF(GSM_NL "+CMQTTSNEW:"));
+                       "\",", timeout_ms, ',', buffer_size);
+    rc = this->modem.waitResponse(timeout_ms, GF(GSM_NL "+CMQTTSNEW:"));
     if (rc == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7200", GF("MQTTS new timed out"));
       return -703;
@@ -98,7 +103,7 @@ int16_t SIM7020MqttClient::createClientInstance() {
   } else {
     this->modem.sendAT(GF("+CMQNEW=\""), server_name, "\",\"", server_port,
                        "\",", timeout_ms, ',', buffer_size);
-    rc = this->modem.waitResponse(30000, GF(GSM_NL "+CMQNEW:"));
+    rc = this->modem.waitResponse(timeout_ms, GF(GSM_NL "+CMQNEW:"));
     if (rc == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7200",
                  GF("MQTT (no TLS) new timed out"));
@@ -134,7 +139,7 @@ int16_t SIM7020MqttClient::createClientInstanceExtended() {
 
 void SIM7020MqttClient::disconnect() {
   if (this->mqtt_id > -1) {
-    ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("MQTT %s disconnect"),
+    ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("MQTT %d disconnect"),
                this->mqtt_id)
     this->modem.sendAT(GF("+CMQDISCON="), this->mqtt_id);
     this->modem.waitResponse(30000);

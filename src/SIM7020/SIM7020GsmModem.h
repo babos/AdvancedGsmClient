@@ -24,24 +24,20 @@ class SIM7020GsmModem : public GsmModemCommon {
   SIM7020HttpClient* http_clients[GSM_MUX_COUNT];
   SIM7020MqttClient* mqtt_clients[GSM_MUX_COUNT];
 
-  virtual int8_t checkResponse(uint32_t timeout_ms,
-                               String& data,
-                               GsmConstStr r1 = GFP(GSM_OK),
-                               GsmConstStr r2 = GFP(GSM_ERROR),
-                               GsmConstStr r3 = NULL,
-                               GsmConstStr r4 = NULL,
-                               GsmConstStr r5 = NULL) override;
-  bool connect(const char apn[],
-               PacketDataProtocolType pdpType,
-               const char username[],
-               const char password[]) override;
-  void loop() override;
-  bool reset() override;
+  bool checkConnection() override;
+  int8_t checkResponse(uint32_t timeout_ms,
+                       String& data,
+                       GsmConstStr r1 = GFP(GSM_OK),
+                       GsmConstStr r2 = GFP(GSM_ERROR),
+                       GsmConstStr r3 = NULL,
+                       GsmConstStr r4 = NULL,
+                       GsmConstStr r5 = NULL) override;
 
  private:
   bool checkUnsolicitedHttpResponse(String& data);
   bool checkUnsolicitedMqttResponse(String& data);
   bool checkUnsolicitedResponse(String& data);
+  bool confirmPacketDataConfiguration();
   bool setCertificate(int8_t type,
                       const char* certificate,
                       int8_t connection_id = -1);

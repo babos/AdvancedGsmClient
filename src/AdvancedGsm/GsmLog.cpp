@@ -1,5 +1,5 @@
 #include "GsmLog.h"
 
-#ifdef ADVGSM_LOG_ENABLED
+#if ADVGSM_LOG_SEVERITY > 0
 GsmLog AdvancedGsmLog;
 #endif

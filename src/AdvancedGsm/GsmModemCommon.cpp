@@ -6,15 +6,159 @@
 
 GsmModemCommon::GsmModemCommon(Stream& stream) : stream(stream) {}
 
-void GsmModemCommon::begin(const char accessPointName[],
-                           PacketDataProtocolType pdpType,
-                           const char username[],
+void GsmModemCommon::begin(const char access_point_name[],
+                           PacketDataProtocolType pdp_type,
+                           const char user_name[],
                            const char password[]) {
-  if (!reset()) {
-    ADVGSM_LOG(GsmSeverity::Error, "GsmModemCommon", GF("Reset failed"));
-    return;
+  this->access_point_name = access_point_name ? access_point_name : "";
+  this->pdp_type = pdp_type;
+  this->user_name = user_name ? user_name : "";
+  this->password = password ? password : "";
+
+  ADVGSM_LOG(GsmSeverity::Info, "GsmModemCommon",
+             GF("Begin connection to %s@%s (%d)"), this->user_name,
+             this->access_point_name, this->pdp_type);
+
+  this->active = true;
+  bool success = checkConnection();
+  if (!success) {
+    this->retry_count++;
+    int32_t delay = retry_base_delay_ms * (1 << (this->retry_count - 1));
+    ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon",
+               "Connection not ready, retry %d delaying for %d ms",
+               this->retry_count, delay);
+    this->next_check = millis() + delay;
   }
-  connect(accessPointName, pdpType, username, password);
+}
+
+int8_t GsmModemCommon::compareIPAddress(const char ip_a[], const char ip_b[]) {
+  // For sorting IP Addresses in the order they are likely to be used as a
+  // server or appear in logs. Apply RFC 6724, assuming the destination is a
+  // public address scope (and then in reducing scope), and preferring stable
+  // (over temporary) addresses, e.g. if device is a server. Won't always be
+  // correct (e.g. if on local link, or if using IPv4 when v6 available), but
+  // provides a reasonable order of preference.
+
+  // Note: When IPAddress supports IPv6, then this can be easier done by byte,
+  // rather than string, comparison. (Also IPAddress might get a built in
+  // scope() property)
+
+  // IPv6 defined scope, or IPv4 scope equivalence from RFC 6724
+  int8_t scope_a;
+  int8_t scope_b;
+
+  if (strcmp(ip_a, "::") == 0 || strcmp(ip_a, "0.0.0.0") == 0) {
+    // Undefined
+    scope_a = 0;
+  } else if (strncmp(ip_a, "fe80:", 5) == 0 || strcmp(ip_a, "::1") == 0) {
+    // Link-local or loopback
+    scope_a = 0x2;
+  } else if (strncmp(ip_a, "ff0", 3) == 0) {
+    // IPv6 multicast scope
+    char scope_hex = tolower(ip_a[3]);
+    scope_a = scope_hex < 'a' ? scope_hex - '0' : scope_hex + 10 - 'a';
+  } else if (strncmp(ip_a, "169.254.", 8) == 0 ||
+             strncmp(ip_a, "127.", 4) == 0) {
+    // IPv4 link-local or loopback
+    scope_a = 0x2;
+  } else {
+    // global
+    scope_a = 0xe;
+  }
+
+  if (strcmp(ip_b, "::") == 0 || strcmp(ip_b, "0.0.0.0") == 0) {
+    // Undefined
+    scope_b = 0;
+  } else if (strncmp(ip_b, "fe80:", 5) == 0 || strcmp(ip_b, "::1") == 0) {
+    // Link-local or loopback
+    scope_b = 0x2;
+  } else if (strncmp(ip_b, "ff0", 3) == 0) {
+    // IPv6 multicast scope
+    char scope_hex = tolower(ip_b[3]);
+    scope_b = scope_hex < 'a' ? scope_hex - '0' : scope_hex + 10 - 'a';
+  } else if (strncmp(ip_b, "169.254.", 8) == 0 ||
+             strncmp(ip_b, "127.", 4) == 0) {
+    // IPv4 link-local or loopback
+    scope_b = 0x2;
+  } else {
+    // global
+    scope_b = 0xe;
+  }
+
+  ADVGSM_LOG(GsmSeverity::Trace, "GsmModemCommon", "Scope A %s %d vs B %s %d",
+             ip_a, scope_a, ip_b, scope_b);
+
+  // Prioritise larger scope (i.e. global) over smaller
+  if (scope_b - scope_a != 0) {
+    return scope_b - scope_a;
+  }
+
+  // From RFC 6724 default table
+  int8_t precedence_a;
+  int8_t precedence_b;
+
+  if (strcmp(ip_a, "::1") == 0) {
+    precedence_a = 50;
+  } else if (strncmp(ip_a, "::ffff:0:0:", 11) == 0 ||
+             strchr(ip_a, ':') == nullptr) {
+    // Any IPv4
+    precedence_a = 35;
+  } else if (strncmp(ip_a, "2002:", 5) == 0) {
+    // 6to4 tunnel 2002://16
+    precedence_a = 30;
+  } else if (strncmp(ip_a, "2001::", 6) == 0 ||
+             strncmp(ip_a, "2001:0:", 7) == 0) {
+    // Teredo tunnel 2001::/32
+    precedence_a = 5;
+  } else if (strncmp(ip_a, "fc", 2) == 0) {
+    // ULA fc00::/7
+    precedence_a = 3;
+  } else if (strncmp(ip_a, "3ffe:", 5) == 0 || strncmp(ip_a, "fec0:", 5) == 0 ||
+             strncmp(ip_a, "::", 2) == 0) {
+    // Note: Netmask not correctly checked
+    precedence_a = 1;
+  } else {
+    // Any IPv6
+    precedence_a = 40;
+  }
+
+  if (strcmp(ip_b, "::1") == 0) {
+    precedence_b = 50;
+  } else if (strncmp(ip_b, "::ffff:0:0:", 11) == 0 ||
+             strchr(ip_b, ':') == nullptr) {
+    // Any IPv4
+    precedence_b = 35;
+  } else if (strncmp(ip_b, "2002:", 5) == 0) {
+    // 6to4 tunnel 2002://16
+    precedence_b = 30;
+  } else if (strncmp(ip_b, "2001::", 6) == 0 ||
+             strncmp(ip_b, "2001:0:", 7) == 0) {
+    // Teredo tunnel 2001::/32
+    precedence_b = 5;
+  } else if (strncmp(ip_b, "fc", 2) == 0) {
+    // ULA fc00::/7
+    precedence_b = 3;
+  } else if (strncmp(ip_b, "3ffe:", 5) == 0 || strncmp(ip_b, "fec0:", 5) == 0 ||
+             strncmp(ip_b, "::", 2) == 0) {
+    // Note: Netmask not correctly checked
+    precedence_b = 1;
+  } else {
+    // Any IPv6
+    precedence_b = 40;
+  }
+
+  ADVGSM_LOG(GsmSeverity::Trace, "GsmModemCommon",
+             "Precedence A %s %d vs B %s %d", ip_a, precedence_a, ip_b,
+             precedence_b);
+
+  // Prioritise larger scope (i.e. global) over smaller
+  if (precedence_b - precedence_a != 0) {
+    return precedence_b - precedence_a;
+  }
+
+  // Tie-break by string comparison, although this could be weird as '9' < ':' <
+  // 'a', so '::' sorts in the middle
+  return strcmp(ip_a, ip_b);
 }
 
 int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
@@ -41,7 +185,15 @@ int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
     if (end1 < start1 + 2) {
       continue;
     }
-    addresses[address_index] = address_line.substring(start1 + 1, end1);
+    String address1 = address_line.substring(start1 + 1, end1);
+    // Insert sort in priority order
+    int8_t insert1 = address_index;
+    while (insert1 > 0 && compareIPAddress(addresses[insert1 - 1].c_str(),
+                                           address1.c_str()) > 0) {
+      addresses[insert1] = addresses[insert1 - 1];
+      insert1--;
+    }
+    addresses[insert1] = address1;
     if (++address_index >= max) {
       break;
     }
@@ -55,7 +207,15 @@ int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
     if (end2 < start1 + 2) {
       continue;
     }
-    addresses[address_index] = address_line.substring(start2 + 1, end2);
+    String address2 = address_line.substring(start1 + 1, end1);
+    // Insert sort in priority order
+    int8_t insert2 = address_index;
+    while (insert2 > 0 && compareIPAddress(addresses[insert2 - 1].c_str(),
+                                           address2.c_str()) > 0) {
+      addresses[insert2] = addresses[insert2 - 1];
+      insert2--;
+    }
+    addresses[insert2] = address2;
   }
   if (!response_finished) {
     waitResponse();
@@ -91,6 +251,10 @@ String GsmModemCommon::IMSI() {
   return response;
 }
 
+bool GsmModemCommon::isActive() {
+  return this->active;
+}
+
 String GsmModemCommon::localIP(uint8_t index) {
   String addresses[index];
   uint8_t count = getLocalIPs(addresses, index);
@@ -103,6 +267,37 @@ String GsmModemCommon::localIP(uint8_t index) {
 void GsmModemCommon::loop() {
   // Serial.print("GsmModemCommon::loop\n");
   //  TODO: Heartbeat check on connection
+  if (this->active) {
+    // If not ready, then check connection status, with back off delay
+    if (this->status < ModemStatus::PacketDataReady) {
+      if (this->next_check > -1 && millis() > this->next_check) {
+        bool success = checkConnection();
+        if (success) {
+          this->next_check = -1;
+        } else {
+          this->retry_count++;
+          if (this->retry_count > this->retry_max) {
+            ADVGSM_LOG(GsmSeverity::Fatal, "GsmModemCommon",
+                       "Connection retry count exceeded; modem shutting down");
+            this->active = false;
+            this->next_check = -1;
+            // TODO: high level communication retry after 1 minute /
+            // communication sequence retry, with modem hard reset
+          } else {
+            int32_t delay =
+                retry_base_delay_ms * (1 << (this->retry_count - 1));
+            ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon",
+                       "Connection not ready, retry %d delaying for %d ms",
+                       this->retry_count, delay);
+            this->next_check = millis() + delay;
+          }
+        }
+      }
+    }
+
+    // For any unsolicited responses
+    this->waitResponse(GSM_COMMAND_DELAY_MS, NULL, NULL);
+  }
 }
 
 String GsmModemCommon::manufacturer() {
@@ -127,6 +322,10 @@ String GsmModemCommon::model() {
   response.replace("\rOK\r", "");
   response.trim();
   return response;
+}
+
+ModemStatus GsmModemCommon::modemStatus() {
+  return this->status;
 }
 
 String GsmModemCommon::network() {
@@ -163,12 +362,12 @@ RegistrationStatus GsmModemCommon::registrationStatus() {
   //  +C5GREG? (5G)
   this->sendAT(GF("+CEREG?"));
   if (waitResponse("+CEREG:") != 1) {
-    return RegistrationStatus::Unknown;
+    return RegistrationStatus::UnknownRegistrationStatus;
   }
   streamSkipUntil(',');  // skip mode
   int16_t status = this->stream.parseInt();
   if (waitResponse() != 1) {
-    return RegistrationStatus::Unknown;
+    return RegistrationStatus::UnknownRegistrationStatus;
   }
   return static_cast<RegistrationStatus>(status);
 }
@@ -205,8 +404,6 @@ void GsmModemCommon::sendATCommand(const char command[]) {
   streamWrite("AT", command, this->gsmNL);
   this->stream.flush();
 }
-
-// Protected
 
 inline int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
   char buf[7];
