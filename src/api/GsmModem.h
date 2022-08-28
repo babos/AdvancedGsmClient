@@ -35,17 +35,19 @@ enum RegistrationStatus {
 enum ModemStatus {
   UnknownModemStatus = 0,
   Attention = 10,
-  HasSignal = 20,
-  Registered = 30,
-  PacketDataReady = 40
+  Configured = 20,
+  SimReady = 30,
+  HasSignal = 40,
+  Registered = 50,
+  PacketDataReady = 60
 };
 
 class GsmModem {
  public:
   virtual void begin(const char access_point_name[],
                      PacketDataProtocolType pdp_type = IPv4v6,
-                     const char username[] = NULL,
-                     const char password[] = NULL) = 0;
+                     const char username[] = "",
+                     const char password[] = "") = 0;
   // virtual int8_t getLocalIPs(IPAddress addresses[], uint8_t max) = 0;
   virtual int8_t getLocalIPs(String addresses[], uint8_t max) = 0;
   virtual String ICCID() = 0;

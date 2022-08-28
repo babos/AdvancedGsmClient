@@ -45,11 +45,13 @@ Board settings (also see the environment settings in platformio.ini)
 Sample code
 */
 
-#define WAIT_FOR_NON_LOCAL_IPV6
-#define SEND_INTERVAL_MS 10000
+//#define WAIT_FOR_NON_LOCAL_IPV6
+#define SEND_INTERVAL_MS 5000
 //#define USE_INSECURE_HTTP
 
 const char apn[] = "telstra.iot";
+const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6; // default
+//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
 
 // See https://test.mosquitto.org/
 const char server[] = "test.mosquitto.org";
@@ -108,6 +110,7 @@ TestModem testModem(debugger);
 TestModem testModem(SerialAT);
 #endif
 
+int delay_ms = SEND_INTERVAL_MS;
 int next_message_ms = 0;
 // Access via the API
 GsmModem& modem = testModem;
@@ -127,8 +130,7 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
-  //modem.begin(apn, PacketDataProtocolType::IP);
-  modem.begin(apn, IPv4v6);
+  modem.begin(apn, pdp_type);
   delay(100);
   SerialMon.print("Setup complete\n");
 }
@@ -145,17 +147,17 @@ bool isReady() {
       return true;
     }
 #else
-    if (addresses[index] != "127.0.0.1") {
-      SerialMon.printf("### Ready with address %s\n", addresses[index].c_str());
-      return true;
-    }
+    return modem.modemStatus() >= ModemStatus::PacketDataReady;
+    // if (addresses[index] != "127.0.0.1") {
+    //   SerialMon.printf("### Ready with address %s\n", addresses[index].c_str());
+    //   return true;
+    // }
 #endif
   }
   return false;
 }
 
 void connectedLoop() {
-  modem.loop();
   int now = millis();
   if (now > next_message_ms) {
     if (!publish_done) {
@@ -163,7 +165,13 @@ void connectedLoop() {
 
       bool use_tls = false;
       if (port == 8886 || port == 8887) {
-        modem.setRootCA(root_ca);
+        bool ca_success = modem.setRootCA(root_ca);
+        if (!ca_success) {
+          SerialMon.printf("### Set Root CA failed, delaying %d ms", delay_ms);
+          next_message_ms = millis() + delay_ms;
+          delay_ms = delay_ms * 2;
+          return;
+        }
         use_tls = true;
       }
 
@@ -178,18 +186,21 @@ void connectedLoop() {
         rc = mqtt.connect(client_id);
       }
       if (rc != 0) {
-        Serial.printf("MQTT connect error: %d\n", rc);
+        Serial.printf("### MQTT connect error: %d, delaying %d ms\n", rc, delay_ms);
+        next_message_ms = millis() + delay_ms;
+        delay_ms = delay_ms * 2;
         return;
       }
 
       // Subscribe
       Serial.printf("Subscribing\n");
       mqtt.subscribe("advgsm/t");
-      delay (200);
+      delay (100);
 
       // Publish
       Serial.printf("Publishing\n");
       mqtt.publish("advgsm/t", "TestMessage");
+      delay (100);
 
       // Wait for messages
       int finish = millis() + SEND_INTERVAL_MS;
@@ -200,7 +211,7 @@ void connectedLoop() {
           String body = mqtt.receiveBody();
           Serial.printf("Received [%s]: %s\n", topic.c_str(), body.c_str());
         }
-        delay(200);
+        delay(100);
       }
 
       Serial.printf("Disconnecting\n");
@@ -213,11 +224,14 @@ void connectedLoop() {
 }
 
 void loop() {
-  if (!ready) {
-    ready = isReady();
+  modem.loop();
+  if (modem.modemStatus() >= ModemStatus::PacketDataReady) {
+    if (!ready) {
+      ready = isReady();      
+      Serial.printf("Ready %d (%d)\n", ready, modem.modemStatus());
+    }
+    if (ready) {
+      connectedLoop();
+    }
   }
-  if (ready) {
-    connectedLoop();
-  }
-  delay(1000);
 }

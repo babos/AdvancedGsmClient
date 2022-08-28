@@ -52,17 +52,20 @@ class GsmModemCommon : public GsmModem {
   const char* access_point_name;
   bool active = false;
   char gsmNL[3] = GSM_NL;
+  int32_t next_check = -1;
   const char* password;
   PacketDataProtocolType pdp_type;
+  int16_t retry_base_delay_ms = 250;
+  int8_t retry_count = 0;
+  int8_t retry_max = 8;    
   ModemStatus status;
   Stream& stream;
-  const char* username;
+  const char* user_name;
 
-  virtual bool connect() = 0;
+  virtual bool checkConnection() = 0;
   // inline int16_t streamGetIntBefore(char lastChar);
   virtual int16_t streamGetIntBefore(char lastChar);
   virtual bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);
-  virtual bool reset() = 0;
   //  template <typename... Args>
   //  void sendAT(Args... command);
 

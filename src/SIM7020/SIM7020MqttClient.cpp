@@ -71,6 +71,12 @@ int16_t SIM7020MqttClient::createClientInstance() {
              GF("MQTT creating instance %s, %d (%d)"), server_name, server_port,
              use_tls);
 
+  // TODO: Confirm if it already exists and selectively clean up
+  for (int8_t client_id = 0; client_id < 1; client_id++) {
+    this->modem.sendAT(GF("+CMQDISCON="), client_id);
+    this->modem.waitResponse();
+  }
+
   int16_t rc;
   this->modem.sendAT(GF("+CMQTSYNC=1"));
   rc = this->modem.waitResponse();

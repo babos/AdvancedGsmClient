@@ -8,84 +8,175 @@
 
 SIM7020GsmModem::SIM7020GsmModem(Stream& stream) : GsmModemCommon(stream) {}
 
-// Public
-
-int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
-  // SIM7020 requires to specify the context ID to query addresses, i.e.
-  // "+CGPADDR=1" works (but "+CGPADDR" does not). The value returned for IPv6
-  // (address 2) is only the suffix:
-  //   +CGPADDR: 1,"10.89.132.147","::5B5B:EA87:AF0C:8447"
-  //
-  // Reading the dynamic parameters ("AT+CGCONTRDP") shows the DNS settings, but
-  // also only has the IPv6 suffix:
-  //   +CGCONTRDP:
-  //   1,5,"telstra.iot","10.89.132.147.255.255.255.0",,"101.168.244.101","101.168.244.103",,,,,1500
-  //   +CGCONTRDP:
-  //   1,5,"telstra.iot","::5B5B:EA87:AF0C:8447/64",,"2001:8004:2D43:C00::","2001:8004:2C42:B16::1",,,,,1500
-  //
-  // The "+IPCONFIG" command shows full addresses
-  // Before connection, it has a single localhost address "127.0.0.1".
-  // Once the context is connected (as above), it shows: link local IPv6
-  // ("fe80..."), IPv4, and localhost (It can calculate the link local from the
-  // suffix) After getting the network prefix it then shows four addresses: link
-  // local IPv6, then global IPv6, then IPv4, then localhost
-  //   +IPCONFIG: fe80:0:0:0:719d:1439:899a:42d7
-  //   +IPCONFIG: 2001:8004:4810:0:719d:1439:899a:42d7
-  //   +IPCONFIG: 10.88.134.167
-  //   +IPCONFIG: 127.0.0.1
-  //
-  // The global IPv6 address has to wait for a router advertisement with the
-  // prefix (not exposed in AT commands)
-
-  this->sendAT(GF("+IPCONFIG"));
-
-  bool response_finished = false;
-  int8_t address_index = 0;
-  while (address_index < max) {
-    int8_t response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+IPCONFIG:");
-    if (response != 3) {
-      response_finished = true;
-      break;
+bool SIM7020GsmModem::checkConnection() {
+  int8_t rc;
+  if (this->status < ModemStatus::Attention) {
+    sendAT(GF(""));
+    rc = waitResponse();
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Attention %s", (rc == 0) ? "timed out" : "error");
+      return false;
     }
-    String address_line = this->stream.readStringUntil('\n');
-    address_line.trim();
-    // TODO: Insert sort with a compareIPAddress() function
-    addresses[address_index] = address_line;
-    address_index++;
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Attention success");
+    this->status = ModemStatus::Attention;
+    delay(GSM_COMMAND_DELAY_MS);
   }
-  if (!response_finished) {
-    waitResponse();
+
+  // Basic settings -- should respond straight away
+  if (this->status < ModemStatus::Attention + 1) {
+    // Echo Off
+    sendAT(GF("E0"));
+    rc = waitResponse();
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting echo off %s", (rc == 0) ? "timed out" : "error");
+      return false;
+    }
+    this->status = (ModemStatus)(ModemStatus::Attention + 1);
+    delay(GSM_COMMAND_DELAY_MS);
   }
-  return address_index;
+
+  if (this->status < ModemStatus::Attention + 2) {
+    // TODO: Support error codes, e.g. E2
+    sendAT(GF("+CMEE=0"));  
+    rc = waitResponse();
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting disable error codes %s", (rc == 0) ? "timed out" : "error");
+      return false;
+    }
+    this->status = (ModemStatus)(ModemStatus::Attention + 2);
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::Attention + 3) {
+    // Enable (Unsolicited) Local Time Stamp for getting network time
+    sendAT(GF("+CLTS=1"));
+    rc = waitResponse();
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting enable timestamp %s", (rc == 0) ? "timed out" : "error");
+      return false;
+    }
+    this->status = (ModemStatus)(ModemStatus::Attention + 3);
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::Attention + 4) {
+    // Enable battery checks
+    sendAT(GF("+CBATCHK=1"));
+    rc = waitResponse();
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting enable battery checks %s", (rc == 0) ? "timed out" : "error");
+      return false;
+    }
+    this->status = (ModemStatus)(ModemStatus::Attention + 4);
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::Attention + 5) {
+    // Set IPv6 format
+    sendAT(GF("+CGPIAF=1,1,0,1"));
+    rc = waitResponse();
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting IPv6 address format %s", (rc == 0) ? "timed out" : "error");
+      return false;
+    }
+    this->status = (ModemStatus)(ModemStatus::Attention + 5);
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::Configured) {
+    bool is_configured = confirmPacketDataConfiguration();
+    if (!is_configured) {
+      return false;
+    }
+    this->status = ModemStatus::Configured;
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  // TODO: SIM status, i.e. +CPIN: READY; this happens after resetting the modem
+
+  if (this->status < ModemStatus::HasSignal) {
+    int32_t rssi_dbm = this->RSSI();
+    if (rssi_dbm == 0) {
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for signal");
+      return false;
+    }
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Received Signal Strength Indicator: %d dBm", rssi_dbm);
+    this->status = ModemStatus::HasSignal;
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::Registered) {
+    RegistrationStatus registration_status = this->registrationStatus();
+    switch (registration_status) {
+      case RegistrationStatus::RegisteredHome:
+      case RegistrationStatus::RegisteredRoaming:
+        break;
+      default:
+        ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for registration (%d)%s", registration_status, (registration_status == RegistrationStatus::Searching) ? ": Searching" : "");
+        return false;
+    }
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Registered (%d)%s", registration_status, (registration_status == RegistrationStatus::RegisteredHome) ? ": Home" : "");
+    this->status = ModemStatus::Registered;
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::PacketDataReady) {
+    // SIM7020 Manual says "AT+CGCONTRDP=[<cid>]", however TS 27.007 says "AT+CGCONTRDP[=<cid>]", and adding "=0" returns ERROR
+    sendAT(GF("+CGCONTRDP"));
+    rc = waitResponse("+CGCONTRDP:");
+    if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for packet data context dynamic parameters %s", (rc == 0) ? "timed out" : "error");
+      return false;
+    }
+    rc = waitResponse();
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Packet data ready");
+    this->status = ModemStatus::PacketDataReady;
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  return true;
 }
 
-String SIM7020GsmModem::ICCID() {
-  this->sendAT(GF("+CCID"));
-  String response;
-  if (waitResponse(1000, response) != 1) {
-    return "unknown";
-  }
-  response.replace("\r\nOK\r\n", "");
-  response.replace("\rOK\r", "");
-  response.trim();
-  return response;
-}
+bool SIM7020GsmModem::confirmPacketDataConfiguration() {
+  int8_t rc;
 
-// Protected
-
-bool SIM7020GsmModem::connect() {
   // Based on "APN Manual Configuration", from SIM7020 TCPIP Application Note
-
   const char* pdp_type_string = this->pdp_type == PacketDataProtocolType::IPv4v6
                                   ? "IPV4V6"
                               : this->pdp_type == PacketDataProtocolType::IPv6 ? "IPV6"
                                                                         : "IP";
+  char configuration_string[512] = { 0 };
+  int16_t len1 = snprintf(configuration_string, sizeof(configuration_string), "\"%s\",\"%s\"", pdp_type_string, this->access_point_name);
+  if (this->user_name && strlen(this->user_name) > 0) {
+    int16_t len2 = snprintf(configuration_string + len1, sizeof(configuration_string) - len1, ",\"%s\"", this->user_name);
+    if (this->password && strlen(this->password) > 0) {
+      int16_t len3 = snprintf(configuration_string + len1 + len2, sizeof(configuration_string) - len1 - len2, ",\"%s\"", this->password);
+    }
+  }
 
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"),
-             pdp_type_string, this->access_point_name);
+  // Check existing default context
+  sendAT(GF("*MCGDEFCONT?"));
+  rc = waitResponse("*MCGDEFCONT:");
+  if (rc != 1) {
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Getting default context %s", (rc == 0) ? "timed out" : "error");
+  } else {
+    String default_context = this->stream.readStringUntil('\n');
+    default_context.trim();
+    if (default_context == configuration_string)
+    {
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Already configured: %s@%s (%s)", this->user_name, this->access_point_name, pdp_type_string);
+      return true;
+    }
+  }
+
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", "Reconfiguring default packet data context: %s@%s (%s)", this->user_name, this->access_point_name, pdp_type_string);
 
   sendAT(GF("+CFUN=0"));
-  waitResponse();
+  rc = waitResponse();
+  if (rc != 1) {
+    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Disabling radio %s", (rc == 0) ? "timed out" : "error");
+  }
+  delay(GSM_COMMAND_DELAY_MS);
 
   // Set Default PSD Connection Settings
   // Set the user name and password
@@ -94,27 +185,22 @@ bool SIM7020GsmModem::connect() {
   //            IPV6: Internet Protocol Version 6
   //            IP: Internet Protocol Version 4
   //            Non-IP: external packet data network
-  if (this->password && strlen(this->password) > 0 && this->username && strlen(this->username) > 0) {
-    sendAT(GF("*MCGDEFCONT=\""), pdp_type_string, "\",\"", this->access_point_name, "\",\"", this->username,
-           "\",\"", this->password, '"');
-  } else if (this->username && strlen(this->username) > 0) {
-    // Set the user name only
-    sendAT(GF("*MCGDEFCONT=\""), pdp_type_string, "\",\"", this->access_point_name, "\",\"", this->username,
-           '"');
-  } else {
-    // Set the APN only
-    sendAT(GF("*MCGDEFCONT=\""), pdp_type_string, "\",\"", this->access_point_name, '"');
-  }
-  if (waitResponse() != 1) {
+  sendAT(GF("*MCGDEFCONT="), configuration_string);
+  rc = waitResponse();
+  if (rc != 1) {
+    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Setting default context %s", (rc == 0) ? "timed out" : "error");
     return false;
   }
+  delay(GSM_COMMAND_DELAY_MS);
 
   sendAT(GF("+CFUN=1"));
-  if (waitResponse(20000L, GF(GSM_NL "+CPIN: READY")) != 1) {
+  rc = waitResponse();
+  if (rc != 1) {
+    ADVGSM_LOG(GsmSeverity::Warn, "SIM7200", "Enabling radio %s", (rc == 0) ? "timed out" : "error");
     return false;
   }
-  waitResponse();
 
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Default packet data context reconfigured");
   return true;
 }
 
@@ -335,49 +421,74 @@ bool SIM7020GsmModem::checkUnsolicitedResponse(String& data) {
   return false;
 }
 
-void SIM7020GsmModem::loop() {
-  this->waitResponse(200, NULL, NULL);
+int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
+  // SIM7020 requires to specify the context ID to query addresses, i.e.
+  // "+CGPADDR=1" works (but "+CGPADDR" does not). The value returned for IPv6
+  // (address 2) is only the suffix:
+  //   +CGPADDR: 1,"10.89.132.147","::5B5B:EA87:AF0C:8447"
+  //
+  // Reading the dynamic parameters ("AT+CGCONTRDP") shows the DNS settings, but
+  // also only has the IPv6 suffix:
+  //   +CGCONTRDP:
+  //   1,5,"telstra.iot","10.89.132.147.255.255.255.0",,"101.168.244.101","101.168.244.103",,,,,1500
+  //   +CGCONTRDP:
+  //   1,5,"telstra.iot","::5B5B:EA87:AF0C:8447/64",,"2001:8004:2D43:C00::","2001:8004:2C42:B16::1",,,,,1500
+  //
+  // The "+IPCONFIG" command shows full addresses
+  // Before connection, it has a single localhost address "127.0.0.1".
+  // Once the context is connected (as above), it shows: link local IPv6
+  // ("fe80..."), IPv4, and localhost (It can calculate the link local from the
+  // suffix) After getting the network prefix it then shows four addresses: link
+  // local IPv6, then global IPv6, then IPv4, then localhost
+  //   +IPCONFIG: fe80:0:0:0:719d:1439:899a:42d7
+  //   +IPCONFIG: 2001:8004:4810:0:719d:1439:899a:42d7
+  //   +IPCONFIG: 10.88.134.167
+  //   +IPCONFIG: 127.0.0.1
+  //
+  // The global IPv6 address has to wait for a router advertisement with the
+  // prefix (not exposed in AT commands)
+
+  this->sendAT(GF("+IPCONFIG"));
+
+  bool response_finished = false;
+  int8_t address_index = 0;
+  while (address_index < max) {
+    int8_t response = waitResponse(GFP(GSM_OK), GFP(GSM_ERROR), "+IPCONFIG:");
+    if (response != 3) {
+      response_finished = true;
+      break;
+    }
+    String address_line = this->stream.readStringUntil('\n');
+    address_line.trim();
+    // TODO: Insert sort with a compareIPAddress() function
+    addresses[address_index] = address_line;
+    address_index++;
+  }
+  if (!response_finished) {
+    waitResponse();
+  }
+  return address_index;
 }
 
-bool SIM7020GsmModem::reset() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Resetting"));
-  //    if (!testAT()) { return false; }
-  sendAT(GF(""));
-  if (waitResponse(30000) != 1) {
-    return false;
+String SIM7020GsmModem::ICCID() {
+  this->sendAT(GF("+CCID"));
+  String response;
+  if (waitResponse(1000, response) != 1) {
+    return "unknown";
   }
+  response.replace("\r\nOK\r\n", "");
+  response.replace("\rOK\r", "");
+  response.trim();
+  return response;
+}
+
+// TODO: Handle these, e.g. move the HTTP / MQTT destroy into the relevant sections
 
   // sendAT(GF("Z"));  // Reset (to user settings)
   // if (waitResponse(30000) != 1) {
   //   return false;
   // }
 
-  sendAT(GF("E0"));  // Echo Off
-  if (waitResponse() != 1) {
-    return false;
-  }
-
-  // TODO: Support error codes
-  sendAT(GF("+CMEE=0"));  // turn off error codes
-  waitResponse();
-
-  // Enable Local Time Stamp for getting network time
-  sendAT(GF("+CLTS=1"));
-  if (waitResponse(10000) != 1) {
-    return false;
-  }
-
-  // Enable battery checks
-  sendAT(GF("+CBATCHK=1"));
-  if (waitResponse() != 1) {
-    return false;
-  }
-
-  // Set IPv6 format
-  sendAT(GF("+CGPIAF=1,1,0,1"));
-  if (waitResponse() != 1) {
-    return false;
-  }
 
   // Clean up any old connections
   // TODO: Check the list of what exists first
@@ -387,10 +498,10 @@ bool SIM7020GsmModem::reset() {
   // }
 
   // for (int8_t client_id = 0; client_id < 5; client_id++) {
-  for (int8_t client_id = 0; client_id < 1; client_id++) {
-    sendAT(GF("+CMQDISCON="), client_id);
-    waitResponse();
-  }
+  // for (int8_t client_id = 0; client_id < 1; client_id++) {
+  //   sendAT(GF("+CMQDISCON="), client_id);
+  //   waitResponse();
+  // }
 
   // SimStatus ret = getSimStatus();
   // // if the sim isn't ready and a pin has been provided, try to unlock the
@@ -402,8 +513,6 @@ bool SIM7020GsmModem::reset() {
   //   // return true
   //   return (ret == SIM_READY || ret == SIM_LOCKED);
   // }
-  return true;
-}
 
 bool SIM7020GsmModem::setCertificate(int8_t type,
                                      const char* certificate,
