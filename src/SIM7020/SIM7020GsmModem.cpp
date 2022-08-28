@@ -73,19 +73,16 @@ String SIM7020GsmModem::ICCID() {
 
 // Protected
 
-bool SIM7020GsmModem::connect(const char apn[],
-                              PacketDataProtocolType pdpType,
-                              const char username[],
-                              const char password[]) {
+bool SIM7020GsmModem::connect() {
   // Based on "APN Manual Configuration", from SIM7020 TCPIP Application Note
 
-  const char* pdpTypeString = pdpType == PacketDataProtocolType::IPv4v6
+  const char* pdp_type_string = this->pdp_type == PacketDataProtocolType::IPv4v6
                                   ? "IPV4V6"
-                              : pdpType == PacketDataProtocolType::IPv6 ? "IPV6"
+                              : this->pdp_type == PacketDataProtocolType::IPv6 ? "IPV6"
                                                                         : "IP";
 
   ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("Connecting %s %s"),
-             pdpTypeString, apn);
+             pdp_type_string, this->access_point_name);
 
   sendAT(GF("+CFUN=0"));
   waitResponse();
@@ -97,16 +94,16 @@ bool SIM7020GsmModem::connect(const char apn[],
   //            IPV6: Internet Protocol Version 6
   //            IP: Internet Protocol Version 4
   //            Non-IP: external packet data network
-  if (password && strlen(password) > 0 && username && strlen(username) > 0) {
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username,
-           "\",\"", password, '"');
-  } else if (username && strlen(username) > 0) {
+  if (this->password && strlen(this->password) > 0 && this->username && strlen(this->username) > 0) {
+    sendAT(GF("*MCGDEFCONT=\""), pdp_type_string, "\",\"", this->access_point_name, "\",\"", this->username,
+           "\",\"", this->password, '"');
+  } else if (this->username && strlen(this->username) > 0) {
     // Set the user name only
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, "\",\"", username,
+    sendAT(GF("*MCGDEFCONT=\""), pdp_type_string, "\",\"", this->access_point_name, "\",\"", this->username,
            '"');
   } else {
     // Set the APN only
-    sendAT(GF("*MCGDEFCONT=\""), pdpTypeString, "\",\"", apn, '"');
+    sendAT(GF("*MCGDEFCONT=\""), pdp_type_string, "\",\"", this->access_point_name, '"');
   }
   if (waitResponse() != 1) {
     return false;

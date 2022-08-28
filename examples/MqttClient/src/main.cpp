@@ -58,8 +58,8 @@ const char user_name[] = "rw";
 const char password[] = "readwrite";
 
 //const int16_t port = 1883; // unencrypted, unauthenticated
-const int16_t port = 1884; // unencrypted, authenticated
-//const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
+//const int16_t port = 1884; // unencrypted, authenticated
+const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
 //const int16_t port = 8887; // encrypted: certificate deliberately expired
 
 

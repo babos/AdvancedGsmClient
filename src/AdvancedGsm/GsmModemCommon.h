@@ -9,8 +9,8 @@
 class GsmModemCommon : public GsmModem {
  public:
   GsmModemCommon(Stream& stream);
-  void begin(const char accessPointName[],
-             PacketDataProtocolType pdpType,
+  void begin(const char access_point_name[],
+             PacketDataProtocolType pdp_type,
              const char username[],
              const char password[]) override;
   int8_t getLocalIPs(String addresses[], uint8_t max) override;
@@ -21,6 +21,7 @@ class GsmModemCommon : public GsmModem {
   void loop() override;
   String manufacturer() override;
   String model() override;
+  ModemStatus modemStatus() override;
   String network() override;
   virtual String readResponseLine();
   RegistrationStatus registrationStatus() override;
@@ -48,13 +49,16 @@ class GsmModemCommon : public GsmModem {
                       GsmConstStr r5 = NULL);
 
  protected:
+  const char* access_point_name;
+  bool active = false;
   char gsmNL[3] = GSM_NL;
+  const char* password;
+  PacketDataProtocolType pdp_type;
+  ModemStatus status;
   Stream& stream;
+  const char* username;
 
-  virtual bool connect(const char apn[],
-                       PacketDataProtocolType pdpType,
-                       const char username[],
-                       const char password[]) = 0;
+  virtual bool connect() = 0;
   // inline int16_t streamGetIntBefore(char lastChar);
   virtual int16_t streamGetIntBefore(char lastChar);
   virtual bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);

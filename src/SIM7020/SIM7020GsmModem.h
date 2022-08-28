@@ -31,10 +31,7 @@ class SIM7020GsmModem : public GsmModemCommon {
                                GsmConstStr r3 = NULL,
                                GsmConstStr r4 = NULL,
                                GsmConstStr r5 = NULL) override;
-  bool connect(const char apn[],
-               PacketDataProtocolType pdpType,
-               const char username[],
-               const char password[]) override;
+  bool connect() override;
   void loop() override;
   bool reset() override;
 

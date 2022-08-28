@@ -6,15 +6,20 @@
 
 GsmModemCommon::GsmModemCommon(Stream& stream) : stream(stream) {}
 
-void GsmModemCommon::begin(const char accessPointName[],
-                           PacketDataProtocolType pdpType,
+void GsmModemCommon::begin(const char access_point_name[],
+                           PacketDataProtocolType pdp_type,
                            const char username[],
                            const char password[]) {
+  this->active = true;
+  this->access_point_name = access_point_name;
+  this->pdp_type = pdp_type;
+  this->username = username;
+  this->password = password;
   if (!reset()) {
     ADVGSM_LOG(GsmSeverity::Error, "GsmModemCommon", GF("Reset failed"));
     return;
   }
-  connect(accessPointName, pdpType, username, password);
+  connect();
 }
 
 int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
@@ -129,6 +134,10 @@ String GsmModemCommon::model() {
   return response;
 }
 
+ModemStatus GsmModemCommon::modemStatus() {
+  return this->status;
+}
+
 String GsmModemCommon::network() {
   // Gets the PLMN (Public Land Mobile Network) operator details
   this->sendAT(GF("+COPS?"));
@@ -163,12 +172,12 @@ RegistrationStatus GsmModemCommon::registrationStatus() {
   //  +C5GREG? (5G)
   this->sendAT(GF("+CEREG?"));
   if (waitResponse("+CEREG:") != 1) {
-    return RegistrationStatus::Unknown;
+    return RegistrationStatus::UnknownRegistrationStatus;
   }
   streamSkipUntil(',');  // skip mode
   int16_t status = this->stream.parseInt();
   if (waitResponse() != 1) {
-    return RegistrationStatus::Unknown;
+    return RegistrationStatus::UnknownRegistrationStatus;
   }
   return static_cast<RegistrationStatus>(status);
 }
@@ -205,8 +214,6 @@ void GsmModemCommon::sendATCommand(const char command[]) {
   streamWrite("AT", command, this->gsmNL);
   this->stream.flush();
 }
-
-// Protected
 
 inline int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
   char buf[7];
