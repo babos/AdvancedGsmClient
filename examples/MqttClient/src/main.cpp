@@ -139,23 +139,19 @@ bool isReady() {
   // Get non-link-local IP address
   String addresses[4];
   int8_t count = modem.getLocalIPs(addresses, 4);
+  bool found_global_ipv6 = false;
   for (int8_t index = 0; index < count; index++) {
-#ifdef WAIT_FOR_NON_LOCAL_IPV6
+    SerialMon.printf("IP address[%d] = %s\n", index, addresses[index].c_str());
     if (addresses[index].indexOf(":") > 0 &&
         !addresses[index].startsWith("fe80:")) {
-      SerialMon.printf("### Ready with IPv6 address %s\n",
-                       addresses[index].c_str());
-      return true;
+      found_global_ipv6 = true;
     }
+  }
+#ifdef WAIT_FOR_NON_LOCAL_IPV6
+  return found_global_ipv6;
 #else
     return modem.modemStatus() >= ModemStatus::PacketDataReady;
-    // if (addresses[index] != "127.0.0.1") {
-    //   SerialMon.printf("### Ready with address %s\n",
-    //   addresses[index].c_str()); return true;
-    // }
 #endif
-  }
-  return false;
 }
 
 void connectedLoop() {

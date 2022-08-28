@@ -64,6 +64,7 @@ class GsmModemCommon : public GsmModem {
   const char* user_name;
 
   virtual bool checkConnection() = 0;
+  int8_t compareIPAddress(const char ip_a[], const char ip_b[]);
   // inline int16_t streamGetIntBefore(char lastChar);
   virtual int16_t streamGetIntBefore(char lastChar);
   virtual bool streamSkipUntil(const char c, const uint32_t timeout_ms = 1000L);
