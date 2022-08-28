@@ -107,7 +107,7 @@ GsmModem& modem = testModem;
 bool ready = false;
 
 void setup() {
-#ifdef ADVGSM_LOG_ENABLED
+#if ADVGSM_LOG_SEVERITY > 0
 #ifdef LOG_OUTPUT
   AdvancedGsmLog.Log = &LOG_OUTPUT;
 #endif

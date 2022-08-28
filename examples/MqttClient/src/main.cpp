@@ -11,7 +11,7 @@ Log settings (set before including modem)
 */
 
 // See all AT commands, if wanted
-#define DUMP_AT_COMMANDS
+//#define DUMP_AT_COMMANDS
 #define LOG_OUTPUT Serial
 
 /*
@@ -119,7 +119,7 @@ bool ready = false;
 bool publish_done = false;
 
 void setup() {
-#ifdef ADVGSM_LOG_ENABLED
+#if ADVGSM_LOG_SEVERITY > 0
 #ifdef LOG_OUTPUT
   AdvancedGsmLog.Log = &LOG_OUTPUT;
 #endif

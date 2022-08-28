@@ -81,7 +81,7 @@ int8_t GsmModemCommon::compareIPAddress(const char ip_a[], const char ip_b[]) {
     scope_b = 0xe; 
   }
 
-  ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Scope A %s %d vs B %s %d", ip_a, scope_a, ip_b, scope_b);
+  ADVGSM_LOG(GsmSeverity::Trace, "GsmModemCommon", "Scope A %s %d vs B %s %d", ip_a, scope_a, ip_b, scope_b);
 
   // Prioritise larger scope (i.e. global) over smaller
   if (scope_b - scope_a != 0) {
@@ -136,7 +136,7 @@ int8_t GsmModemCommon::compareIPAddress(const char ip_a[], const char ip_b[]) {
     precedence_b = 40;
   }
 
-  ADVGSM_LOG(GsmSeverity::Debug, "GsmModemCommon", "Precedence A %s %d vs B %s %d", ip_a, precedence_a, ip_b, precedence_b);
+  ADVGSM_LOG(GsmSeverity::Trace, "GsmModemCommon", "Precedence A %s %d vs B %s %d", ip_a, precedence_a, ip_b, precedence_b);
 
   // Prioritise larger scope (i.e. global) over smaller
   if (precedence_b - precedence_a != 0) { return precedence_b - precedence_a; }

@@ -13,11 +13,8 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
 int16_t SIM7020MqttClient::connect(const char client_id[],
                                    const char user_name[],
                                    const char password[]) {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("MQTT connect client %s"),
-             client_id);
-
-  int16_t rc;
   // Create if needed
+  int16_t rc;
   if (this->mqtt_id == -1) {
     // if (use_tls && this->server_ca != nullptr) {
     //   rc = createClientInstanceExtended();
@@ -33,7 +30,8 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
     this->modem.mqtt_clients[this->mqtt_id] = this;
   }
 
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("MQTT %d connecting"), mqtt_id);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("MQTT %d connect client %s@%s"),
+             mqtt_id, user_name ? user_name : "", client_id);
 
   // Connect
   // TODO: Should store client_id as field?
@@ -68,8 +66,8 @@ boolean SIM7020MqttClient::connected() {
 }
 
 int16_t SIM7020MqttClient::createClientInstance() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
-             GF("MQTT creating instance %s, %d (%d)"), server_name, server_port,
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7200",
+             GF("MQTT creating instance %s, %d (TLS %d)"), server_name, server_port,
              use_tls);
 
   // TODO: Confirm if it already exists and selectively clean up
@@ -141,7 +139,7 @@ int16_t SIM7020MqttClient::createClientInstanceExtended() {
 
 void SIM7020MqttClient::disconnect() {
   if (this->mqtt_id > -1) {
-    ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("MQTT %s disconnect"),
+    ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("MQTT %d disconnect"),
                this->mqtt_id)
     this->modem.sendAT(GF("+CMQDISCON="), this->mqtt_id);
     this->modem.waitResponse(30000);

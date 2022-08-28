@@ -135,7 +135,7 @@ bool SIM7020GsmModem::checkConnection() {
     delay(GSM_COMMAND_DELAY_MS);
   }
 
-  if (this->status < ModemStatus::PacketDataReady) {
+  if (this->status < ModemStatus::PacketDataReady - 1) {
     // SIM7020 Manual says "AT+CGCONTRDP=[<cid>]", however TS 27.007 says
     // "AT+CGCONTRDP[=<cid>]", and adding "=0" returns ERROR
     sendAT(GF("+CGCONTRDP"));
@@ -148,6 +148,18 @@ bool SIM7020GsmModem::checkConnection() {
     }
     rc = waitResponse();
     ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Packet data ready");
+    this->status = (ModemStatus)(ModemStatus::PacketDataReady - 1);
+    delay(GSM_COMMAND_DELAY_MS);
+  }
+
+  if (this->status < ModemStatus::PacketDataReady) {
+    String addresses[4];
+    int8_t count = this->getLocalIPs(addresses, 4);
+    if (count == 0) {
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for IP address");
+      return false;
+    }
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Got IP Addresses: %s%s%s", addresses[0].c_str(), count > 0 ? ", " : "", count > 0 ? addresses[1].c_str() : "");
     this->status = ModemStatus::PacketDataReady;
     delay(GSM_COMMAND_DELAY_MS);
   }

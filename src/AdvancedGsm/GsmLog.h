@@ -4,8 +4,9 @@
 #include <Print.h>
 #include "../api/Shared.h"
 
-#define ADVGSM_LOG_ENABLED
-#define ADVGSM_LOG_SEVERITY 5
+#ifndef ADVGSM_LOG_SEVERITY
+#define ADVGSM_LOG_SEVERITY 9
+#endif
 
 // See: https://opentelemetry.io/docs/reference/specification/logs/overview/
 
@@ -18,7 +19,7 @@ enum GsmSeverity {
   Fatal = 21
 };
 
-#ifdef ADVGSM_LOG_ENABLED
+#if ADVGSM_LOG_SEVERITY > 0
 class GsmLog {
  public:
   Print* Log = nullptr;
