@@ -67,8 +67,8 @@ boolean SIM7020MqttClient::connected() {
 
 int16_t SIM7020MqttClient::createClientInstance() {
   ADVGSM_LOG(GsmSeverity::Info, "SIM7200",
-             GF("MQTT creating instance %s, %d (TLS %d)"), server_name, server_port,
-             use_tls);
+             GF("MQTT creating instance %s, %d (TLS %d)"), server_name,
+             server_port, use_tls);
 
   // TODO: Confirm if it already exists and selectively clean up
   for (int8_t client_id = 0; client_id < 1; client_id++) {

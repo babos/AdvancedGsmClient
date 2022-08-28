@@ -159,7 +159,9 @@ bool SIM7020GsmModem::checkConnection() {
       ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Waiting for IP address");
       return false;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Got IP Addresses: %s%s%s", addresses[0].c_str(), count > 0 ? ", " : "", count > 0 ? addresses[1].c_str() : "");
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", "Got IP Addresses: %s%s%s",
+               addresses[0].c_str(), count > 0 ? ", " : "",
+               count > 0 ? addresses[1].c_str() : "");
     this->status = ModemStatus::PacketDataReady;
     delay(GSM_COMMAND_DELAY_MS);
   }
@@ -492,8 +494,9 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
   // The global IPv6 address has to wait for a router advertisement with the
   // prefix (not exposed in AT commands)
   //
-  // Rather than the above order, use insert sort to sort the largest scope (global) first, then in RFC 6724 precedence order,
-  // which puts the two public addresses first:
+  // Rather than the above order, use insert sort to sort the largest scope
+  // (global) first, then in RFC 6724 precedence order, which puts the two
+  // public addresses first:
   //
   //   2001:8004:4810:0:719d:1439:899a:42d7
   //   10.88.134.167
@@ -514,7 +517,8 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
     address_line.trim();
     // Insert sort in priority order
     int8_t insert = address_index;
-    while (insert > 0 && compareIPAddress(addresses[insert - 1].c_str(), address_line.c_str()) > 0) {
+    while (insert > 0 && compareIPAddress(addresses[insert - 1].c_str(),
+                                          address_line.c_str()) > 0) {
       addresses[insert] = addresses[insert - 1];
       insert--;
     }

@@ -150,7 +150,7 @@ bool isReady() {
 #ifdef WAIT_FOR_NON_LOCAL_IPV6
   return found_global_ipv6;
 #else
-    return modem.modemStatus() >= ModemStatus::PacketDataReady;
+  return modem.modemStatus() >= ModemStatus::PacketDataReady;
 #endif
 }
 
