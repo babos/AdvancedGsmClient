@@ -69,6 +69,7 @@ void setup() {
 #if ADVGSM_LOG_SEVERITY > 0
 #ifdef LOG_OUTPUT
   AdvancedGsmLog.Log = &LOG_OUTPUT;
+//  AdvancedGsmLog.Log = Serial;
 #endif
 #endif
 

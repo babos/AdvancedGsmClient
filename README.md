@@ -29,12 +29,10 @@ Different ways to compose an application that uses HTTP, whether the modem just 
 
 In general PlatformIO, running in VS Code, has been used for development.
 
-Examples should be relatively easily to directly convert into an Arduino IDE `.ino` file.
-
 Boards developed on:
 
-* M5Stack Core 2
-* M5Stack Atom [TODO]
+* M5Stack Atom
+* M5Stack Core 2 [TODO]
 * RAKWireless WisBlock [TODO]
 
 Modems supported;
@@ -45,6 +43,23 @@ Modems supported;
 ## Examples
 
 Examples are written for PlatformIO (in VS Code), generally for the M5Stack Atom, with the AtomDTU for NB-IoT, which has the SIM7020G.
+
+You need the following:
+
+* VS Code
+* Platform IO plugin
+
+To run the examples you will need to modify the settings, usually at the top, to change the Access Point Name to the one used by your mobile network provider (the examples have telstra.iot, which is an Australian telco).
+
+To run:
+
+1. Open the root of the project in VS Code
+2. Open the Platform IO console (in VS Code)
+3. Change directory to the example, e.g. `cd examples/ModemInfo/`
+4. Build, e.g. `pio run -e m5stack-atom`
+5. Deploy, e.g. `pio run -e m5stack-atom -t upload` and then monitor `pio device monitor --baud 115200`
+
+Examples should be relatively easily to convert into an Arduino IDE `.ino` file, although I have not done that.
 
 ### Basic modem information
 
@@ -67,6 +82,22 @@ After initial configuration with IPv6, once the global prefix is received (e.g. 
 `examples/HttpClient`
 
 Plain (unencrypted) HTTP connections are working, including verifying IPv6 with `http://v4v6.ipv6-test.com/api/myip.php` (the site replies with what it sees as your client address; also useful for checking carrier NAT).
+
+You need to configure your APN, and then run the sample, which will connect and then output the IP address as seen by the web server.
+
+If it works, you will get something like:
+
+```
+### Ready with IPv6 address 2001:8004:4880:0:bbd8:39a6:a0d5:fd14
+Testing HTTP to: v4v6.ipv6-test.com, 80
+...
+HTTP response code: 200
+### PAYLOAD:
+2001:8004:4880:0:bbd8:39a6:a0d5:fd14
+```
+
+
+#### TLS issues
 
 Currently HTTPS (TLS) is not working.
 
@@ -95,11 +126,24 @@ OK
 
 `examples/MqttClient`
 
-Test connections to test.mosquitto.org are working for plain (1883), authenticated (1884), and with a Lets Encrypt public certificate (8886), using an M5Stack Atom with the NB-IoT Atom DTU, which has a SIM7020. Connections have been tested with both dual stack (test.mosquitto.org has IPv6) and IPv4, with Telstra (Australia).
+Tests connection to `test.mosquitto.org` for plain (1883), authenticated (1884), and with a Lets Encrypt public certificate (8886), using an M5Stack Atom with the NB-IoT Atom DTU, which has a SIM7020. Connections have been tested with both dual stack (test.mosquitto.org has IPv6) and IPv4, with Telstra (Australia).
+
+If you change the port to one of the commented out alternatives, then the code will configure certificates and/or usernames as needed (based on the port).
 
 The test program starts the modem, and once the packet data connection is ready it connects (using certificates and username as needed), subscribes to "advgsm/t", sends a message to the same topic, and then waits for the response to be echoed, then disconnects.
 
-This component 
+By default it will only send one message, and then wait. If everything works, you should see it print out something like:
+
+```
+### Testing MQTT to: test.mosquitto.org (1883)
+Subscribing
+Publishing
+Received [advgsm/t]: TestMessage
+Disconnecting
+Done
+```
+
+You can test the PDP type (dual stack vs IPv4), and the different ports on `test.mosquitto.org`, as well as turn the various debugging options on or off.
 
 **NOTE:** Note all features, e.g. QoS, have been implemented yet.
 
@@ -107,7 +151,80 @@ This component
 
 TBA.
 
-## Sources
+## Troubleshooting
+
+### Enabling debug output
+
+Logging is managed in `GsmLog.h`, controlled by the compile flag `ADVGSM_LOG_SEVERITY`.
+
+To configure the logging output destination, you need to set `AdvancedGsmLog.Log` to the print destination (e.g. a serial connection) as part of `setup()` (anything that supports `Print` will work):
+
+```c++
+void setup() {
+  #if ADVGSM_LOG_SEVERITY > 0
+  AdvancedGsmLog.Log = Serial;
+  #endif
+  ...
+```
+
+This property only exists if `ADVGSM_LOG_SEVERITY` is set greater than zero, hence the compile guard.
+
+The default settings is 9, which will output all Info logs and above (it does not output Debug or Trace logs). Severity levels are based on the [OpenTelemetry](https://opentelemetry.io/docs/reference/specification/logs/data-model/#field-severitynumber) common levels.
+
+To change the logging level, you need to set the compile flag in the `platformio.ini` file, e.g. to turn on Debug (level 5) and above:
+
+```ini
+build_flags =
+  '-D ADVGSM_LOG_SEVERITY=5'
+```
+
+Note: You can't set this #define in your source code, as the Advanced GSM code will be compiled long before your files are loaded; you need to set it in the build flags (or in the Advanced GSM source code).
+
+If you set `ADVGSM_LOG_SEVERITY=0` then logging will be turned off (and not even compiled into the code, if you really need to save space). Leaving `AdvancedGsmLog.Log` unset will also turn off logging, but they will still exist as empty operations (unless the compiler optimises them).
+
+Logging in the libary source code is through the `ADVGSM_LOG()` macro, which has takes the severity level, a category/tag name, and then a message and optional arguments with `printf` formatting:
+
+```c++
+  ADVGSM_LOG(GsmSeverity::Info, "GsmModemCommon",
+             GF("Begin connection to %s@%s (%d)"), this->user_name,
+             this->access_point_name, this->pdp_type);
+```
+
+This is output to the monitoring serial channel (or other print destination) with the milliseconds timestamp, level, category, and then the formatted message:
+
+```
+[5329] <INFO> GsmModemCommon: Begin connection to @telstra.iot (2)
+```
+
+### Enabling AT command tracing
+
+You can use the `StreamDebugger` from the TinyGsm libraries to dump all the AT commands for additional troubleshooting.
+
+To configure this, add the dependency to your `platformio.ini` file:
+
+```ini
+lib_deps =
+  vshymanskyy/StreamDebugger
+```
+
+Then you can use something like the following (with a compile flag to easily enable/disable), where `Serial` is your monitoring output, and `Serial1` is the connection to the modem where the AT commands will be sent. 
+
+When you configure the modem with the debugger (instead of directly to `Serial1`) it echoes everything both to and from `Serial1` to the monitoring `Serial`.
+
+```c++
+#define DUMP_AT_COMMANDS
+
+#ifdef DUMP_AT_COMMANDS
+#include <StreamDebugger.h>
+StreamDebugger debugger(Serial1, Serial);
+TestModem testModem(debugger);
+#else
+TestModem testModem(Serial1);
+#endif
+```
+
+
+## Source acknowledgements
 
 The library is heavily based on code from TinyGsm by Volodymyr Shymanskyy, however it is focussed more on the advanced application capabilities now available in many communications chips, rather than just the low level function.
 
@@ -118,6 +235,13 @@ Some guidelines for writing the code:
 * https://docs.arduino.cc/learn/contributions/arduino-library-style-guide
 * https://docs.arduino.cc/learn/contributions/arduino-writing-style-guide
 * https://isocpp.github.io/CppCoreGuidelines/
+
+The interfaces for each client library are based on those commonly used, e.g. the TCP interface is based on the Arduino core Client API (and can be used as a Client), and the implementations in various Ethernet and WiFi networking stacks.
+
+HTTP is based on ArduinoHttpClient, with influence from Arduino-ESP32 HTTPClient.
+
+The MQTT interface is based on PubSubClient, with some features from ArduinoMqttClient and the 256dpi arduino-mqtt library.
+
 
 ## Implementation notes
 

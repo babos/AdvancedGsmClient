@@ -515,7 +515,7 @@ int8_t SIM7020GsmModem::getLocalIPs(String addresses[], uint8_t max) {
     }
     String address_line = this->stream.readStringUntil('\n');
     address_line.trim();
-    // Insert sort in priority order
+    // Insertion sort in priority order
     int8_t insert = address_index;
     while (insert > 0 && compareIPAddress(addresses[insert - 1].c_str(),
                                           address_line.c_str()) > 0) {

@@ -186,7 +186,7 @@ int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
       continue;
     }
     String address1 = address_line.substring(start1 + 1, end1);
-    // Insert sort in priority order
+    // Insertion sort in priority order
     int8_t insert1 = address_index;
     while (insert1 > 0 && compareIPAddress(addresses[insert1 - 1].c_str(),
                                            address1.c_str()) > 0) {
@@ -208,7 +208,7 @@ int8_t GsmModemCommon::getLocalIPs(String addresses[], uint8_t max) {
       continue;
     }
     String address2 = address_line.substring(start1 + 1, end1);
-    // Insert sort in priority order
+    // Insertion sort in priority order
     int8_t insert2 = address_index;
     while (insert2 > 0 && compareIPAddress(addresses[insert2 - 1].c_str(),
                                            address2.c_str()) > 0) {
