@@ -110,8 +110,8 @@ int8_t GsmModemCommon::compareIPAddress(const char ip_a[], const char ip_b[]) {
              strncmp(ip_a, "2001:0:", 7) == 0) {
     // Teredo tunnel 2001::/32
     precedence_a = 5;
-  } else if (strncmp(ip_a, "fc", 2) == 0) {
-    // ULA fc00::/7
+  } else if (strncmp(ip_a, "fc", 2) == 0 || strncmp(ip_a, "fd", 2) == 0) {
+    // ULA fc00::/7, usually fd..
     precedence_a = 3;
   } else if (strncmp(ip_a, "3ffe:", 5) == 0 || strncmp(ip_a, "fec0:", 5) == 0 ||
              strncmp(ip_a, "::", 2) == 0) {
@@ -135,8 +135,8 @@ int8_t GsmModemCommon::compareIPAddress(const char ip_a[], const char ip_b[]) {
              strncmp(ip_b, "2001:0:", 7) == 0) {
     // Teredo tunnel 2001::/32
     precedence_b = 5;
-  } else if (strncmp(ip_b, "fc", 2) == 0) {
-    // ULA fc00::/7
+  } else if (strncmp(ip_b, "fc", 2) == 0 || strncmp(ip_b, "fd", 2) == 0) {
+    // ULA fc00::/7, usually fd..
     precedence_b = 3;
   } else if (strncmp(ip_b, "3ffe:", 5) == 0 || strncmp(ip_b, "fec0:", 5) == 0 ||
              strncmp(ip_b, "::", 2) == 0) {
