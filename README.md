@@ -1,5 +1,5 @@
 # AdvancedGsmClient
-Arduino-style GSM application clients for SIM7020 that take advantage of on-chip applications such as HTTP(S) that already include IPv6 support.
+Arduino-style GSM application clients for SIM7020 that take advantage of on-chip applications such as MQTT(S) and HTTP(S) that already include IPv6 support.
 
 ## Overview
 
@@ -13,16 +13,18 @@ The following API interfaces are defined, allowing basic code to be switched bet
 
 * GsmModem - The modem is primarily used as a network provider, similar to Wifi or Ethernet, so initialisation is about connecting to the Packet Data Protocol (PDP) network (via a configured Access Point Name).
 * TcpClient - TCP client based on the the Arduino Client API, with IPv6 support, https://github.com/arduino/ArduinoCore-API
-* HttpClient - Based on ArduinoHttpClient interface, https://github.com/arduino-libraries/ArduinoHttpClient (rather than the Arduino-ESP32 HTTPClient, even though the boards I am using are ESP32 based)
-* MqttClient [TODO] - Based on the ArudinoMqttClient interface, https://github.com/arduino-libraries/ArduinoMqttClient (alternative PubSubClient, https://github.com/knolleary/pubsubclient/blob/master/src/PubSubClient.h, or MQTT https://github.com/256dpi/arduino-mqtt)
+* HttpClient - Based largely on ArduinoHttpClient interface, https://github.com/arduino-libraries/ArduinoHttpClient (rather than the Arduino-ESP32 HTTPClient, even though the boards I am using are ESP32 based)
+* MqttClient - Based largely on on the PubSubClient interface, https://github.com/knolleary/pubsubclient/blob/master/src/PubSubClient.h (as well as bits of ArudinoMqttClient, https://github.com/arduino-libraries/ArduinoMqttClient and 256dpi MQTT, https://github.com/256dpi/arduino-mqtt)
 * Lwm2mClient [TODO] - See https://github.com/eclipse/wakaama/, https://github.com/ivankravets/libWakaamaEmb
-* UdpClient - Based on core Udp class.
+* UdpClient [TODO] - Based on core Udp class.
 
-Different ways to compose an application that uses HTTP, whether the modem just supplies TCP sockets (everything else done in software), a secure TLS connection, or manages the entire HTTP client:
+There are different ways to compose an application that uses HTTP, whether the modem just supplies TCP sockets (everything else done in software), a secure TLS connection, or manages the entire HTTP client:
 
-* Application -> GsmHttpClient -> modem
-* Application -> ArduinoHttpClient -> GsmSecureClient -> modem
-* Application -> ArduinoHttpClient -> TlsClient -> GsmTcpClient -> modem
+1. Application -> GsmHttpClient -> modem
+2. Application -> ArduinoHttpClient -> GsmSecureClient -> modem
+3. Application -> ArduinoHttpClient -> TlsClient -> GsmTcpClient -> modem
+
+This library is focussed on the first pattern, directly leveraging the protocol support in the modem chip.
 
 
 ## Supported platforms, boards, and devices
