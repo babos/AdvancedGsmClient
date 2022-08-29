@@ -7,10 +7,12 @@
 
 class SIM7020HttpClient;
 class SIM7020MqttClient;
+class SIM7020TcpClient;
 
 class SIM7020GsmModem : public GsmModemCommon {
   friend class SIM7020HttpClient;
   friend class SIM7020MqttClient;
+  friend class SIM7020TcpClient;
 
  public:
   explicit SIM7020GsmModem(Stream& stream);
@@ -38,9 +40,7 @@ class SIM7020GsmModem : public GsmModemCommon {
   bool checkUnsolicitedMqttResponse(String& data);
   bool checkUnsolicitedResponse(String& data);
   bool confirmPacketDataConfiguration();
-  bool setCertificate(int8_t type,
-                      const char* certificate,
-                      int8_t connection_id = -1);
+  bool setCertificate(int8_t type, const char* certificate);
 };
 
 #endif

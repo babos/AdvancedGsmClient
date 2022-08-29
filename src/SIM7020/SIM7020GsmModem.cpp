@@ -576,8 +576,7 @@ String SIM7020GsmModem::ICCID() {
 // }
 
 bool SIM7020GsmModem::setCertificate(int8_t type,
-                                     const char* certificate,
-                                     int8_t connection_id) {
+                                     const char* certificate) {
   /*  type 0 : Root CA
       type 1 : Client CA
       type 2 : Client Private Key
@@ -610,26 +609,14 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
       is_more = 0;
     }
 
-    if (connection_id == -1) {
-      stream.print(GF("AT+CSETCA="));
-      stream.print(type);
-      stream.print(',');
-      stream.print(total_length);
-      stream.print(',');
-      stream.print(is_more);
-      stream.print(",0,\"");
-    } else {
-      int8_t mux_type = 6 + type;
-      stream.print(GF("AT+CTLSCFG="));
-      stream.print(connection_id);
-      stream.print(',');
-      stream.print(mux_type);
-      stream.print(',');
-      stream.print(total_length);
-      stream.print(',');
-      stream.print(is_more);
-      stream.print(",\"");
-    }
+    stream.print(GF("AT+CSETCA="));
+    stream.print(type);
+    stream.print(',');
+    stream.print(total_length);
+    stream.print(',');
+    stream.print(is_more);
+    stream.print(",0,\"");
+
     while (index < chunk_end) {
       c = certificate[index];
       if (c == '\r') {
