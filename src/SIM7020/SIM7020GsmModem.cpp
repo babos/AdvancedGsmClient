@@ -597,49 +597,70 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
              GF("Set certificate %d length %d with %d escaped characters"),
              type, length, count_escaped);
   int16_t total_length = length + count_escaped;
-  int8_t is_more = 1;
-  int16_t index = 0;
-  int16_t chunk_end = 0;
-  char c = '\0';
 
-  while (index < length) {
-    chunk_end += chunk_size;
-    if (chunk_end >= length) {
-      chunk_end = length;
-      is_more = 0;
-    }
+  // NOTE: If a certificate (or partial) already exists, there is no way to clear it; instead, ERROR is returned
+  // when you exceed the length (usually the first command), and it is cleared, and you need to start again.
+  // Allow (and ignore) one error.
 
-    stream.print(GF("AT+CSETCA="));
-    stream.print(type);
-    stream.print(',');
-    stream.print(total_length);
-    stream.print(',');
-    stream.print(is_more);
-    stream.print(",0,\"");
+  int8_t error_count = 0;
+  bool success = false;
 
-    while (index < chunk_end) {
-      c = certificate[index];
-      if (c == '\r') {
-        stream.print("\\r");
+  while (!success && error_count < 2) {
+    int8_t is_more = 1;
+    int16_t index = 0;
+    int16_t chunk_end = 0;
+    char c = '\0';
+
+    int8_t result_code;
+    while (index < length) {
+      chunk_end += chunk_size;
+      if (chunk_end >= length) {
+        chunk_end = length;
+        is_more = 0;
       }
-      if (c == '\n') {
-        stream.print("\\n");
-      } else {
-        stream.print(c);
+
+      stream.print(GF("AT+CSETCA="));
+      stream.print(type);
+      stream.print(',');
+      stream.print(total_length);
+      stream.print(',');
+      stream.print(is_more);
+      stream.print(",0,\"");
+
+      while (index < chunk_end) {
+        c = certificate[index];
+        if (c == '\r') {
+          stream.print("\\r");
+        }
+        if (c == '\n') {
+          stream.print("\\n");
+        } else {
+          stream.print(c);
+        }
+        index++;
       }
-      index++;
+      stream.print("\"" GSM_NL);
+      result_code = waitResponse();
+      if (result_code != 1) {
+        break;
+      }
     }
-    stream.print("\"" GSM_NL);
-    int8_t rc = waitResponse();
-    if (rc == 0) {
+    if (result_code == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-                 GF("Set certificate timed out"));
+                GF("Set certificate timed out"));
       return false;
-    } else if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("Set certificate error"));
-      return false;
+    } else if (result_code != 1) {
+      error_count++;
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Set certificate error %d result at index %d (first error is expected, to clear)"), error_count, index);
+      continue;
     }
+    success = true;
   }
+  if (!success) {
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("Set certificate error"));
+    return false;
+  }
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Certificate set on attempt %d"), error_count + 1);
   return true;
 }
 
