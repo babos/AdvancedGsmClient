@@ -247,6 +247,11 @@ The MQTT interface is based on PubSubClient, with some features from ArduinoMqtt
 
 ## Implementation notes
 
+### TODO
+
+* Work out why setca fails when called a second time, and how to fix it.
+* Better cleanup (or reuse) of existing mqtt (or http) clients
+
 ### M5Stack
 
 

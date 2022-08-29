@@ -16,7 +16,7 @@ uint8_t SIM7020HttpClient::connected() {
 };
 
 int16_t SIM7020HttpClient::createClientInstance() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020",
              GF("HTTP creating instance %d, %s, %d"), scheme, server_name,
              server_port);
 
@@ -41,7 +41,7 @@ int16_t SIM7020HttpClient::createClientInstance() {
     return -603;
   }
   int8_t http_client_id = this->modem.streamGetIntBefore('\n');
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("HTTP %d instance created"),
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("HTTP %d instance created"),
              http_client_id);
   rc = this->modem.waitResponse();
   if (rc == 0) {
@@ -54,7 +54,7 @@ int16_t SIM7020HttpClient::createClientInstance() {
 }
 
 int16_t SIM7020HttpClient::createClientInstanceExtended() {
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020",
              GF("HTTP creating extended instance %d, %s, %d"), scheme,
              server_name, server_port);
 
@@ -82,7 +82,7 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
       (server_ca_hex_length >= 10000 ? 1 : 0);
   int16_t header_length = prefix_length + server_name_length + 1 +
                           server_port_length + 1 + 1 + 1 + 1;
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020",
              GF("Header length pref=%d nm=%d pt=%d t=%d"), prefix_length,
              server_name_length, server_port_length, header_length);
   int16_t tail_length = 1 + 1 + 1 + 1 + 1 + 1;
@@ -95,7 +95,7 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
   char c = '\0';
 
   // First chunk (header)
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Create first chunk %d"),
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Create first chunk %d"),
              header_length);
   this->modem.sendAT(GF("+CHTTPCREATEEXT="), is_more, ",", total_length, ",",
                      header_length, ",\"", GSM_PREFIX_HTTPS, server_name, ':',
@@ -126,7 +126,7 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
     if (cert_index == 0) {
       chunk_length = chunk_length + server_ca_hex_length_string_length + 1;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7020",
                GF("Loop chunk %d, cert start %d, end %d"), chunk_length,
                cert_index, cert_section_end);
     this->modem.stream.print(GF("AT+CHTTPCREATEEXT="));
@@ -147,7 +147,7 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
       cert_index++;
     }
     this->modem.stream.print("\"\r\n");
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("Wait http response"));
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Wait http response"));
     rc = this->modem.waitResponse();
     if (rc == 0) {
       return -722;
@@ -171,7 +171,7 @@ int16_t SIM7020HttpClient::createClientInstanceExtended() {
     return -623;
   }
   int8_t http_client_id = this->modem.streamGetIntBefore('\n');
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7200",
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020",
              GF("HTTP %d extended instance created"), http_client_id);
   rc = this->modem.waitResponse();
   if (rc == 0) {
@@ -207,7 +207,7 @@ int SIM7020HttpClient::startRequest(const char url_path[],
                                     const char content_type[],
                                     int content_length,
                                     const byte body[]) {
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7200", GF("HTTP start %s %s (%d, %d)"),
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("HTTP start %s %s (%d, %d)"),
              http_method, url_path, is_connected, http_client_id);
   int16_t rc;
   // Connect if needed
@@ -228,7 +228,7 @@ int SIM7020HttpClient::startRequest(const char url_path[],
       this->modem.http_clients[this->http_client_id] = this;
     }
 
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7200", GF("HTTP %d connecting"),
+    ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("HTTP %d connecting"),
                http_client_id);
 
     // Connect
