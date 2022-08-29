@@ -43,10 +43,10 @@ const char version[] = STR(PIO_VERSION);
 #define GSM_TX_PIN 22
 #define GSM_RX_PIN 19
 
-// #include <StreamDebugger.h>
-// StreamDebugger debugger(Serial1, Serial);
-// SIM7020GsmModem sim7020(debugger);
-SIM7020GsmModem sim7020(Serial1);
+#include <StreamDebugger.h>
+StreamDebugger debugger(Serial1, Serial);
+SIM7020GsmModem sim7020(debugger);
+// SIM7020GsmModem sim7020(Serial1);
 
 SIM7020TcpClient sim7020tcp(sim7020);
 SIM7020MqttClient sim7020mqtt(sim7020tcp, server, port, true);

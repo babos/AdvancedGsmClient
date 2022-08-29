@@ -31,6 +31,10 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
     this->modem.mqtt_clients[this->mqtt_id] = this;
   }
 
+  // Set hex format
+  this->modem.sendAT(GF("+CREVHEX=1"));
+  this->modem.waitResponse();
+
   ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d connect client %s@%s"),
              mqtt_id, user_name ? user_name : "", client_id);
 
@@ -73,7 +77,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
 
   if (strlen(server_name) > 50) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-             GF("SIM7020 maximum server name length is 50; cannot connect to server"));
+               GF("SIM7020 maximum server name length is 50; cannot connect to "
+                  "server"));
     return -605;
   }
 
@@ -155,6 +160,7 @@ void SIM7020MqttClient::disconnect() {
 
 void SIM7020MqttClient::loop() {}
 
+// NOTE: Topic max length is 128 characters
 boolean SIM7020MqttClient::publish(const char topic[], const char payload[]) {
   int8_t qos = 0;
   int8_t retained = 0;
@@ -171,7 +177,6 @@ boolean SIM7020MqttClient::publish(const char topic[], const char payload[]) {
     payload_index++;
   }
   this->modem.stream.print("\"\r\n");
-
   int16_t rc = this->modem.waitResponse(5000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
