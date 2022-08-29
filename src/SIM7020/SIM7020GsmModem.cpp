@@ -159,7 +159,7 @@ bool SIM7020GsmModem::checkConnection() {
       ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", "Waiting for IP address");
       return false;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", "Got IP Addresses: %s%s%s",
+    ADVGSM_LOG(GsmSeverity::Info, "SIM7020", "Local IP Addresses: %s%s%s",
                addresses[0].c_str(), count > 0 ? ", " : "",
                count > 0 ? addresses[1].c_str() : "");
     this->status = ModemStatus::PacketDataReady;
