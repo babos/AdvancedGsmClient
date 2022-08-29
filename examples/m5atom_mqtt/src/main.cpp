@@ -1,4 +1,29 @@
-#include <SIM7020/SIM7020MqttClient.h>
+/*
+This example runs on the M5Atom, with the SIM7020 DTU, and setting the LED to indicate initialisation (yellow),
+ready (green flash), message sending/receiving (blue flash), and fatal errors (red).
+
+It is configured to connect to a test MQTT server set in Azure by the scripts from the example at:
+https://github.com/sgryphon/iot-demo-build/blob/main/azure-mosquitto/README-mosquitto.md
+
+To run, start the test server, use a terminal to connect to it and follow the logs:
+
+./start-mosquitto.ps1
+ssh iotadmin@mqdev01-0xacc5.australiaeast.cloudapp.azure.com
+sudo tail -f /var/log/mosquitto/mosquitto.log
+
+In another shell, start a mosquitto client listening on all topics:
+
+$mqttPassword = 'YourSecretPassword'
+mosquitto_sub -h mqdev01-0xacc5.australiaeast.cloudapp.azure.com -t '#' -F '%I %t [%l] %p' -p 8883 -u mqttuser -P $mqttPassword
+
+Then, in the PIO shell, deploy (upload) to your device, and then monitor the serial output:
+
+export PIO_MQTT_PASSWORD=YourMqttPassword3
+(export PIO_VERSION=$(git describe --tags --dirty); pio run --target upload)
+pio device monitor --baud 115200
+
+*/
+#include "../../../src/SIM7020/SIM7020MqttClient.h"
 #include <M5Atom.h>
 #include <Arduino.h>
 
@@ -14,11 +39,9 @@ const char mqtt_user[] = "mqttdevice1";
 const char mqtt_password[] = STR(PIO_MQTT_PASSWORD);
 const char version[] = STR(PIO_VERSION);
 
-
 #define GSM_BAUDRATE 115200
 #define GSM_TX_PIN 22
 #define GSM_RX_PIN 19
-
 
 // #include <StreamDebugger.h>
 // StreamDebugger debugger(Serial1, Serial);
