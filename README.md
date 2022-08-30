@@ -63,6 +63,7 @@ To run:
 
 Examples should be relatively easily to convert into an Arduino IDE `.ino` file, although I have not done that.
 
+
 ### Basic modem information
 
 `examples/ModemInfo`
@@ -79,50 +80,15 @@ An IPv4 address is assigned on first connection, as is an IPv6 suffix (if enable
 
 After initial configuration with IPv6, once the global prefix is received (e.g. from a router advertisement), the modem also reports it's global IPv6 address.
 
-### HTTP client
 
-`examples/HttpClient`
+### M5Stack Atom MQTT example
 
-Plain (unencrypted) HTTP connections are working, including verifying IPv6 with `http://v4v6.ipv6-test.com/api/myip.php` (the site replies with what it sees as your client address; also useful for checking carrier NAT).
+`examples/m5atom_mqtt`
 
-You need to configure your APN, and then run the sample, which will connect and then output the IP address as seen by the web server.
+This example runs on the M5Stack Atom DTU NB-IoT Kit, with the SIM7020 DTU. It shows a secure MQTTS connection, with TLS, running on IPv6, over NB-IoT LPWAN. The connection is both encrypted and then authenticated with an MQTT password, handling both upstream and downstream messages. The Atom LED colour is used to indicate status.
 
-If it works, you will get something like:
+![M5Stack Atom with SIM7020 showing MQTT over TLS over IPv6, over NB-IoT](examples/m5atom_mqtt/test-mqtt-tls-ipv6-nbiot.png)
 
-```
-### Ready with IPv6 address 2001:8004:4880:0:bbd8:39a6:a0d5:fd14
-Testing HTTP to: v4v6.ipv6-test.com, 80
-...
-HTTP response code: 200
-### PAYLOAD:
-2001:8004:4880:0:bbd8:39a6:a0d5:fd14
-```
-
-
-#### TLS issues
-
-Currently HTTPS (TLS) is not working.
-
-Manually following the example in the "SIM7020 Series HTTP(S) Application Note v1.04" documentation, the HTTP client can be created, but when you try and connect it gives an error:
-
-```
-... packages 1, 2,3 ...
-AT+CHTTPCREATEEXT=0,3268,270,"43646a... last package ...2d2d2d0d0a,0,,0,"
-+CHTTPCREATEEXT: 0
-
-OK
-
-AT+CHTTPCON=0
-ERROR
-
-AT+CHTTPCREATEEXT?
-+CHTTPCREATEEXT: 0,1,https://180.97.33.108/
-+CHTTPCREATEEXT: 1,0,(null)
-+CHTTPCREATEEXT: 2,0,(null)
-+CHTTPCREATEEXT: 3,0,(null)
-+CHTTPCREATEEXT: 4,0,(null)
-OK
-```
 
 ### MQTT client
 
@@ -149,9 +115,56 @@ You can test the PDP type (dual stack vs IPv4), and the different ports on `test
 
 **NOTE:** Note all features, e.g. QoS, have been implemented yet.
 
+
+### HTTP client
+
+`examples/HttpClient`
+
+Plain (unencrypted) HTTP connections are working, including verifying IPv6 with `http://v4v6.ipv6-test.com/api/myip.php` (the site replies with what it sees as your client address; also useful for checking carrier NAT).
+
+You need to configure your APN, and then run the sample, which will connect and then output the IP address as seen by the web server.
+
+If it works, you will get something like:
+
+```
+### Ready with IPv6 address 2001:8004:4880:0:bbd8:39a6:a0d5:fd14
+Testing HTTP to: v4v6.ipv6-test.com, 80
+...
+HTTP response code: 200
+### PAYLOAD:
+2001:8004:4880:0:bbd8:39a6:a0d5:fd14
+```
+
+#### TLS issues
+
+Currently HTTPS (TLS) is not working.
+
+Manually following the example in the "SIM7020 Series HTTP(S) Application Note v1.04" documentation, the HTTP client can be created, but when you try and connect it gives an error:
+
+```
+... packages 1, 2,3 ...
+AT+CHTTPCREATEEXT=0,3268,270,"43646a... last package ...2d2d2d0d0a,0,,0,"
++CHTTPCREATEEXT: 0
+
+OK
+
+AT+CHTTPCON=0
+ERROR
+
+AT+CHTTPCREATEEXT?
++CHTTPCREATEEXT: 0,1,https://180.97.33.108/
++CHTTPCREATEEXT: 1,0,(null)
++CHTTPCREATEEXT: 2,0,(null)
++CHTTPCREATEEXT: 3,0,(null)
++CHTTPCREATEEXT: 4,0,(null)
+OK
+```
+
+
 ### LwM2M Client
 
 TBA.
+
 
 ## Troubleshooting
 
@@ -249,7 +262,6 @@ The MQTT interface is based on PubSubClient, with some features from ArduinoMqtt
 
 ### TODO
 
-* Work out why setca fails when called a second time, and how to fix it.
 * Better cleanup (or reuse) of existing mqtt (or http) clients
 
 ### M5Stack
