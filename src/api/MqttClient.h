@@ -4,6 +4,11 @@
 #include <Arduino.h>
 #include <Client.h>
 
+enum MqttVersion {
+  MQTT_3_1 = 3,
+  MQTT_3_1_1 = 4
+};
+
 class MqttClient {
  public:
   static const int MqttPort = 1883;
@@ -12,11 +17,14 @@ class MqttClient {
   // TODO: Need beginPublish(), write(), endPublish()
   virtual int16_t connect(const char client_id[],
                           const char user_name[] = NULL,
-                          const char password[] = NULL) = 0;
+                          const char password[] = NULL,
+                          bool clean_session = true) = 0;
   // TODO retain, will, etc
   virtual boolean connected() = 0;
   virtual void disconnect() = 0;
+  virtual uint16_t keepAliveSeconds() = 0;
   virtual void loop() = 0;
+  virtual MqttVersion mqttVersion() = 0;
   virtual boolean publish(const char topic[], const char payload[]) = 0;
   // bool publish(const char topic[], const char payload[], bool retained =
   // false, int qos = 0);
@@ -24,6 +32,8 @@ class MqttClient {
   //  responseCode(), responseBody()
   virtual String receiveBody() = 0;
   virtual String receiveTopic() = 0;
+  virtual void setKeepAliveSeconds(uint16_t seconds) = 0;
+  virtual void setMqttVersion(MqttVersion version) = 0;
   virtual boolean subscribe(const char topic[], int qos = 0) = 0;
   virtual boolean unsubscribe(const char topic[]) = 0;
 };

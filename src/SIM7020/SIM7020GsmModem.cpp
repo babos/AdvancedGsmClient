@@ -159,7 +159,7 @@ bool SIM7020GsmModem::checkConnection() {
       ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", "Waiting for IP address");
       return false;
     }
-    ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", "Got IP Addresses: %s%s%s",
+    ADVGSM_LOG(GsmSeverity::Info, "SIM7020", "Local IP Addresses: %s%s%s",
                addresses[0].c_str(), count > 0 ? ", " : "",
                count > 0 ? addresses[1].c_str() : "");
     this->status = ModemStatus::PacketDataReady;
@@ -576,8 +576,7 @@ String SIM7020GsmModem::ICCID() {
 // }
 
 bool SIM7020GsmModem::setCertificate(int8_t type,
-                                     const char* certificate,
-                                     int8_t connection_id) {
+                                     const char* certificate) {
   /*  type 0 : Root CA
       type 1 : Client CA
       type 2 : Client Private Key
@@ -598,19 +597,28 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
              GF("Set certificate %d length %d with %d escaped characters"),
              type, length, count_escaped);
   int16_t total_length = length + count_escaped;
-  int8_t is_more = 1;
-  int16_t index = 0;
-  int16_t chunk_end = 0;
-  char c = '\0';
 
-  while (index < length) {
-    chunk_end += chunk_size;
-    if (chunk_end >= length) {
-      chunk_end = length;
-      is_more = 0;
-    }
+  // NOTE: If a certificate (or partial) already exists, there is no way to clear it; instead, ERROR is returned
+  // when you exceed the length (usually the first command), and it is cleared, and you need to start again.
+  // Allow (and ignore) one error.
 
-    if (connection_id == -1) {
+  int8_t error_count = 0;
+  bool success = false;
+
+  while (!success && error_count < 2) {
+    int8_t is_more = 1;
+    int16_t index = 0;
+    int16_t chunk_end = 0;
+    char c = '\0';
+
+    int8_t result_code;
+    while (index < length) {
+      chunk_end += chunk_size;
+      if (chunk_end >= length) {
+        chunk_end = length;
+        is_more = 0;
+      }
+
       stream.print(GF("AT+CSETCA="));
       stream.print(type);
       stream.print(',');
@@ -618,41 +626,41 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
       stream.print(',');
       stream.print(is_more);
       stream.print(",0,\"");
-    } else {
-      int8_t mux_type = 6 + type;
-      stream.print(GF("AT+CTLSCFG="));
-      stream.print(connection_id);
-      stream.print(',');
-      stream.print(mux_type);
-      stream.print(',');
-      stream.print(total_length);
-      stream.print(',');
-      stream.print(is_more);
-      stream.print(",\"");
-    }
-    while (index < chunk_end) {
-      c = certificate[index];
-      if (c == '\r') {
-        stream.print("\\r");
+
+      while (index < chunk_end) {
+        c = certificate[index];
+        if (c == '\r') {
+          stream.print("\\r");
+        }
+        if (c == '\n') {
+          stream.print("\\n");
+        } else {
+          stream.print(c);
+        }
+        index++;
       }
-      if (c == '\n') {
-        stream.print("\\n");
-      } else {
-        stream.print(c);
+      stream.print("\"" GSM_NL);
+      result_code = waitResponse();
+      if (result_code != 1) {
+        break;
       }
-      index++;
     }
-    stream.print("\"" GSM_NL);
-    int8_t rc = waitResponse();
-    if (rc == 0) {
+    if (result_code == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-                 GF("Set certificate timed out"));
+                GF("Set certificate timed out"));
       return false;
-    } else if (rc != 1) {
-      ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("Set certificate error"));
-      return false;
+    } else if (result_code != 1) {
+      error_count++;
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Set certificate error %d result at index %d (first error is expected, to clear)"), error_count, index);
+      continue;
     }
+    success = true;
   }
+  if (!success) {
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("Set certificate error"));
+    return false;
+  }
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Certificate set on attempt %d"), error_count + 1);
   return true;
 }
 

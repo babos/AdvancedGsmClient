@@ -12,7 +12,8 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
 
 int16_t SIM7020MqttClient::connect(const char client_id[],
                                    const char user_name[],
-                                   const char password[]) {
+                                   const char password[],
+                                   bool clean_session) {
   // Create if needed
   int16_t rc;
   if (this->mqtt_id == -1) {
@@ -30,13 +31,17 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
     this->modem.mqtt_clients[this->mqtt_id] = this;
   }
 
+  // Set hex format
+  this->modem.sendAT(GF("+CREVHEX=1"));
+  this->modem.waitResponse();
+
   ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d connect client %s@%s"),
              mqtt_id, user_name ? user_name : "", client_id);
 
   // Connect
   // TODO: Should store client_id as field?
   this->modem.stream.printf(GF("AT+CMQCON=%d,%d,\"%s\",%d,%d"), this->mqtt_id,
-                            mqtt_version, client_id, mqtt_keep_alive_s,
+                            this->mqtt_version, client_id, this->keep_alive_s,
                             clean_session);
   this->modem.stream.print(GF(",0"));  // Will
   if (user_name != nullptr) {
@@ -72,7 +77,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
 
   if (strlen(server_name) > 50) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-             GF("SIM7020 maximum server name length is 50; cannot connect to server");
+               GF("SIM7020 maximum server name length is 50; cannot connect to "
+                  "server"));
     return -605;
   }
 
@@ -149,11 +155,14 @@ void SIM7020MqttClient::disconnect() {
                this->mqtt_id)
     this->modem.sendAT(GF("+CMQDISCON="), this->mqtt_id);
     this->modem.waitResponse(30000);
+    this->mqtt_id = -1;
+    is_connected = false;
   }
 }
 
 void SIM7020MqttClient::loop() {}
 
+// NOTE: Topic max length is 128 characters
 boolean SIM7020MqttClient::publish(const char topic[], const char payload[]) {
   int8_t qos = 0;
   int8_t retained = 0;
@@ -170,7 +179,6 @@ boolean SIM7020MqttClient::publish(const char topic[], const char payload[]) {
     payload_index++;
   }
   this->modem.stream.print("\"\r\n");
-
   int16_t rc = this->modem.waitResponse(5000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",

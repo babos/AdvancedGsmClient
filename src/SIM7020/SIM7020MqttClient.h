@@ -10,9 +10,6 @@ class SIM7020MqttClient : public GsmMqttClient {
 
  private:
   static const int16_t buffer_size = 1024;
-  static const int16_t clean_session = 1;
-  static const int16_t mqtt_keep_alive_s = 600;
-  static const int16_t mqtt_version = 4;  // 3=MQTT 3.1, 4=MQTT 3.1.1
   static const int16_t timeout_ms = 12000;
 
  public:
@@ -23,7 +20,8 @@ class SIM7020MqttClient : public GsmMqttClient {
 
   int16_t connect(const char client_id[],
                   const char user_name[] = NULL,
-                  const char password[] = NULL) override;
+                  const char password[] = NULL,
+                  bool clean_session = true) override;
   boolean connected() override;
   void disconnect() override;
   void loop() override;

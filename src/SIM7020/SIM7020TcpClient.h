@@ -15,6 +15,9 @@ class SIM7020TcpClient : public GsmTcpClient {
 
  protected:
   SIM7020GsmModem& modem;
+
+ private:
+  bool setTlsCertificate(int8_t type, const char* certificate, int8_t connection_id);
 };
 
 #endif
