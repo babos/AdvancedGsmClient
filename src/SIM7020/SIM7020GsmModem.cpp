@@ -575,8 +575,7 @@ String SIM7020GsmModem::ICCID() {
 //   return (ret == SIM_READY || ret == SIM_LOCKED);
 // }
 
-bool SIM7020GsmModem::setCertificate(int8_t type,
-                                     const char* certificate) {
+bool SIM7020GsmModem::setCertificate(int8_t type, const char* certificate) {
   /*  type 0 : Root CA
       type 1 : Client CA
       type 2 : Client Private Key
@@ -598,9 +597,10 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
              type, length, count_escaped);
   int16_t total_length = length + count_escaped;
 
-  // NOTE: If a certificate (or partial) already exists, there is no way to clear it; instead, ERROR is returned
-  // when you exceed the length (usually the first command), and it is cleared, and you need to start again.
-  // Allow (and ignore) one error.
+  // NOTE: If a certificate (or partial) already exists, there is no way to
+  // clear it; instead, ERROR is returned when you exceed the length (usually
+  // the first command), and it is cleared, and you need to start again. Allow
+  // (and ignore) one error.
 
   int8_t error_count = 0;
   bool success = false;
@@ -647,11 +647,14 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
     }
     if (result_code == 0) {
       ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-                GF("Set certificate timed out"));
+                 GF("Set certificate timed out"));
       return false;
     } else if (result_code != 1) {
       error_count++;
-      ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Set certificate error %d result at index %d (first error is expected, to clear)"), error_count, index);
+      ADVGSM_LOG(GsmSeverity::Debug, "SIM7020",
+                 GF("Set certificate error %d result at index %d (first error "
+                    "is expected, to clear)"),
+                 error_count, index);
       continue;
     }
     success = true;
@@ -660,7 +663,8 @@ bool SIM7020GsmModem::setCertificate(int8_t type,
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("Set certificate error"));
     return false;
   }
-  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Certificate set on attempt %d"), error_count + 1);
+  ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", GF("Certificate set on attempt %d"),
+             error_count + 1);
   return true;
 }
 

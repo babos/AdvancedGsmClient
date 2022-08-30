@@ -4,10 +4,7 @@
 #include <Arduino.h>
 #include <Client.h>
 
-enum MqttVersion {
-  MQTT_3_1 = 3,
-  MQTT_3_1_1 = 4
-};
+enum MqttVersion { MQTT_3_1 = 3, MQTT_3_1_1 = 4 };
 
 class MqttClient {
  public:

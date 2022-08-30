@@ -31,12 +31,30 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
     this->modem.mqtt_clients[this->mqtt_id] = this;
   }
 
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7020",
+             GF("MQTT %d connect client '%s' (user '%s')"), mqtt_id, client_id,
+             user_name ? user_name : "");
+
+  if (strlen(client_id) > 120) {
+    ADVGSM_LOG(
+        GsmSeverity::Error, "SIM7020",
+        GF("SIM7020 maximum MQTT client ID length is 120; cannot connect"));
+    return -611;
+  }
+  if (strlen(user_name) > 100) {
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
+               GF("SIM7020 maximum user name length is 100; cannot connect"));
+    return -612;
+  }
+  if (strlen(password) > 100) {
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
+               GF("SIM7020 maximum password length is 100; cannot connect"));
+    return -613;
+  }
+
   // Set hex format
   this->modem.sendAT(GF("+CREVHEX=1"));
   this->modem.waitResponse();
-
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d connect client '%s' (user '%s')"),
-             mqtt_id, client_id, user_name ? user_name : "");
 
   // Connect
   // TODO: Should store client_id as field?
@@ -77,8 +95,7 @@ int16_t SIM7020MqttClient::createClientInstance() {
 
   if (strlen(server_name) > 50) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("SIM7020 maximum server name length is 50; cannot connect to "
-                  "server"));
+               GF("SIM7020 maximum server name length is 50; cannot connect"));
     return -605;
   }
 

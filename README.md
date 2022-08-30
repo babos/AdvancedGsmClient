@@ -263,6 +263,7 @@ The MQTT interface is based on PubSubClient, with some features from ArduinoMqtt
 ### TODO
 
 * Better cleanup (or reuse) of existing mqtt (or http) clients
+* Azure mode support (set in constructor; username / password treated as device ID / key)
 
 ### M5Stack
 

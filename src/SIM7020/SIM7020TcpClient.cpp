@@ -3,8 +3,8 @@
 SIM7020TcpClient::SIM7020TcpClient(SIM7020GsmModem& modem) : modem(modem) {}
 
 bool SIM7020TcpClient::setTlsCertificate(int8_t type,
-                                     const char* certificate,
-                                     int8_t connection_id) {
+                                         const char* certificate,
+                                         int8_t connection_id) {
   /*  type 0 : Root CA, TLS parameter 6
       type 1 : Client CA, TLS parameter 7
       type 2 : Client Private Key, TLS parameter 8
