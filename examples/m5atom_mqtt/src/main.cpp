@@ -22,6 +22,11 @@ export PIO_MQTT_PASSWORD=YourMqttPassword3
 (export PIO_VERSION=$(git describe --tags --dirty); pio run --target upload)
 pio device monitor --baud 115200
 
+To test downstream, use another terminal:
+
+$mqttPassword = 'YourSecretPassword'
+mosquitto_pub -h mqdev01-0xacc5.australiaeast.cloudapp.azure.com -t 'test/c2d' -p 8883 -u mqttuser -P $mqttPassword -m '{\"interval_s\": 60}'
+
 */
 #include "../../../src/SIM7020/SIM7020MqttClient.h"
 #include <M5Atom.h>
@@ -67,6 +72,7 @@ int32_t counter = 0;
 bool ready = false;
 bool failed = false;
 int32_t led_off_ms = -1;
+int32_t next_connected_blink_ms = -1;
 int32_t next_message_ms = -1;
 int32_t disconnect_ms = -1;
 
@@ -88,7 +94,7 @@ void setup() {
   M5.begin(true, true, true);
   delay(1000);
   Serial.printf("MQTT example started, v.%s\n", version);
-  M5.dis.fillpix(CRGB::Yellow); 
+  M5.dis.fillpix(0x333300); 
   Serial1.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
   modem.begin(apn);
 }
@@ -136,10 +142,11 @@ void loop() {
   }
 
   if (next_message_ms > 0 && millis() > next_message_ms) {
+    M5.dis.fillpix(CRGB::Blue); 
     int8_t rc = mqtt.connect(client_id.c_str(), mqtt_user, mqtt_password);
     if (rc != 0) {
       Serial.println("Connect failed");
-      M5.dis.fillpix(CRGB::Red); 
+      M5.dis.fillpix(CRGB::Red);
       failed = true;
       return;
     }
@@ -148,23 +155,34 @@ void loop() {
     buildMessage();
     Serial.printf("Publishing: %s\n", message_buffer);
     mqtt.publish(publish_topic, message_buffer);
-    M5.dis.fillpix(CRGB::Blue); 
-    led_off_ms = millis() + 200;
-    disconnect_ms = millis() + 5000;
     next_message_ms = now + 60000;
+    int32_t start = millis();
+    disconnect_ms =start + 6000;
+    next_connected_blink_ms = start + 1000;
+    led_off_ms = start + 100;
+  }
+
+  if (next_connected_blink_ms > 0 && now > next_connected_blink_ms) {
+    M5.dis.fillpix(0x333300);
+    int32_t blink = millis();
+    next_connected_blink_ms = blink + 2000;
+    led_off_ms = blink + 50;
   }
 
   String receive_topic = mqtt.receiveTopic();
   if (receive_topic.length() > 0) {
+    M5.dis.fillpix(CRGB::Blue);
+    led_off_ms = millis() + 100;
     String receive_body = mqtt.receiveBody();
     Serial.printf("Received [%s]: %s\n", receive_topic.c_str(), receive_body.c_str());
-    M5.dis.fillpix(CRGB::Blue); 
-    led_off_ms = now + 200;
   }
 
   if (disconnect_ms > 0 && now > disconnect_ms) {
     Serial.print("Disconnecting\n");
     mqtt.disconnect();
+    M5.dis.clear();
     disconnect_ms = -1;
+    next_connected_blink_ms = -1;
+    led_off_ms = -1;
   }
 }

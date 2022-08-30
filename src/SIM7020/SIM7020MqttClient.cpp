@@ -155,6 +155,8 @@ void SIM7020MqttClient::disconnect() {
                this->mqtt_id)
     this->modem.sendAT(GF("+CMQDISCON="), this->mqtt_id);
     this->modem.waitResponse(30000);
+    this->mqtt_id = -1;
+    is_connected = false;
   }
 }
 
