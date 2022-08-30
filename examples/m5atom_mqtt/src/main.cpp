@@ -27,6 +27,8 @@ To test downstream, use another terminal:
 $mqttPassword = 'YourSecretPassword'
 mosquitto_pub -h mqdev01-0xacc5.australiaeast.cloudapp.azure.com -t 'test/c2d' -p 8883 -u mqttuser -P $mqttPassword -m '{\"interval_s\": 60}'
 
+For a screen shot, see: test-mqtt-tls-ipv6-nbiot.png
+
 */
 #include "../../../src/SIM7020/SIM7020MqttClient.h"
 #include <M5Atom.h>
@@ -172,7 +174,7 @@ void loop() {
   String receive_topic = mqtt.receiveTopic();
   if (receive_topic.length() > 0) {
     M5.dis.fillpix(CRGB::Blue);
-    led_off_ms = millis() + 100;
+    led_off_ms = millis() + 200;
     String receive_body = mqtt.receiveBody();
     Serial.printf("Received [%s]: %s\n", receive_topic.c_str(), receive_body.c_str());
   }
@@ -180,9 +182,7 @@ void loop() {
   if (disconnect_ms > 0 && now > disconnect_ms) {
     Serial.print("Disconnecting\n");
     mqtt.disconnect();
-    M5.dis.clear();
     disconnect_ms = -1;
     next_connected_blink_ms = -1;
-    led_off_ms = -1;
   }
 }

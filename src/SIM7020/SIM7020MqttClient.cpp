@@ -35,8 +35,8 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
   this->modem.sendAT(GF("+CREVHEX=1"));
   this->modem.waitResponse();
 
-  ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d connect client %s@%s"),
-             mqtt_id, user_name ? user_name : "", client_id);
+  ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d connect client '%s' (user '%s')"),
+             mqtt_id, client_id, user_name ? user_name : "");
 
   // Connect
   // TODO: Should store client_id as field?
@@ -72,8 +72,8 @@ boolean SIM7020MqttClient::connected() {
 
 int16_t SIM7020MqttClient::createClientInstance() {
   ADVGSM_LOG(GsmSeverity::Info, "SIM7020",
-             GF("MQTT creating instance %s, %d (TLS %d)"), server_name,
-             server_port, use_tls);
+             GF("MQTT creating instance %s, %d (TLS %s)"), server_name,
+             server_port, use_tls ? "yes" : "no");
 
   if (strlen(server_name) > 50) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",

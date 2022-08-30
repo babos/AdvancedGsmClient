@@ -15,9 +15,13 @@ void GsmModemCommon::begin(const char access_point_name[],
   this->user_name = user_name ? user_name : "";
   this->password = password ? password : "";
 
+  const char* pdp_type_string =
+      this->pdp_type == PacketDataProtocolType::IPv4v6 ? "IPV4V6"
+      : this->pdp_type == PacketDataProtocolType::IPv6 ? "IPV6"
+                                                       : "IP";
   ADVGSM_LOG(GsmSeverity::Info, "GsmModemCommon",
-             GF("Begin connection to %s@%s (%d)"), this->user_name,
-             this->access_point_name, this->pdp_type);
+             GF("Begin connection to %s@%s (%s)"), this->user_name,
+             this->access_point_name, pdp_type_string);
 
   this->active = true;
   bool success = checkConnection();
