@@ -416,7 +416,7 @@ bool SIM7020GsmModem::checkUnsolicitedMqttResponse(String& data) {
     int16_t payload_hex_length = streamGetIntBefore(',');
     int16_t payload_length = payload_hex_length / 2;
     ADVGSM_LOG(GsmSeverity::Debug, "SIM7020", "MQTT %d received topic '%s'",
-               mqtt_id, topic);
+               mqtt_id, topic.c_str());
     streamSkipUntil('"');
     if (payload_hex_length > 0) {
       char hex[3] = {0, 0, 0};

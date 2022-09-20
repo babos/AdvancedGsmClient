@@ -42,7 +42,7 @@ const char apn[] = "telstra.iot";
 // NOTE: Maximum server name length is 50 characters
 const char server[] = "mqdev01-0xacc5.australiaeast.cloudapp.azure.com";
 const int16_t port = 8883;
-const char mqtt_user[] = "mqttdevice1";
+const char mqtt_user[] = "dev00001";
 const char mqtt_password[] = STR(PIO_MQTT_PASSWORD);
 const char version[] = STR(PIO_VERSION);
 
@@ -65,8 +65,8 @@ extern const uint8_t root_ca_pem_start[] asm("_binary_src_certs_ISRG_Root_X1_pem
 extern const uint8_t root_ca_pem_end[] asm("_binary_src_certs_ISRG_Root_X1_pem_end");
 const String root_ca((char *)root_ca_pem_start);
 
-const char publish_topic[] = "test/d2c";
-const char subscribe_topic[] = "test/c2d";
+const char publish_topic[] = "dt/demo/1/dev00001";
+const char subscribe_topic[] = "cmd/demo/1/dev00001/req";
 String client_id;
 char message_buffer[2000] = { 0 };
 int32_t counter = 0;
@@ -129,7 +129,8 @@ void loop() {
         M5.dis.fillpix(CRGB::Red); 
         return;
       }
-      client_id = "imei-" + modem.IMEI();
+      //client_id = "imei-" + modem.IMEI();
+      client_id = mqtt_user;
       Serial.printf("Setting client ID to: %s\n", client_id.c_str());
       M5.dis.fillpix(CRGB::Green);
       led_off_ms = millis() + 500;

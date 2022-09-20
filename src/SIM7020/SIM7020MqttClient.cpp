@@ -70,13 +70,13 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
   rc = this->modem.waitResponse(60000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s connect client '%s' timed out"), this->mqtt_id,
-               client_id);
+               GF("MQTT %d connect client '%s' timed out for user '%s' with password length %d"), this->mqtt_id,
+               client_id, user_name, strlen(password));
     return -710;
   } else if (rc != 1) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s connect client '%s' error"), this->mqtt_id,
-               client_id);
+               GF("MQTT %d connect client '%s' error for user '%s' with password length %d"), this->mqtt_id,
+               client_id, user_name, strlen(password));
     return -610;
   }
 
