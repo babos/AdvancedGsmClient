@@ -71,6 +71,7 @@ class GsmModem {
   virtual void sendATCommand(const char command[]) = 0;
   virtual bool setClientCA(const String& certificate) = 0;
   virtual bool setClientPrivateKey(const String& certificate) = 0;
+  virtual bool setDns(const char primaryDns[], const char secondaryDns[]) = 0;
   virtual bool setRootCA(const String& certificate) = 0;
 };
 

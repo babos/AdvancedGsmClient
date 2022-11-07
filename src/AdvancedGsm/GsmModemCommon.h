@@ -30,6 +30,7 @@ class GsmModemCommon : public GsmModem {
   String revision() override;
   int32_t RSSI() override;
   void sendATCommand(const char command[]) override;
+  bool setDns(const char primaryDns[], const char secondaryDns[]) override;
   int8_t waitResponse();
   int8_t waitResponse(GsmConstStr r1,
                       GsmConstStr r2 = GFP(GSM_ERROR),

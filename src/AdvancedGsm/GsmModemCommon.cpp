@@ -423,6 +423,14 @@ void GsmModemCommon::sendATCommand(const char command[]) {
   this->stream.flush();
 }
 
+bool GsmModemCommon::setDns(const char primaryDns[], const char secondaryDns[]) {
+  this->sendAT(GF("+CDNSCFG="), "\"", primaryDns, "\",\"", secondaryDns, "\"");
+  if (waitResponse() != 1) {
+    return false;
+  }
+  return true;
+}
+
 inline int16_t GsmModemCommon::streamGetIntBefore(char lastChar) {
   char buf[7];
   size_t bytesRead =
