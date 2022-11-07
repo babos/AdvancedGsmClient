@@ -45,16 +45,24 @@ Board settings (also see the environment settings in platformio.ini)
 Sample code
 */
 
-#define WAIT_FOR_NON_LOCAL_IPV6
+//#define WAIT_FOR_NON_LOCAL_IPV6
 #define SEND_INTERVAL_MS 5000
 
 const char apn[] = "telstra.iot";
-const PacketDataProtocolType pdp_type =
-    PacketDataProtocolType::IPv4v6;  // default
-// const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
+//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;  // default
+const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
+//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
+
+// NOTE: Manual DNS is only supported for IPv4
+//#define SET_MANUAL_DNS
+//const char primaryDns[] = "8.8.8.8";
+//const char secondaryDns[] = "8.8.4.4";
 
 #define TLS_PER_CONNECTION
-const char server[] = "v4v6.ipv6-test.com";
+//const char server[] = "v4v6.ipv6-test.com";
+const char server[] = "v6.ipv6-test.com";
+// NOTE: IPv4 only host works on Telstra IPv6 only, via DNS64 + NAT64
+//const char server[] = "v4.ipv6-test.com";
 //const int16_t port = 443;  // encrypted
 const int16_t port = 80;  // unencrypted
 
@@ -125,7 +133,7 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
-  modem.begin(apn, IPv4v6);
+  modem.begin(apn, pdp_type);
   delay(100);
   SerialMon.print("Setup complete\n");
 }
@@ -201,6 +209,11 @@ void connectedLoop() {
 void loop() {
   if (!ready) {
     ready = isReady();
+    if (ready) {
+      #ifdef SET_MANUAL_DNS
+      modem.setDns(primaryDns, secondaryDns);
+      #endif
+    }
   }
   if (ready) {
     connectedLoop();
