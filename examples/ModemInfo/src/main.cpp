@@ -68,6 +68,7 @@ const PacketDataProtocolType pdp_type =
 int32_t max_report = 0;
 GsmModem& modem = testModem;
 int32_t next_report = 0;
+bool displayed = false;
 
 void setup() {
 #if ADVGSM_LOG_SEVERITY > 0
@@ -82,6 +83,7 @@ void setup() {
 
   SerialMon.print("Modem information\n");
   M5.Display.setCursor(0, 0);
+  M5.Display.setTextSize(2);
   M5.Display.println("Modem Info");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
@@ -118,6 +120,7 @@ void setup() {
 }
 
 void loop() {
+  M5.update();
   modem.loop();
 
   int32_t now = millis();
@@ -173,5 +176,19 @@ void loop() {
                       : "");
     Serial.printf("Operator: %s\n", network.c_str());
     Serial.printf("IP Address: %s\n", ip_address.c_str());
+
+    if (ip_address.length() > 0 && !displayed) {
+      displayed = true;
+      M5.Display.printf("RSSI (dBm): %d\n", rssidBm);
+      M5.Display.printf("Registration status: %d%s\n", registrationStatus,
+                    (registrationStatus == RegistrationStatus::Searching)
+                        ? " (= Searching)"
+                    : (registrationStatus,
+                      registrationStatus == RegistrationStatus::RegisteredHome)
+                        ? " (= Home)"
+                        : "");
+      M5.Display.printf("Operator: %s\n", network.c_str());
+      M5.Display.printf("IP Address: %s\n", ip_address.c_str());
+    } 
   }
 }
