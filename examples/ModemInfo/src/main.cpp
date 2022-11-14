@@ -42,6 +42,9 @@ Board settings (also see the environment settings in platformio.ini)
 Sample code
 */
 
+//#include <M5Atom.h>
+#include <M5Unified.h>
+#include <FastLED.h>
 #include <Arduino.h>
 
 #ifdef DUMP_AT_COMMANDS
@@ -54,7 +57,8 @@ TestModem testModem(SerialAT);
 
 const char apn[] = "telstra.iot";
 const PacketDataProtocolType pdp_type =
-    PacketDataProtocolType::IPv4v6;  // default
+    PacketDataProtocolType::IPv6;
+//    PacketDataProtocolType::IPv4v6;  // default
 // const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
 
 #define LOOP_INTERVAL_MS 200
@@ -72,10 +76,13 @@ void setup() {
 //  AdvancedGsmLog.Log = Serial;
 #endif
 #endif
+  M5.begin();
 
-  SerialMon.begin(115200);
   delay(5000);
+
   SerialMon.print("Modem information\n");
+  M5.Display.setCursor(0, 0);
+  M5.Display.println("Modem Info");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
@@ -99,6 +106,13 @@ void setup() {
   Serial.printf("IMEI: %s\n", imei.c_str());
   Serial.printf("IMSI: %s\n", imsi.c_str());
   Serial.printf("ICCID: %s\n", iccid.c_str());
+
+  M5.Display.printf("Manufacturer: %s\n", manufacturer.c_str());
+  M5.Display.printf("Model: %s\n", model.c_str());
+  M5.Display.printf("Revision: %s\n", revision.c_str());
+  M5.Display.printf("IMEI: %s\n", imei.c_str());
+  M5.Display.printf("IMSI: %s\n", imsi.c_str());
+  M5.Display.printf("ICCID: %s\n", iccid.c_str());
 
   modem.begin(apn, pdp_type);
 }

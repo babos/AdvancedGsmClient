@@ -126,6 +126,7 @@ void setup() {
   AdvancedGsmLog.Log = &LOG_OUTPUT;
 #endif
 #endif
+  M5.begin();
 
   SerialMon.begin(115200);
   delay(5000);
