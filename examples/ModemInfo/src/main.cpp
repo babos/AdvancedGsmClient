@@ -83,7 +83,7 @@ void setup() {
 
   SerialMon.print("Modem information\n");
   M5.Display.setCursor(0, 0);
-  M5.Display.setTextSize(2);
+//  M5.Display.setTextSize(2);
   M5.Display.println("Modem Info");
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
