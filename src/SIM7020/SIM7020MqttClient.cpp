@@ -41,15 +41,17 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
         GF("SIM7020 maximum MQTT client ID length is 120; cannot connect"));
     return -611;
   }
-  if (strlen(user_name) > 100) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
+  if (user_name != nullptr) {
+    if (strlen(user_name) > 100) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
                GF("SIM7020 maximum user name length is 100; cannot connect"));
-    return -612;
-  }
-  if (strlen(password) > 100) {
+      return -612;
+    }
+    if (strlen(password) > 100) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
                GF("SIM7020 maximum password length is 100; cannot connect"));
-    return -613;
+      return -613;
+    }
   }
 
   // Set hex format
@@ -100,10 +102,12 @@ int16_t SIM7020MqttClient::createClientInstance() {
   }
 
   // TODO: Confirm if it already exists and selectively clean up
+  /*
   for (int8_t client_id = 0; client_id < 1; client_id++) {
     this->modem.sendAT(GF("+CMQDISCON="), client_id);
     this->modem.waitResponse();
   }
+  */
 
   int16_t rc;
   this->modem.sendAT(GF("+CMQTSYNC=1"));

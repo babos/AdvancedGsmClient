@@ -23,7 +23,6 @@ Modem device
 #define TestModem SIM7020GsmModem
 //#define TestModem SIM7080GsmModem
 
-
 #define GSM_BAUDRATE 115200
 
 /*
@@ -42,7 +41,6 @@ Board settings (also see the environment settings in platformio.ini)
 Sample code
 */
 
-//#include <M5Atom.h>
 #include <M5Unified.h>
 #include <FastLED.h>
 #include <Arduino.h>

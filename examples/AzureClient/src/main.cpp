@@ -11,7 +11,7 @@ Log settings (set before including modem)
 */
 
 // See all AT commands, if wanted
-#define DUMP_AT_COMMANDS
+//#define DUMP_AT_COMMANDS
 #define LOG_OUTPUT Serial
 
 /*
@@ -50,20 +50,19 @@ Sample code
 //#define USE_INSECURE_HTTP
 
 const char apn[] = "telstra.iot";
-//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
-const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;
+const PacketDataProtocolType pdp_type =
+    PacketDataProtocolType::IPv6;  // default
+// const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
 
 // See https://test.mosquitto.org/
 const char server[] = "test.mosquitto.org";
 const char client_id[] = "testclient";
 const char user_name[] = "rw";
 const char password[] = "readwrite";
-const char publish_topic[] = "dt/advgsm/demo/rw/txt";
-const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 
 const int16_t port = 1883;  // unencrypted, unauthenticated
-//const int16_t port = 1884; // unencrypted, authenticated
-//const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
+// const int16_t port = 1884; // unencrypted, authenticated
+// const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
 // const int16_t port = 8887; // encrypted: certificate deliberately expired
 
 // Root certificate for Let's Encrypt
@@ -100,8 +99,6 @@ const String root_ca =
     "emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=\n"
     "-----END CERTIFICATE-----\n";
 
-#include <M5Unified.h>
-#include <FastLED.h>
 #include <Arduino.h>
 
 // Allocate memory for concrete object
@@ -127,10 +124,9 @@ void setup() {
   AdvancedGsmLog.Log = &LOG_OUTPUT;
 #endif
 #endif
-  M5.begin();
 
+  SerialMon.begin(115200);
   delay(5000);
-
   SerialMon.printf("### MQTT client example started at %d\n", millis());
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
@@ -197,12 +193,12 @@ void connectedLoop() {
 
       // Subscribe
       Serial.printf("Subscribing\n");
-      mqtt.subscribe(subscribe_topic);
+      mqtt.subscribe("advgsm/t");
       delay(100);
 
       // Publish
       Serial.printf("Publishing\n");
-      mqtt.publish(publish_topic, "Message from device");
+      mqtt.publish("advgsm/t", "TestMessage");
       delay(100);
 
       // Wait for messages

@@ -34,7 +34,7 @@ In general PlatformIO, running in VS Code, has been used for development.
 Boards developed on:
 
 * M5Stack Atom
-* M5Stack Core 2 [TODO]
+* M5Stack Core 2
 * RAKWireless WisBlock [TODO]
 
 Modems supported;

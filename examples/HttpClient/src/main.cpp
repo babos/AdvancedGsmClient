@@ -45,13 +45,16 @@ Board settings (also see the environment settings in platformio.ini)
 Sample code
 */
 
+#include <M5Unified.h>
+#include <FastLED.h>
+#include <Arduino.h>
+
 //#define WAIT_FOR_NON_LOCAL_IPV6
 #define SEND_INTERVAL_MS 5000
 
 const char apn[] = "telstra.iot";
-//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;  // default
 const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
-//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
+//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;
 
 // NOTE: Manual DNS is only supported for IPv4
 //#define SET_MANUAL_DNS
@@ -60,9 +63,9 @@ const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
 
 #define TLS_PER_CONNECTION
 //const char server[] = "v4v6.ipv6-test.com";
-const char server[] = "v6.ipv6-test.com";
+//const char server[] = "v6.ipv6-test.com";
 // NOTE: IPv4 only host works on Telstra IPv6 only, via DNS64 + NAT64
-//const char server[] = "v4.ipv6-test.com";
+const char server[] = "v4.ipv6-test.com";
 //const int16_t port = 443;  // encrypted
 const int16_t port = 80;  // unencrypted
 

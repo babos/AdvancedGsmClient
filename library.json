@@ -1,8 +1,8 @@
 {
   "name": "AdvancedGsmClient",
-  "version": "0.1.0",
-  "description": ".",
-  "keywords": "GSM, AT commands, AT, SIM7020, SIM7080, SIMCOM, LTE, LTE-M, Cat-M1, NB-IoT",
+  "version": "0.2.0",
+  "description": "Arduino client for SIM7020 NB-IoT modem, used in M5Stack products, that use built-in modem functions for HTTP(S) and MQTT(S).",
+  "keywords": "GSM, AT commands, AT, SIM7020, SIM7080, SIMCOM, LTE, LTE-M, Cat-M1, NB-IoT, M5Stack",
   "authors": [
     {
       "name": "Sly Gryphon",
