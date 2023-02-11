@@ -61,43 +61,43 @@ const char password[] = "readwrite";
 const char publish_topic[] = "dt/advgsm/demo/rw/txt";
 const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 
-const int16_t port = 1883;  // unencrypted, unauthenticated
+//const int16_t port = 1883;  // unencrypted, unauthenticated
 //const int16_t port = 1884; // unencrypted, authenticated
-//const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
+const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
 // const int16_t port = 8887; // encrypted: certificate deliberately expired
 
 // Root certificate for Let's Encrypt
 const String root_ca =
     "-----BEGIN CERTIFICATE-----\n"
-    "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\n"
+    "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\n"
+    "1xnnZw==\n"
     "-----END CERTIFICATE-----\n";
 
 #include <M5Unified.h>
