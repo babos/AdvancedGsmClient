@@ -216,7 +216,7 @@ void connectedLoop() {
 
       TestTcpClient testTcpClient(testModem);
       TestMqttClient testMqttClient(testTcpClient, server, port, use_tls);
-      //TestMqttClient testMqttClient(testTcpClient, server, port, use_tls, 1024, 30000);
+      //TestMqttClient testMqttClient(testTcpClient, server, port, use_tls, 30000);
       MqttClient& mqtt = testMqttClient;
 
       int8_t rc;

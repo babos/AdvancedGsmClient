@@ -4,8 +4,8 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
                                      const char* server_name,
                                      uint16_t server_port,
                                      bool use_tls,
-                                     int16_t buffer_size,
-                                     int32_t timeout_ms)
+                                     int32_t timeout_ms,
+                                     int16_t buffer_size)
     : GsmMqttClient(client, server_name, server_port, use_tls),
       modem(client.modem) {
   this->mqtt_id = -1;

@@ -17,8 +17,8 @@ class SIM7020MqttClient : public GsmMqttClient {
                     const char* server_name,
                     uint16_t server_port = MqttPort,
                     bool use_tls = false,
-                    int16_t buffer_size = 1024,
-                    int32_t timeout_ms = 60000);
+                    int32_t timeout_ms = 60000,
+                    int16_t buffer_size = 1024);
 
   int16_t connect(const char client_id[],
                   const char user_name[] = NULL,
