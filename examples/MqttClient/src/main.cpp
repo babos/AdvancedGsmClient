@@ -62,9 +62,9 @@ const char password[] = "readwrite";
 const char publish_topic[] = "dt/advgsm/demo/rw/txt";
 const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 
-//const int16_t port = 1883;  // unencrypted, unauthenticated
+const int16_t port = 1883;  // unencrypted, unauthenticated
 //const int16_t port = 1884; // unencrypted, authenticated
-const int16_t port = 8883;  // encrypted, unauthenticated
+//const int16_t port = 8883;  // encrypted, unauthenticated
 //const int16_t port = 8884; // encrypted, client certificate
 //const int16_t port = 8885; // encrypted: Lets Encrypt, authenticated
 //const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
@@ -165,7 +165,7 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
-//  modem.resetDefaultConfiguration();
+  //modem.resetDefaultConfiguration();
 
   modem.begin(apn, pdp_type);
   delay(100);
@@ -198,7 +198,7 @@ void connectedLoop() {
       SerialMon.printf("### Testing MQTT to: %s (%d)\n", server, port);
 
       bool use_tls = false;
-      if (port >= 8883 || port <= 8887) {
+      if (port >= 8883 && port <= 8887) {
         bool ca_success;
         if (port == 8883 || port == 8884 || port == 8887) {
           ca_success = modem.setRootCA(mos_root_ca);
@@ -216,6 +216,7 @@ void connectedLoop() {
 
       TestTcpClient testTcpClient(testModem);
       TestMqttClient testMqttClient(testTcpClient, server, port, use_tls);
+      //TestMqttClient testMqttClient(testTcpClient, server, port, use_tls, 1024, 30000);
       MqttClient& mqtt = testMqttClient;
 
       int8_t rc;

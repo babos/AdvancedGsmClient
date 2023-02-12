@@ -9,14 +9,16 @@ class SIM7020MqttClient : public GsmMqttClient {
   friend class SIM7020GsmModem;
 
  private:
-  static const int16_t buffer_size = 1024;
-  static const int16_t timeout_ms = 12000;
+  int16_t buffer_size;
+  int32_t timeout_ms;
 
  public:
   SIM7020MqttClient(SIM7020TcpClient& client,
                     const char* server_name,
                     uint16_t server_port = MqttPort,
-                    bool use_tls = false);
+                    bool use_tls = false,
+                    int16_t buffer_size = 1024,
+                    int32_t timeout_ms = 60000);
 
   int16_t connect(const char client_id[],
                   const char user_name[] = NULL,
