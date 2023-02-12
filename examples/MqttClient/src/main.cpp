@@ -64,9 +64,9 @@ const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 
 //const int16_t port = 1883;  // unencrypted, unauthenticated
 //const int16_t port = 1884; // unencrypted, authenticated
-const int16_t port = 8883;  // encrypted, unauthenticated
+//const int16_t port = 8883;  // encrypted, unauthenticated
 //const int16_t port = 8884; // encrypted, client certificate
-//const int16_t port = 8885; // encrypted: Lets Encrypt, authenticated
+const int16_t port = 8885; // encrypted, authenticated
 //const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
 //const int16_t port = 8887; // encrypted: certificate deliberately expired
 
@@ -201,10 +201,10 @@ void connectedLoop() {
       bool use_tls = false;
       if (port >= 8883 && port <= 8887) {
         bool ca_success;
-        if (port == 8883 || port == 8884 || port == 8887) {
-          ca_success = modem.setRootCA(mos_root_ca);
-        } else {
+        if (port == 8886) {
           ca_success = modem.setRootCA(le_root_ca);
+        } else {
+          ca_success = modem.setRootCA(mos_root_ca);
         }
         if (!ca_success) {
           SerialMon.printf("### Set Root CA failed, delaying %d ms", delay_ms);
