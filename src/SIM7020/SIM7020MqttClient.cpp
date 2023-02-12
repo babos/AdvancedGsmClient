@@ -4,7 +4,7 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
                                      const char* server_name,
                                      uint16_t server_port,
                                      bool use_tls,
-                                     int32_t timeout_ms,
+                                     int16_t timeout_ms,
                                      int16_t buffer_size)
     : GsmMqttClient(client, server_name, server_port, use_tls),
       modem(client.modem) {
@@ -81,8 +81,8 @@ int16_t SIM7020MqttClient::connect(const char client_id[],
     return -710;
   } else if (rc != 1) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %d connect client '%s' error for user '%s' with password length %d"), this->mqtt_id,
-               client_id, user_name, strlen(password));
+               GF("MQTT %d connect client '%s' error for user '%s' with password length %d, error %d"), this->mqtt_id,
+               client_id, user_name, strlen(password), rc);
     return -610;
   }
 
@@ -99,19 +99,14 @@ int16_t SIM7020MqttClient::createClientInstance() {
              GF("MQTT creating instance %s, %d (TLS %s)"), server_name,
              server_port, use_tls ? "yes" : "no");
 
+  // TODO: Confirm if it already exists? Can match name, but not port, etc
+  // So, maybe need to delete anyway.
+
   if (strlen(server_name) > 50) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
                GF("SIM7020 maximum server name length is 50; cannot connect"));
     return -605;
   }
-
-  // TODO: Confirm if it already exists and selectively clean up
-  /*
-  for (int8_t client_id = 0; client_id < 1; client_id++) {
-    this->modem.sendAT(GF("+CMQDISCON="), client_id);
-    this->modem.waitResponse();
-  }
-  */
 
   int16_t rc;
   this->modem.sendAT(GF("+CMQTSYNC=1"));
@@ -120,7 +115,7 @@ int16_t SIM7020MqttClient::createClientInstance() {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT sync timed out"));
     return -701;
   } else if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT sync error"));
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT sync error %d"), rc);
     return -601;
   }
 
@@ -161,8 +156,8 @@ int16_t SIM7020MqttClient::createClientInstance() {
                mqtt_id);
     return -704;
   } else if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT %d create ok error"),
-               mqtt_id);
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT %d create ok error %d"),
+               mqtt_id, rc);
     return -604;
   }
   delay(100);
@@ -174,15 +169,52 @@ int16_t SIM7020MqttClient::createClientInstanceExtended() {
   return 0;
 }
 
-void SIM7020MqttClient::disconnect() {
+boolean SIM7020MqttClient::disconnect() {
   if (this->mqtt_id > -1) {
     ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d disconnect"),
                this->mqtt_id)
     this->modem.sendAT(GF("+CMQDISCON="), this->mqtt_id);
-    this->modem.waitResponse(30000);
+    int16_t rc = this->modem.waitResponse(30000);
+    if (rc == 0) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
+                GF("MQTT %d disconnect timed out"), this->mqtt_id);
+      return false;
+    } else if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT %d disconnect failed %d"),
+                this->mqtt_id, rc);
+      return false;
+    }
     this->mqtt_id = -1;
     is_connected = false;
+    return true;
   }
+  is_connected = false;
+  ADVGSM_LOG(GsmSeverity::Warn, "SIM7020", GF("MQTT %d already disconnected"),
+              this->mqtt_id)
+  return false;
+}
+
+boolean SIM7020MqttClient::disconnectAll() {
+  boolean success = true;
+  // TODO: Confirm if it already exists and selectively clean up
+  for (int8_t client_id = 0; client_id < 1; client_id++) {
+    ADVGSM_LOG(GsmSeverity::Info, "SIM7020", GF("MQTT %d disconnect"),
+               client_id)
+    this->modem.sendAT(GF("+CMQDISCON="), client_id);
+    int16_t rc = this->modem.waitResponse(30000);
+    if (rc == 0) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
+                GF("MQTT %d disconnect timed out"), this->mqtt_id);
+      success = false;
+    } else if (rc != 1) {
+      ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT %d disconnect failed %d"),
+                this->mqtt_id, rc);
+      success = false;
+    }
+  }
+  this->mqtt_id = -1;
+  is_connected = false;
+  return success;
 }
 
 void SIM7020MqttClient::loop() {}
@@ -207,11 +239,11 @@ boolean SIM7020MqttClient::publish(const char topic[], const char payload[]) {
   int16_t rc = this->modem.waitResponse(5000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s publish '%s' timed out"), this->mqtt_id, topic);
+               GF("MQTT %d publish '%s' timed out"), this->mqtt_id, topic);
     return false;
   } else if (rc != 1) {
-    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT %s publish '%s' failed"),
-               this->mqtt_id, topic);
+    ADVGSM_LOG(GsmSeverity::Error, "SIM7020", GF("MQTT %d publish '%s' failed %d"),
+               this->mqtt_id, topic, rc);
     return false;
   }
 
@@ -223,11 +255,11 @@ boolean SIM7020MqttClient::subscribe(const char topic[], int qos) {
   int8_t rc = this->modem.waitResponse(5000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s subscribe '%s' timed out"), this->mqtt_id, topic);
+               GF("MQTT %d subscribe '%s' timed out"), this->mqtt_id, topic);
     return false;
   } else if (rc != 1) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s subscribe '%s' failed"), this->mqtt_id, topic);
+               GF("MQTT %d subscribe '%s' failed %d"), this->mqtt_id, topic, rc);
     return false;
   }
   return false;
@@ -238,11 +270,11 @@ boolean SIM7020MqttClient::unsubscribe(const char topic[]) {
   int8_t rc = this->modem.waitResponse(5000);
   if (rc == 0) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s unsubscribe '%s' timed out"), this->mqtt_id, topic);
+               GF("MQTT %d unsubscribe '%s' timed out"), this->mqtt_id, topic);
     return false;
   } else if (rc != 1) {
     ADVGSM_LOG(GsmSeverity::Error, "SIM7020",
-               GF("MQTT %s unsubscribe '%s' failed"), this->mqtt_id, topic);
+               GF("MQTT %d unsubscribe '%s' failed %d"), this->mqtt_id, topic, rc);
     return false;
   }
   return true;

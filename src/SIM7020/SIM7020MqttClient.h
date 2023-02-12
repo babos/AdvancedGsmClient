@@ -10,22 +10,23 @@ class SIM7020MqttClient : public GsmMqttClient {
 
  private:
   int16_t buffer_size;
-  int32_t timeout_ms;
+  int16_t timeout_ms;
 
  public:
   SIM7020MqttClient(SIM7020TcpClient& client,
-                    const char* server_name,
+                    const char* server_name, // max length 50
                     uint16_t server_port = MqttPort,
                     bool use_tls = false,
-                    int32_t timeout_ms = 60000,
-                    int16_t buffer_size = 1024);
+                    int16_t timeout_ms = 30000, // 0 to 60000
+                    int16_t buffer_size = 1024); // 20 to 1132
 
   int16_t connect(const char client_id[],
                   const char user_name[] = NULL,
                   const char password[] = NULL,
                   bool clean_session = true) override;
   boolean connected() override;
-  void disconnect() override;
+  boolean disconnect() override;
+  boolean disconnectAll() override;
   void loop() override;
   boolean publish(const char topic[], const char payload[]) override;
   boolean subscribe(const char topic[], int qos = 0) override;

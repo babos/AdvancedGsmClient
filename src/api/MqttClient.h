@@ -18,7 +18,8 @@ class MqttClient {
                           bool clean_session = true) = 0;
   // TODO retain, will, etc
   virtual boolean connected() = 0;
-  virtual void disconnect() = 0;
+  virtual boolean disconnect() = 0;
+  virtual boolean disconnectAll() = 0;
   virtual uint16_t keepAliveSeconds() = 0;
   virtual void loop() = 0;
   virtual MqttVersion mqttVersion() = 0;

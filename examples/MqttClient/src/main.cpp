@@ -62,9 +62,9 @@ const char password[] = "readwrite";
 const char publish_topic[] = "dt/advgsm/demo/rw/txt";
 const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 
-const int16_t port = 1883;  // unencrypted, unauthenticated
+//const int16_t port = 1883;  // unencrypted, unauthenticated
 //const int16_t port = 1884; // unencrypted, authenticated
-//const int16_t port = 8883;  // encrypted, unauthenticated
+const int16_t port = 8883;  // encrypted, unauthenticated
 //const int16_t port = 8884; // encrypted, client certificate
 //const int16_t port = 8885; // encrypted: Lets Encrypt, authenticated
 //const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
@@ -169,6 +169,7 @@ void setup() {
 
   modem.begin(apn, pdp_type);
   delay(100);
+
   SerialMon.print("Setup complete\n");
 }
 
@@ -218,8 +219,8 @@ void connectedLoop() {
       TestMqttClient testMqttClient(testTcpClient, server, port, use_tls);
       //TestMqttClient testMqttClient(testTcpClient, server, port, use_tls, 30000);
       MqttClient& mqtt = testMqttClient;
-
-      int8_t rc;
+      mqtt.disconnectAll();
+      int16_t rc;
       if (port == 1884 || port == 8885) {
         rc = mqtt.connect(client_id, user_name, password);
       } else {
