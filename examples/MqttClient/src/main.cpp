@@ -51,7 +51,8 @@ Sample code
 
 const char apn[] = "telstra.iot";
 //const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
-const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;
+//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;
+const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
 
 // See https://test.mosquitto.org/
 const char server[] = "test.mosquitto.org";
@@ -63,41 +64,70 @@ const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 
 //const int16_t port = 1883;  // unencrypted, unauthenticated
 //const int16_t port = 1884; // unencrypted, authenticated
-const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
-// const int16_t port = 8887; // encrypted: certificate deliberately expired
+const int16_t port = 8883;  // encrypted, unauthenticated
+//const int16_t port = 8884; // encrypted, client certificate
+//const int16_t port = 8885; // encrypted: Lets Encrypt, authenticated
+//const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
+//const int16_t port = 8887; // encrypted: certificate deliberately expired
+
+const String mos_root_ca =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIEAzCCAuugAwIBAgIUBY1hlCGvdj4NhBXkZ/uLUZNILAwwDQYJKoZIhvcNAQEL\n"
+    "BQAwgZAxCzAJBgNVBAYTAkdCMRcwFQYDVQQIDA5Vbml0ZWQgS2luZ2RvbTEOMAwG\n"
+    "A1UEBwwFRGVyYnkxEjAQBgNVBAoMCU1vc3F1aXR0bzELMAkGA1UECwwCQ0ExFjAU\n"
+    "BgNVBAMMDW1vc3F1aXR0by5vcmcxHzAdBgkqhkiG9w0BCQEWEHJvZ2VyQGF0Y2hv\n"
+    "by5vcmcwHhcNMjAwNjA5MTEwNjM5WhcNMzAwNjA3MTEwNjM5WjCBkDELMAkGA1UE\n"
+    "BhMCR0IxFzAVBgNVBAgMDlVuaXRlZCBLaW5nZG9tMQ4wDAYDVQQHDAVEZXJieTES\n"
+    "MBAGA1UECgwJTW9zcXVpdHRvMQswCQYDVQQLDAJDQTEWMBQGA1UEAwwNbW9zcXVp\n"
+    "dHRvLm9yZzEfMB0GCSqGSIb3DQEJARYQcm9nZXJAYXRjaG9vLm9yZzCCASIwDQYJ\n"
+    "KoZIhvcNAQEBBQADggEPADCCAQoCggEBAME0HKmIzfTOwkKLT3THHe+ObdizamPg\n"
+    "UZmD64Tf3zJdNeYGYn4CEXbyP6fy3tWc8S2boW6dzrH8SdFf9uo320GJA9B7U1FW\n"
+    "Te3xda/Lm3JFfaHjkWw7jBwcauQZjpGINHapHRlpiCZsquAthOgxW9SgDgYlGzEA\n"
+    "s06pkEFiMw+qDfLo/sxFKB6vQlFekMeCymjLCbNwPJyqyhFmPWwio/PDMruBTzPH\n"
+    "3cioBnrJWKXc3OjXdLGFJOfj7pP0j/dr2LH72eSvv3PQQFl90CZPFhrCUcRHSSxo\n"
+    "E6yjGOdnz7f6PveLIB574kQORwt8ePn0yidrTC1ictikED3nHYhMUOUCAwEAAaNT\n"
+    "MFEwHQYDVR0OBBYEFPVV6xBUFPiGKDyo5V3+Hbh4N9YSMB8GA1UdIwQYMBaAFPVV\n"
+    "6xBUFPiGKDyo5V3+Hbh4N9YSMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQEL\n"
+    "BQADggEBAGa9kS21N70ThM6/Hj9D7mbVxKLBjVWe2TPsGfbl3rEDfZ+OKRZ2j6AC\n"
+    "6r7jb4TZO3dzF2p6dgbrlU71Y/4K0TdzIjRj3cQ3KSm41JvUQ0hZ/c04iGDg/xWf\n"
+    "+pp58nfPAYwuerruPNWmlStWAXf0UTqRtg4hQDWBuUFDJTuWuuBvEXudz74eh/wK\n"
+    "sMwfu1HFvjy5Z0iMDU8PUDepjVolOCue9ashlS4EB5IECdSR2TItnAIiIwimx839\n"
+    "LdUdRudafMu5T5Xma182OC0/u/xRlEm+tvKGGmfFcN0piqVl8OrSPBgIlb+1IKJE\n"
+    "m/XriWr/Cq4h/JfB7NTsezVslgkBaoU=\n"
+    "-----END CERTIFICATE-----\n";
 
 // Root certificate for Let's Encrypt
-const String root_ca =
+const String le_root_ca =
     "-----BEGIN CERTIFICATE-----\n"
-    "MIIFQDCCBCigAwIBAgISA62DzWkTB/LTntyW0qvvPg8lMA0GCSqGSIb3DQEBCwUA\n"
-    "MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD\n"
-    "EwJSMzAeFw0yMjExMjEwMzIwNDNaFw0yMzAyMTkwMzIwNDJaMB0xGzAZBgNVBAMT\n"
-    "EnRlc3QubW9zcXVpdHRvLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\n"
-    "ggEBAMp0E8YXER6sK0q0IZEsi7yuBWlIsqrvXC8RePddMsF/61h6k9esj/UylMPV\n"
-    "8pc7jJi2QxzMDxRwHyGWuHw/8FEtqcboV17OMjBF46K7tQb/eP38NFt+NmY/1It7\n"
-    "Dd80OxNqRhGEdu+dQutORRFDAHa7TqcW2H5boQSHnHWf552tOzMzjLdLr8Os6nJE\n"
-    "N9RaX024228ylPlFXS9wVfqY7BjBeOrwdD/l/n9f2IbxGo+l+vhuYL0G8WB7N0Q4\n"
-    "T8sbgvxPNyAf8fgJhfdZ5i7i9YGiP5C77Y1Ap4QrMaeBH2jU/FmCHbfHct53Z3aS\n"
-    "di8LZcJw635mser/rfrtZkVwpuUCAwEAAaOCAmMwggJfMA4GA1UdDwEB/wQEAwIF\n"
-    "oDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAd\n"
-    "BgNVHQ4EFgQUEL0LHjiq9v+MQs2Tig4ibsXTUuEwHwYDVR0jBBgwFoAUFC6zF7dY\n"
-    "VsuuUAlA5h+vnYsUwsYwVQYIKwYBBQUHAQEESTBHMCEGCCsGAQUFBzABhhVodHRw\n"
-    "Oi8vcjMuby5sZW5jci5vcmcwIgYIKwYBBQUHMAKGFmh0dHA6Ly9yMy5pLmxlbmNy\n"
-    "Lm9yZy8wMgYDVR0RBCswKYISdGVzdC5tb3NxdWl0dG8ub3JnghN0ZXN0Ni5tb3Nx\n"
-    "dWl0dG8ub3JnMEwGA1UdIARFMEMwCAYGZ4EMAQIBMDcGCysGAQQBgt8TAQEBMCgw\n"
-    "JgYIKwYBBQUHAgEWGmh0dHA6Ly9jcHMubGV0c2VuY3J5cHQub3JnMIIBBQYKKwYB\n"
-    "BAHWeQIEAgSB9gSB8wDxAHYAejKMVNi3LbYg6jjgUh7phBZwMhOFTTvSK8E6V6NS\n"
-    "61IAAAGEmGq+AQAABAMARzBFAiEArHdygSmb2evaV5aCLCZCU3PbxrHGLBU6r7Wu\n"
-    "bW6608ACICaznhejZHavVItLio80bJAOUPYeuCdw2RyyvHSKdAAlAHcA6D7Q2j71\n"
-    "BjUy51covIlryQPTy9ERa+zraeF3fW0GvW4AAAGEmGq91AAABAMASDBGAiEAp5GD\n"
-    "kIUQlFGNjB4QnSbxuic81uugK3mSf2IT6a/1KoICIQCLvb8UuYwtQJeYKrpGYhuF\n"
-    "FnoKwgZvfgIc7+uC2D75BzANBgkqhkiG9w0BAQsFAAOCAQEAEIghttHZ9Q4krh6c\n"
-    "tzhg5+hHGsU1QZQSbnZ9HeDn9RyPA8Jj2g5OD9+cLLipq2jb2y/ozoYCtX7dm0Yo\n"
-    "T3qWgjQ/VQAUJYKJf8vgmpLrvD9JeJNa1PpLLk4eFiegRPsZKNq0/zqfxBv6F3MM\n"
-    "+OQoHq+F8njSV7lRQaCBUQWEYjw/TUqM5wvUX2rHNdAbLFU9Z/hjRziMqzeqyaHX\n"
-    "vfyy7hV0wt6poR9cjzeohr8yqLWM21RbXxTi1rw3iqfbK3A85ZOwT9DiOWGsvaxO\n"
-    "6x9BFx49ck17Wygo/tGaIuZDy2dcdTtIbFeiA1j1XLVA4Mik2w8z7TQ1wjgiTFiu\n"
-    "1xnnZw==\n"
+    "MIIFYDCCBEigAwIBAgIQQAF3ITfU6UK47naqPGQKtzANBgkqhkiG9w0BAQsFADA/\n"
+    "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n"
+    "DkRTVCBSb290IENBIFgzMB4XDTIxMDEyMDE5MTQwM1oXDTI0MDkzMDE4MTQwM1ow\n"
+    "TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n"
+    "cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwggIiMA0GCSqGSIb3DQEB\n"
+    "AQUAA4ICDwAwggIKAoICAQCt6CRz9BQ385ueK1coHIe+3LffOJCMbjzmV6B493XC\n"
+    "ov71am72AE8o295ohmxEk7axY/0UEmu/H9LqMZshftEzPLpI9d1537O4/xLxIZpL\n"
+    "wYqGcWlKZmZsj348cL+tKSIG8+TA5oCu4kuPt5l+lAOf00eXfJlII1PoOK5PCm+D\n"
+    "LtFJV4yAdLbaL9A4jXsDcCEbdfIwPPqPrt3aY6vrFk/CjhFLfs8L6P+1dy70sntK\n"
+    "4EwSJQxwjQMpoOFTJOwT2e4ZvxCzSow/iaNhUd6shweU9GNx7C7ib1uYgeGJXDR5\n"
+    "bHbvO5BieebbpJovJsXQEOEO3tkQjhb7t/eo98flAgeYjzYIlefiN5YNNnWe+w5y\n"
+    "sR2bvAP5SQXYgd0FtCrWQemsAXaVCg/Y39W9Eh81LygXbNKYwagJZHduRze6zqxZ\n"
+    "Xmidf3LWicUGQSk+WT7dJvUkyRGnWqNMQB9GoZm1pzpRboY7nn1ypxIFeFntPlF4\n"
+    "FQsDj43QLwWyPntKHEtzBRL8xurgUBN8Q5N0s8p0544fAQjQMNRbcTa0B7rBMDBc\n"
+    "SLeCO5imfWCKoqMpgsy6vYMEG6KDA0Gh1gXxG8K28Kh8hjtGqEgqiNx2mna/H2ql\n"
+    "PRmP6zjzZN7IKw0KKP/32+IVQtQi0Cdd4Xn+GOdwiK1O5tmLOsbdJ1Fu/7xk9TND\n"
+    "TwIDAQABo4IBRjCCAUIwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYw\n"
+    "SwYIKwYBBQUHAQEEPzA9MDsGCCsGAQUFBzAChi9odHRwOi8vYXBwcy5pZGVudHJ1\n"
+    "c3QuY29tL3Jvb3RzL2RzdHJvb3RjYXgzLnA3YzAfBgNVHSMEGDAWgBTEp7Gkeyxx\n"
+    "+tvhS5B1/8QVYIWJEDBUBgNVHSAETTBLMAgGBmeBDAECATA/BgsrBgEEAYLfEwEB\n"
+    "ATAwMC4GCCsGAQUFBwIBFiJodHRwOi8vY3BzLnJvb3QteDEubGV0c2VuY3J5cHQu\n"
+    "b3JnMDwGA1UdHwQ1MDMwMaAvoC2GK2h0dHA6Ly9jcmwuaWRlbnRydXN0LmNvbS9E\n"
+    "U1RST09UQ0FYM0NSTC5jcmwwHQYDVR0OBBYEFHm0WeZ7tuXkAXOACIjIGlj26Ztu\n"
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQAKcwBslm7/DlLQrt2M51oGrS+o44+/yQoDFVDC\n"
+    "5WxCu2+b9LRPwkSICHXM6webFGJueN7sJ7o5XPWioW5WlHAQU7G75K/QosMrAdSW\n"
+    "9MUgNTP52GE24HGNtLi1qoJFlcDyqSMo59ahy2cI2qBDLKobkx/J3vWraV0T9VuG\n"
+    "WCLKTVXkcGdtwlfFRjlBz4pYg1htmf5X6DYO8A4jqv2Il9DjXA6USbW1FzXSLr9O\n"
+    "he8Y4IWS6wY7bCkjCWDcRQJMEhg76fsO3txE+FiYruq9RUWhiF1myv4Q6W+CyBFC\n"
+    "Dfvp7OOGAN6dEOM4+qR9sdjoSYKEBpsr6GtPAQw4dy753ec5\n"
     "-----END CERTIFICATE-----\n";
 
 #include <M5Unified.h>
@@ -135,6 +165,8 @@ void setup() {
 
   SerialAT.begin(GSM_BAUDRATE, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
 
+//  modem.resetDefaultConfiguration();
+
   modem.begin(apn, pdp_type);
   delay(100);
   SerialMon.print("Setup complete\n");
@@ -166,8 +198,13 @@ void connectedLoop() {
       SerialMon.printf("### Testing MQTT to: %s (%d)\n", server, port);
 
       bool use_tls = false;
-      if (port == 8886 || port == 8887) {
-        bool ca_success = modem.setRootCA(root_ca);
+      if (port >= 8883 || port <= 8887) {
+        bool ca_success;
+        if (port == 8883 || port == 8884 || port == 8887) {
+          ca_success = modem.setRootCA(mos_root_ca);
+        } else {
+          ca_success = modem.setRootCA(le_root_ca);
+        }
         if (!ca_success) {
           SerialMon.printf("### Set Root CA failed, delaying %d ms", delay_ms);
           next_message_ms = millis() + delay_ms;
@@ -182,7 +219,7 @@ void connectedLoop() {
       MqttClient& mqtt = testMqttClient;
 
       int8_t rc;
-      if (port == 1884) {
+      if (port == 1884 || port == 8885) {
         rc = mqtt.connect(client_id, user_name, password);
       } else {
         rc = mqtt.connect(client_id);
