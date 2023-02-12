@@ -66,6 +66,42 @@ In another terminal you can test messages to the device:
 mosquitto_pub -h test.mosquitto.org -t "cmd/advgsm/demo/rw/txt" -u wo -P writeonly -m "Command to device"
 ```
 
+Example output
+--------------
+
+Using IPv6 to connect to test.mosquitto.org on port 8885 (with server certificate and authentication).
+
+Logging set to level 5 (DEBUG) and above, but not showing the serial modem commands debugging.
+
+```
+### MQTT client example started at 5119
+[5120] <INFO> GsmModemCommon: Begin connection to @telstra.iot (IPV6)
+[5126] <DEBUG> SIM7020: Attention success
+[5792] <DEBUG> SIM7020: Already configured: @telstra.iot (IPV6)
+[5903] <DEBUG> SIM7020: Received Signal Strength Indicator: -83 dBm
+[6012] <DEBUG> SIM7020: Registered (1): Home
+[6139] <DEBUG> SIM7020: Packet data ready
+[6268] <INFO> SIM7020: Local IP Addresses: 2001:8004:4880:0:c377:7a4f:8575:a4c7, fe80:0:0:0:c377:7a4f:8575:a4c7
+IP address[0] = 2001:8004:4880:0:c377:7a4f:8575:a4c7
+IP address[1] = fe80:0:0:0:c377:7a4f:8575:a4c7
+IP address[2] = 127.0.0.1
+Ready 1 (60)
+### Testing MQTT to: test.mosquitto.org (8885)
+[6618] <INFO> SIM7020: Set certificate 0 length 1452 with 24 escaped characters
+[6701] <DEBUG> SIM7020: Set certificate error 1 result at index 500 (first error is expected, to clear)
+[6929] <DEBUG> SIM7020: Certificate set on attempt 2
+[6929] <INFO> SIM7020: MQTT 0 disconnect
+[6945] <ERROR> SIM7020: MQTT -1 disconnect failed 2
+[6945] <INFO> SIM7020: MQTT creating instance test.mosquitto.org, 8885 (TLS yes)
+[10740] <DEBUG> SIM7020: MQTT 0 created
+[10849] <INFO> SIM7020: MQTT 0 connect client 'testclient' (user 'rw')
+Subscribing
+Publishing
+Disconnecting
+[18450] <INFO> SIM7020: MQTT 0 disconnect
+Done
+```
+
 
 Notes
 -----

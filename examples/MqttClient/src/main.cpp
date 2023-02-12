@@ -50,9 +50,9 @@ Sample code
 //#define USE_INSECURE_HTTP
 
 const char apn[] = "telstra.iot";
-//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
+const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv6;
 //const PacketDataProtocolType pdp_type = PacketDataProtocolType::IPv4v6;
-const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
+//const PacketDataProtocolType pdp_type = PacketDataProtocolType::IP;
 
 // See https://test.mosquitto.org/
 const char server[] = "test.mosquitto.org";
