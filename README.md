@@ -26,7 +26,6 @@ There are different ways to compose an application that uses HTTP, whether the m
 
 This library is focussed on the first pattern, directly leveraging the protocol support in the modem chip.
 
-
 ## Supported platforms, boards, and devices
 
 In general PlatformIO, running in VS Code, has been used for development.
@@ -237,6 +236,14 @@ TestModem testModem(debugger);
 TestModem testModem(Serial1);
 #endif
 ```
+
+## Platform IO Library
+
+The library is registered with PlatformIO, https://registry.platformio.org/libraries/sgryphon/AdvancedGsmClient
+
+To update the version:
+* Modify `library.json` with the new version number (and any other changes).
+* Add a tag `vX.Y.Z` to the source control.
 
 
 ## Source acknowledgements
