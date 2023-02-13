@@ -66,8 +66,8 @@ const char subscribe_topic[] = "cmd/advgsm/demo/rw/#";
 //const int16_t port = 1884; // unencrypted, authenticated
 //const int16_t port = 8883;  // encrypted, unauthenticated
 //const int16_t port = 8884; // encrypted, client certificate
-const int16_t port = 8885; // encrypted, authenticated
-//const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
+//const int16_t port = 8885; // encrypted, authenticated
+const int16_t port = 8886; // encrypted: Lets Encrypt, unauthenticated
 //const int16_t port = 8887; // encrypted: certificate deliberately expired
 
 const String mos_root_ca =
