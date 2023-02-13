@@ -4,7 +4,7 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
                                      const char* server_name,
                                      uint16_t server_port,
                                      bool use_tls,
-                                     int16_t timeout_ms,
+                                     int32_t timeout_ms,
                                      int16_t buffer_size)
     : GsmMqttClient(client, server_name, server_port, use_tls),
       modem(client.modem) {
@@ -12,6 +12,16 @@ SIM7020MqttClient::SIM7020MqttClient(SIM7020TcpClient& client,
   this->is_connected = false;
   this->buffer_size = buffer_size;
   this->timeout_ms = timeout_ms;
+  if (timeout_ms < 0 || timeout_ms > 60000) {
+    ADVGSM_LOG(
+        GsmSeverity::Error, "SIM7020",
+        GF("SIM7020 MQTT timeout must be 0 - 60000 ms"));
+  }
+  if (buffer_size < 20 || buffer_size > 1132) {
+    ADVGSM_LOG(
+        GsmSeverity::Error, "SIM7020",
+        GF("SIM7020 MQTT buffer size must be 20 - 1132"));
+  }
 }
 
 int16_t SIM7020MqttClient::connect(const char client_id[],
