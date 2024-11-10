@@ -30,3 +30,28 @@
 *.exe
 *.out
 *.app
+# editors
+*.swp
+*~
+
+# build
+/build*/
+# File e directory generati dal build
+/build/
+/out/
+
+# Directory specifiche di Zephyr
+/zephyr/.config
+/zephyr/.config.old
+/zephyr/merged.config
+/zephyr/autoconf.h
+/zephyr/include/generated/
+
+
+
+# build
+/build*/
+
+# mac
+**/.DS_Store
+.DS_Store

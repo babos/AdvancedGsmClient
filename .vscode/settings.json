@@ -13,5 +13,6 @@
         "cstring": "cpp",
         "initializer_list": "cpp"
     },
-    "nrf-connect.toolchain.path": "${nrf-connect.toolchain:2.1.1}"
+   "nrf-connect.toolchain.path": "${nrf-connect.toolchain:2.1.1}",
+   "C_Cpp.errorSquiggles": "disabled"
 }
